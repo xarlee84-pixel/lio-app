@@ -3,104 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Lio-Gestión</title>
+    <title>LIAO Gestión</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #000; color: #fff; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
-        .btn-lio { background-color: #FFD700; color: #000; font-weight: bold; border-radius: 12px; }
-        .input-lio { background-color: #1a1a1a; border: 1px solid #333; color: white; border-radius: 12px; }
-        .card-prod { background-color: #111; border: 1px solid #222; border-radius: 16px; }
-        .pill { background-color: #222; border: 1px solid #444; padding: 6px 14px; border-radius: 20px; white-space: nowrap; font-size: 11px; cursor: pointer; }
-        .pill.active { background-color: #FFD700; color: #000; font-weight: bold; }
-        .sub-pill { background-color: #111; border: 1px solid #333; padding: 4px 12px; border-radius: 15px; font-size: 10px; color: #888; cursor: pointer; }
-        .sub-pill.active { border-color: #FFD700; color: #FFD700; border-width: 2px; }
+        /* Tipografía Sans-Serif Limpia (Predeterminada de Tailwind, Inter) */
+        body { 
+            background-color: #F9FAFB; /* Gris muy claro amable */
+            color: #111827; /* Negro/Gris oscuro para legibilidad */
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent; 
+        }
+        /* Botones Principales Azules */
+        .btn-liao { 
+            background-color: #1D4ED8; /* Azul Principal */
+            color: #FFFFFF; 
+            font-weight: 600; 
+            border-radius: 12px; 
+            transition: all 0.2s; 
+        }
+        .btn-liao:active { transform: scale(0.97); background-color: #1E3A8A; } /* Azul más oscuro al pulsar */
+        
+        /* Inputs y Selects */
+        .input-liao { 
+            background-color: #FFFFFF; 
+            border: 1px solid #D1D5DB; /* Gris claro de borde */
+            color: #111827; 
+            border-radius: 12px; 
+            transition: border-color 0.2s;
+        }
+        .input-liao:focus { outline: none; border-color: #1D4ED8; ring: 2px; ring-color: #EBF0FF; }
+        
+        /* Tarjetas de Tienda (Sombra suave y limpieza) */
+        .card-tienda { 
+            background-color: #FFFFFF; 
+            border: 1px solid #E5E7EB; 
+            border-radius: 20px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); /* Sombra muy suave */
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .card-tienda:active { transform: translateY(1px); box-shadow: 0 2px 10px rgba(0,0,0,0.01); }
+
+        /* Píldoras de Filtro */
+        .pill { 
+            background-color: #F3F4F6; /* Gris muy claro */
+            border: 1px solid #D1D5DB; 
+            padding: 8px 18px; 
+            border-radius: 20px; 
+            white-space: nowrap; 
+            font-size: 13px; 
+            font-weight: 500;
+            color: #6B7280; /* Gris secundario */
+            cursor: pointer; 
+            transition: all 0.2s;
+        }
+        .pill.active { 
+            background-color: #1D4ED8; /* Azul Principal */
+            color: #FFFFFF; 
+            border-color: #1D4ED8; 
+            font-weight: 600; 
+        }
+        
+        /* Semáforos Amables */
+        .sem-red { 
+            background-color: #FEE2E2; /* Rojo Claro */
+            color: #DC2626; /* Rojo Fuerte */
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .sem-green { 
+            background-color: #DCFCE7; /* Verde Claro */
+            color: #16A34A; /* Verde Fuerte */
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        input[type="date"] { color-scheme: dark; }
+        input[type="date"] { color-scheme: light; }
     </style>
 </head>
 <body onload="cargarUsuarios()">
 
     <div id="login-screen" class="min-h-screen flex items-center justify-center p-6 text-center">
-        <div class="max-w-md w-full space-y-8">
-            <h1 class="text-4xl font-extrabold text-[#FFD700] tracking-tight uppercase">LIO-GESTIÓN</h1>
-            <div class="space-y-4 text-left">
-                <select id="user-select" class="input-lio w-full p-4 text-lg outline-none appearance-none"><option value="">Cargando sistema...</option></select>
-                <input id="pin-input" type="password" pattern="[0-9]*" inputmode="numeric" placeholder="PIN" class="input-lio w-full p-4 text-center text-3xl tracking-widest outline-none">
-                <button onclick="intentarLogin()" id="btn-entrar" class="btn-lio w-full p-4 text-xl uppercase tracking-widest">Entrar</button>
+        <div class="max-w-md w-full space-y-12">
+            <div class="space-y-3">
+                <h1 class="text-4xl font-extrabold text-[#111827] tracking-tight">LIAO GESTIÓN</h1>
+                <p class="text-xl font-medium text-[#6B7280] tracking-wide uppercase">PRODUCCIÓN Y MERMA</p>
             </div>
-            <div id="login-msg" class="text-red-500 text-sm font-bold h-6"></div>
+            
+            <div class="space-y-5 text-left bg-white p-8 rounded-3xl shadow-xl shadow-gray-100 border border-gray-100">
+                <select id="user-select" class="input-liao w-full p-4 text-lg outline-none appearance-none font-medium">
+                    <option value="">-- Cargando Usuarios --</option>
+                </select>
+                <input id="pin-input" type="password" pattern="[0-9]*" inputmode="numeric" placeholder="Introduce tu PIN" class="input-liao w-full p-4 text-center text-3xl tracking-widest outline-none font-black">
+                <button onclick="intentarLogin()" id="btn-entrar" class="btn-liao w-full p-5 text-xl tracking-wider uppercase shadow-md shadow-blue-500/10">Entrar</button>
+            </div>
+            <div id="login-msg" class="text-red-600 text-sm font-semibold h-6"></div>
         </div>
     </div>
 
     <div id="tienda-screen" class="hidden flex flex-col h-screen">
-        <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-black sticky top-0 z-50">
-            <div><h2 id="store-name" class="font-bold text-[#FFD700] text-lg"></h2><p id="store-zone" class="text-[10px] text-gray-500 uppercase tracking-widest"></p></div>
-            <button onclick="location.reload()" class="text-[10px] bg-red-900/20 text-red-500 px-4 py-2 rounded-full border border-red-900/50 font-bold uppercase">Salir</button>
+        <div class="p-5 border-b border-gray-200 flex justify-between items-center bg-white sticky top-0 z-50">
+            <div><h2 id="store-name" class="font-bold text-[#111827] text-xl leading-tight"></h2><p id="store-zone" class="text-xs text-[#6B7280] uppercase tracking-wider"></p></div>
+            <button onclick="location.reload()" class="text-xs bg-[#EBF0FF] text-[#1D4ED8] px-5 py-2.5 rounded-full border border-blue-100 font-bold uppercase tracking-wider">Salir</button>
         </div>
-        <div class="p-4 bg-black border-b border-gray-900 space-y-3">
-            <div class="flex gap-2"><input type="date" id="input-fecha" class="input-lio flex-1 p-3 text-sm"><select id="select-tipo" onchange="toggleTurnos()" class="input-lio flex-1 p-3 text-sm"><option value="PRODUCCIÓN">PRODUCCIÓN</option><option value="MERMA">MERMA</option></select></div>
-            <div id="container-turnos" class="flex gap-2">
-                <button onclick="setTurno('Obrador')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-bold border border-gray-800 uppercase">Obrador</button>
-                <button onclick="setTurno('Mediodía')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-bold border border-gray-800 uppercase">Mediodía</button>
-                <button onclick="setTurno('Tarde')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-bold border border-gray-800 uppercase">Tarde</button>
+        <div class="p-5 bg-white border-b border-gray-100 space-y-4">
+            <div class="flex gap-3"><input type="date" id="input-fecha" class="input-liao flex-1 p-3.5 text-sm font-medium"><select id="select-tipo" onchange="toggleTurnos()" class="input-liao flex-1 p-3.5 text-sm font-medium"><option value="PRODUCCIÓN">PRODUCCIÓN</option><option value="MERMA">MERMA</option></select></div>
+            <div id="container-turnos" class="flex gap-3">
+                <button onclick="setTurno('Obrador')" class="turno-btn flex-1 p-3.5 rounded-2xl text-xs font-bold border border-gray-200 uppercase tracking-wider">Obrador</button>
+                <button onclick="setTurno('Mediodía')" class="turno-btn flex-1 p-3.5 rounded-2xl text-xs font-bold border border-gray-200 uppercase tracking-wider">Mediodía</button>
+                <button onclick="setTurno('Tarde')" class="turno-btn flex-1 p-3.5 rounded-2xl text-xs font-bold border border-gray-200 uppercase tracking-wider">Tarde</button>
             </div>
         </div>
-        <div class="p-4 space-y-3 bg-black">
-            <input type="text" id="busqueda" oninput="renderProductos()" placeholder="Buscar producto..." class="input-lio w-full p-4 rounded-xl text-sm outline-none">
-            <div id="lista-categorias" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar"></div>
-            <div id="lista-subcategorias" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar h-8"></div>
+        <div class="p-5 space-y-4 bg-white shadow-sm">
+            <input type="text" id="busqueda" oninput="renderProductos()" placeholder="Buscar producto..." class="input-liao w-full p-4 rounded-xl text-sm outline-none">
+            <div id="lista-categorias" class="flex gap-2.5 overflow-x-auto pb-1.5 no-scrollbar"></div>
+            <div id="lista-subcategorias" class="flex gap-2.5 overflow-x-auto pb-1.5 no-scrollbar h-9"></div>
         </div>
-        <div id="lista-productos" class="flex-grow overflow-y-auto p-4 space-y-3 pb-32"></div>
-        <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black to-transparent"><button onclick="enviarDatos()" id="btn-enviar" class="btn-lio w-full py-5 text-xl">GUARDAR REGISTROS</button></div>
+        <div id="lista-productos" class="flex-grow overflow-y-auto p-5 space-y-3 pb-36"></div>
+        <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent"><button onclick="enviarDatos()" id="btn-enviar" class="btn-liao w-full py-5 text-xl tracking-wider shadow-lg shadow-blue-500/15">GUARDAR REGISTROS</button></div>
     </div>
 
     <div id="am-screen" class="hidden flex flex-col h-screen relative">
-        <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-black">
-            <div><h2 class="font-bold text-[#FFD700] text-lg">Panel de Zona</h2><p id="am-info" class="text-[10px] text-gray-500 uppercase"></p></div>
-            <button onclick="location.reload()" class="text-[10px] bg-gray-800 px-4 py-2 rounded-full border border-gray-700 font-bold uppercase">Cerrar</button>
+        <div class="p-5 border-b border-gray-200 flex justify-between items-center bg-white sticky top-0 z-50 shadow-sm">
+            <div><h2 class="font-bold text-[#111827] text-xl">Panel de Zona</h2><p id="am-info" class="text-xs text-[#6B7280] uppercase tracking-wider"></p></div>
+            <button onclick="location.reload()" class="text-xs bg-gray-100 px-5 py-2.5 rounded-full border border-gray-200 font-bold uppercase tracking-wider text-gray-700">Cerrar</button>
         </div>
-        <div id="am-lista-tiendas" class="flex-grow overflow-y-auto p-4 space-y-4 pb-10"></div>
+        <div id="am-lista-tiendas" class="flex-grow overflow-y-auto p-5 space-y-4 pb-12 bg-[#F9FAFB]">
+            <div class="text-center text-gray-400 mt-20 text-xs italic animate-pulse font-medium">Analizando quincena...</div>
+        </div>
 
-        <div id="modal-detalle" class="hidden fixed inset-0 bg-black/95 z-[100] p-6 flex flex-col">
-            <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
-                <div><h3 id="detalle-titulo" class="text-2xl font-bold text-[#FFD700]"></h3><p class="text-[10px] text-gray-500 uppercase">Top 5 Mermas (15 días)</p></div>
-                <button onclick="cerrarDetalle()" class="text-2xl font-light text-gray-400">&times;</button>
+        <div id="modal-detalle" class="hidden fixed inset-0 bg-white/95 z-[100] p-6 flex flex-col shadow-inner">
+            <div class="flex justify-between items-center mb-8 border-b border-gray-200 pb-5">
+                <div><h3 id="detalle-titulo" class="text-3xl font-extrabold text-[#111827] tracking-tight"></h3><p class="text-xs text-[#6B7280] uppercase tracking-wider font-semibold">Análisis Top 5 Mermas (Última quincena)</p></div>
+                <button onclick="cerrarDetalle()" class="text-4xl font-light text-gray-400 transition hover:text-red-500">&times;</button>
             </div>
             <div id="detalle-contenido" class="space-y-4 flex-grow overflow-y-auto"></div>
-            <button onclick="cerrarDetalle()" class="btn-lio w-full py-4 mt-6">VOLVER</button>
+            <button onclick="cerrarDetalle()" class="btn-liao w-full py-5 mt-8 uppercase tracking-widest">VOLVER AL PANEL</button>
         </div>
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyHTg2_WBm4n5Dyy0lpwDnGxW33kpvSTaH4l363A-XpTfgymuxaq7TctXt7HsDbbPaJIg/exec"; 
+        const WEB_APP_URL = "TU_URL_AQUI"; // CAMBIAR ESTO POR TU URL /exec
 
         let PRODUCTOS = []; let FILTROS = []; let VALORES = {}; let USUARIO = null;
         let CAT_ACTIVA = "TODOS"; let SUB_ACTIVA = "TODOS"; let TURNO_ACTIVO = "Obrador";
 
         async function fetchAPI(action, extra = {}) {
-            const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action, ...extra }) });
-            return await res.json();
+            try {
+                const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action, ...extra }) });
+                return await res.json();
+            } catch (e) { return { success: false, msg: "Error de conexión" }; }
         }
 
         function cargarUsuarios() {
             fetchAPI('get_users').then(res => {
-                const s = document.getElementById('user-select');
-                if (res.success) {
-                    s.innerHTML = '<option value="">-- Selecciona Usuario --</option>';
-                    res.usuarios.forEach(u => { s.innerHTML += `<option value="${u.id}">${u.nombre}</option>`; });
-                }
+                const select = document.getElementById('user-select');
+                if (res && res.success) {
+                    select.innerHTML = '<option value="">-- Selecciona Usuario --</option>';
+                    res.usuarios.forEach(u => { select.innerHTML += `<option value="${u.id}">${u.nombre}</option>`; });
+                } else { select.innerHTML = '<option value="">Fallo conexión</option>'; }
             });
         }
 
         function intentarLogin() {
-            const id = document.getElementById('user-select').value; const pin = document.getElementById('pin-input').value;
+            const id = document.getElementById('user-select').value;
+            const pin = document.getElementById('pin-input').value;
             if(!id || !pin) return;
-            document.getElementById('btn-entrar').innerText = "CONECTANDO...";
+            document.getElementById('btn-entrar').innerText = "AUTENTICANDO...";
             fetchAPI('verificar_pin', { userId: id, pin: pin }).then(res => {
                 if(res.success) {
-                    USUARIO = res.usuario; document.getElementById('login-screen').classList.add('hidden');
-                    if (USUARIO.rol === 'AM' || USUARIO.rol === 'ADMIN') mostrarPanelAM(); else mostrarPanelTienda();
-                } else { document.getElementById('login-msg').innerText = res.msg; document.getElementById('btn-entrar').innerText = "Entrar"; }
+                    USUARIO = res.usuario;
+                    document.getElementById('login-screen').classList.add('hidden');
+                    if (USUARIO.rol === 'AM' || USUARIO.rol === 'ADMIN') mostrarPanelAM();
+                    else mostrarPanelTienda();
+                } else {
+                    document.getElementById('login-msg').innerText = res.msg;
+                    document.getElementById('btn-entrar').innerText = "Entrar";
+                }
             });
         }
 
@@ -117,26 +197,34 @@
             document.getElementById('am-screen').classList.remove('hidden');
             document.getElementById('am-info').innerText = `${USUARIO.nombre} | ${USUARIO.zona}`;
             const cont = document.getElementById('am-lista-tiendas');
-            cont.innerHTML = '<p class="text-center text-gray-500 mt-10 animate-pulse">Analizando zona...</p>';
             fetchAPI('get_am_report', { rol: USUARIO.rol, zona: USUARIO.zona }).then(res => {
                 if(res.success) {
                     cont.innerHTML = "";
                     res.reporte.forEach(t => {
-                        const crit = t.pendientes > 0;
+                        const esCritico = t.pendientes > 0;
                         cont.innerHTML += `
-                            <div onclick="verDetalle('${t.id}', '${t.nombre}')" class="card-prod p-5 border-l-4 ${crit ? 'border-red-600' : 'border-green-500'} active:scale-95 transition-transform">
-                                <div class="flex justify-between items-start">
-                                    <h3 class="font-bold text-xl tracking-tight">${t.nombre}</h3>
-                                    <span class="text-[10px] font-black px-3 py-1 rounded-full ${crit ? 'bg-red-900/20 text-red-500' : 'bg-green-900/20 text-green-500'}">${crit ? 'PENDIENTE' : 'AL DÍA'}</span>
+                            <div onclick="verDetalle('${t.id}', '${t.nombre}')" class="card-tienda p-6 transition-all duration-300">
+                                <div class="flex justify-between items-start mb-4">
+                                    <h3 class="font-bold text-xl tracking-tight text-[#111827] leading-none">${t.nombre}</h3>
+                                    <span class="text-xs px-4 py-1.5 rounded-full ${esCritico ? 'sem-red' : 'sem-green'} tracking-wider">
+                                        ${esCritico ? 'PENDIENTE' : 'AL DÍA'}
+                                    </span>
                                 </div>
-                                <div class="mt-3 text-xs text-gray-400">
-                                    ${crit ? 'Faltan <b>'+t.pendientes+'</b> tareas' : 'Operativa al día'}
-                                    ${crit ? '<p class="text-[10px] text-red-400/80 mt-1 italic">'+t.faltas.join(', ')+'...</p>' : ''}
+                                <div class="mt-3 text-sm text-[#6B7280] font-medium">
+                                    ${esCritico ? 'Faltan <b>'+t.pendientes+'</b> tareas en quincena' : 'Operativa completada'}
+                                    ${esCritico ? '<p class="text-xs text-red-500 mt-2 italic font-semibold">'+t.faltas.join(', ')+'...</p>' : ''}
                                 </div>
-                                <div class="grid grid-cols-2 gap-4 mt-5 pt-4 border-t border-gray-800">
-                                    <div><p class="text-[9px] text-gray-500 uppercase font-bold">Ratio Merma</p><p class="text-2xl font-black text-[#FFD700]">${t.ratio}%</p></div>
-                                    <div class="text-right"><p class="text-[9px] text-gray-500 uppercase font-bold">Ranking</p><p class="text-2xl font-black text-white">#${t.puesto}<span class="text-xs text-gray-600 ml-1">/ ${t.totalTiendas}</span></p></div>
+                                <div class="grid grid-cols-2 gap-4 mt-6 pt-5 border-t border-gray-100">
+                                    <div class="bg-[#F9FAFB] p-4 rounded-xl border border-gray-100">
+                                        <p class="text-[10px] text-[#6B7280] uppercase font-bold tracking-widest">Ratio Merma</p>
+                                        <p class="text-3xl font-black text-[#1D4ED8] mt-1">${t.ratio}%</p>
+                                    </div>
+                                    <div class="bg-[#F9FAFB] p-4 rounded-xl border border-gray-100 text-right">
+                                        <p class="text-[10px] text-[#6B7280] uppercase font-bold tracking-widest">Ranking Zona</p>
+                                        <p class="text-3xl font-black text-[#111827] mt-1">#${t.puesto}<span class="text-xs text-gray-400 ml-1">/ ${t.totalTiendas}</span></p>
+                                    </div>
                                 </div>
+                                <p class="text-[10px] text-gray-400 text-center mt-5 italic">Toca para ver detalle de productos</p>
                             </div>`;
                     });
                 }
@@ -146,24 +234,32 @@
         async function verDetalle(id, nombre) {
             document.getElementById('modal-detalle').classList.remove('hidden');
             document.getElementById('detalle-titulo').innerText = nombre;
-            const c = document.getElementById('detalle-contenido'); c.innerHTML = '<p class="text-center text-gray-600 mt-10">Cargando...</p>';
+            const c = document.getElementById('detalle-contenido'); c.innerHTML = '<p class="text-center text-gray-500 mt-16 font-medium animate-pulse">Analizando mermas...</p>';
             const res = await fetchAPI('get_store_detail', { tiendaId: id });
             if(res.success) {
-                c.innerHTML = res.ranking.length ? "" : '<p class="text-center text-gray-600 mt-10">Sin mermas.</p>';
-                res.ranking.forEach(p => { c.innerHTML += `<div class="flex justify-between p-4 bg-white/5 rounded-xl border border-white/10"><span class="font-bold text-gray-100">${p.nombre}</span><span class="text-[#FFD700] font-black">${p.total} ud.</span></div>`; });
+                c.innerHTML = res.ranking.length ? "" : '<p class="text-center text-gray-600 mt-16 font-medium">No hay mermas registradas en la quincena.</p>';
+                res.ranking.forEach(p => { 
+                    c.innerHTML += `
+                        <div class="flex justify-between items-center p-5 bg-[#EBF0FF]/40 rounded-xl border border-blue-100/50">
+                            <span class="font-bold text-[#111827] text-lg tracking-tight">${p.nombre}</span>
+                            <span class="text-[#1D4ED8] font-black text-2xl">${p.total} <span class="text-xs text-blue-300">uds</span></span>
+                        </div>`; 
+                });
             }
         }
         function cerrarDetalle() { document.getElementById('modal-detalle').classList.add('hidden'); }
-        function setTurno(t) { TURNO_ACTIVO = t; document.querySelectorAll('.turno-btn').forEach(b => { const a = b.innerText === t.toUpperCase(); b.style.backgroundColor = a ? "#FFD700" : "#111"; b.style.color = a ? "#000" : "#fff"; }); }
+
+        // --- FUNCIONES INTERFAZ TIENDA (UI ACTUALIZADA) ---
+        function setTurno(t) { TURNO_ACTIVO = t; document.querySelectorAll('.turno-btn').forEach(b => { const a = b.innerText === t.toUpperCase(); b.style.backgroundColor = a ? "#1D4ED8" : "#FFFFFF"; b.style.color = a ? "#FFFFFF" : "#6B7280"; b.style.borderColor = a ? "#1D4ED8" : "#D1D5DB"; }); }
         function toggleTurnos() { const t = document.getElementById('select-tipo').value; document.getElementById('container-turnos').style.display = (t === "MERMA") ? 'none' : 'flex'; TURNO_ACTIVO = (t === "MERMA") ? "Noche" : "Obrador"; if(t === "PRODUCCIÓN") setTurno('Obrador'); }
         function renderCategorias() { const c = document.getElementById('lista-categorias'); c.innerHTML = `<div onclick="setCat('TODOS')" class="pill ${CAT_ACTIVA === 'TODOS' ? 'active' : ''}">TODOS</div>`; FILTROS.forEach(f => { c.innerHTML += `<div onclick="setCat('${f.nombre}')" class="pill ${CAT_ACTIVA === f.nombre ? 'active' : ''}">${f.nombre}</div>`; }); renderSubcategorias(); }
         function renderSubcategorias() { const c = document.getElementById('lista-subcategorias'); c.innerHTML = ""; if (CAT_ACTIVA === "TODOS") return; const catD = FILTROS.find(f => f.nombre === CAT_ACTIVA); if (catD) { c.innerHTML = `<div onclick="setSub('TODOS')" class="sub-pill ${SUB_ACTIVA === 'TODOS' ? 'active' : ''}">TODAS</div>`; catD.subcategorias.forEach(s => { c.innerHTML += `<div onclick="setSub('${s}')" class="sub-pill ${SUB_ACTIVA === s ? 'active' : ''}">${s}</div>`; }); } }
-        function renderProductos() { const c = document.getElementById('lista-productos'); const b = document.getElementById('busqueda').value.toLowerCase(); c.innerHTML = ""; PRODUCTOS.filter(p => (CAT_ACTIVA === "TODOS" || p.categoria === CAT_ACTIVA) && (SUB_ACTIVA === "TODOS" || p.subcategoria === SUB_ACTIVA) && p.nombre.toLowerCase().includes(b)).forEach(p => { const cant = VALORES[p.id] || 0; c.innerHTML += `<div class="card-prod p-4 flex items-center justify-between"><div class="flex-1 pr-4"><h3 class="font-bold text-sm text-gray-200">${p.nombre}</h3><p class="text-[11px] text-[#FFD700] font-bold mt-1 uppercase">${p.subcategoria}</p></div><div class="flex items-center bg-black/50 rounded-full p-1 border border-gray-800"><button onclick="updateCant('${p.id}', -1)" class="w-10 h-10 rounded-full bg-gray-900 text-xl font-bold">-</button><input type="number" value="${cant}" onchange="setCant('${p.id}', this.value)" class="w-10 bg-transparent text-center text-lg font-bold text-[#FFD700] outline-none"><button onclick="updateCant('${p.id}', 1)" class="w-10 h-10 rounded-full btn-lio text-xl">+</button></div></div>`; }); }
+        function renderProductos() { const c = document.getElementById('lista-productos'); const b = document.getElementById('busqueda').value.toLowerCase(); c.innerHTML = ""; PRODUCTOS.filter(p => (CAT_ACTIVA === "TODOS" || p.categoria === CAT_ACTIVA) && (SUB_ACTIVA === "TODOS" || p.subcategoria === SUB_ACTIVA) && p.nombre.toLowerCase().includes(b)).forEach(p => { const cant = VALORES[p.id] || 0; c.innerHTML += `<div class="card-tienda p-4 flex items-center justify-between"><div class="flex-1 pr-4"><h3 class="font-bold text-sm text-[#111827]">${p.nombre}</h3><p class="text-[11px] text-[#1D4ED8] font-bold mt-1 uppercase tracking-wider">${p.subcategoria}</p></div><div class="flex items-center bg-[#F9FAFB] rounded-full p-1 border border-gray-100"><button onclick="updateCant('${p.id}', -1)" class="w-11 h-11 rounded-full bg-white text-2xl font-black text-gray-500 active:bg-gray-100">-</button><input type="number" value="${cant}" onchange="setCant('${p.id}', this.value)" class="w-11 bg-transparent text-center text-lg font-bold text-[#1D4ED8] outline-none"><button onclick="updateCant('${p.id}', 1)" class="w-11 h-11 rounded-full btn-liao text-2xl font-black">+</button></div></div>`; }); }
         function updateCant(id, d) { VALORES[id] = Math.max(0, (VALORES[id] || 0) + d); renderProductos(); }
         function setCant(id, v) { VALORES[id] = Math.max(0, parseInt(v) || 0); }
         function setCat(c) { CAT_ACTIVA = c; SUB_ACTIVA = "TODOS"; renderCategorias(); renderProductos(); }
         function setSub(s) { SUB_ACTIVA = s; renderSubcategorias(); renderProductos(); }
-        function enviarDatos() { const b = document.getElementById('btn-enviar'); const its = Object.keys(VALORES).map(id => ({ id, cantidad: VALORES[id] })).filter(i => i.cantidad > 0); if(!its.length) return alert("Sin datos"); b.disabled = true; b.innerText = "GUARDANDO..."; fetchAPI('save_records', { payload: { tiendaId: USUARIO.id, fecha: document.getElementById('input-fecha').value, tipo: document.getElementById('select-tipo').value, turno: TURNO_ACTIVO, items: its } }).then(res => { if(res.success) { alert("¡Guardado!"); VALORES = {}; renderProductos(); } b.disabled = false; b.innerText = "GUARDAR REGISTROS"; }); }
+        function enviarDatos() { const b = document.getElementById('btn-enviar'); const its = Object.keys(VALORES).map(id => ({ id, cantidad: VALORES[id] })).filter(i => i.cantidad > 0); if(!its.length) return; b.disabled = true; b.innerText = "GUARDANDO REGISTROS..."; fetchAPI('save_records', { payload: { tiendaId: USUARIO.id, fecha: document.getElementById('input-fecha').value, tipo: document.getElementById('select-tipo').value, turno: TURNO_ACTIVO, items: its } }).then(res => { if(res.success) { alert("¡Guardado correctamente!"); VALORES = {}; renderProductos(); } else { alert("Error al guardar"); } b.disabled = false; b.innerText = "GUARDAR REGISTROS"; }); }
     </script>
 </body>
 </html>
