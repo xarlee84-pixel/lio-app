@@ -2,615 +2,504 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    
-    <title>LIAO Gestión ERP</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lio-Gestión App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { black: '#000000', yellow: '#FFD700', gray: '#1F2937' }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        /* Estilos Globales y Corporativos */
-        body { background-color: #F8FAFC; color: #1E293B; font-family: ui-sans-serif, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-        .btn-blue { background-color: #2563EB; color: #FFFFFF; font-weight: 700; border-radius: 12px; transition: all 0.2s; cursor: pointer; }
-        .btn-blue:active { transform: scale(0.98); background-color: #1D4ED8; }
-        .btn-red { background-color: #DC2626; color: #FFFFFF; font-weight: 700; border-radius: 12px; transition: all 0.2s; cursor: pointer; }
-        
-        /* Formularios y Tarjetas */
-        .input-liao { background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; color: #1E293B; outline: none; transition: border-color 0.2s; }
-        .input-liao:focus { border-color: #2563EB; }
-        .card-liao { background-color: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid #F1F5F9; }
-        
-        /* Píldoras de Menú (Tienda y Admin) */
-        .pill { background-color: #F1F5F9; color: #64748B; padding: 10px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #E2E8F0; white-space: nowrap; text-align: center; }
-        .pill.active { background-color: #2563EB; color: #FFFFFF; border-color: #2563EB; }
-        
-        /* Utilidades */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        input[type="date"] { color-scheme: light; }
+        body { background-color: #000000; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .loader { border: 4px solid #1F2937; border-top: 4px solid #FFD700; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
-<body onload="inicializarApp()">
+<body class="antialiased h-screen flex flex-col overflow-hidden">
 
-    <div id="pantalla-login" class="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-        <div class="max-w-md w-full space-y-10">
-            <div class="text-center">
-                <h1 class="text-4xl font-black text-[#0F172A] tracking-tighter">LIAO GESTIÓN</h1>
-                <p class="text-xs font-bold text-[#64748B] tracking-[0.3em] mt-2 uppercase">Producción y Merma</p>
-            </div>
-            <div class="card-liao p-8 space-y-6">
-                <select id="login-user" class="input-liao w-full p-4 text-lg appearance-none font-semibold">
-                    <option value="">Conectando con Servidor...</option>
-                </select>
-                <input id="login-pin" type="password" pattern="[0-9]*" inputmode="numeric" placeholder="Introduce tu PIN" class="input-liao w-full p-4 text-center text-3xl tracking-[0.5em] font-bold">
-                <button onclick="ejecutarLogin()" id="btn-login" class="btn-blue w-full p-5 text-xl tracking-widest uppercase shadow-lg shadow-blue-500/20">Acceder</button>
-                <div id="login-error" class="text-red-500 text-center text-sm font-bold h-4"></div>
-            </div>
+    <div id="loadingOverlay" class="fixed inset-0 bg-brand-black bg-opacity-90 z-50 flex flex-col items-center justify-center">
+        <div class="loader mb-4"></div>
+        <p id="loadingText" class="text-brand-yellow font-semibold">Conectando con Lio-Gestión...</p>
+    </div>
+
+    <div id="viewLogin" class="hidden flex-1 flex flex-col items-center justify-center p-6">
+        <h1 class="text-4xl font-bold text-brand-yellow mb-8 tracking-tighter">LIAOPASTEL</h1>
+        <div class="w-full max-w-sm bg-brand-gray p-6 rounded-xl shadow-2xl">
+            <label class="block text-sm text-gray-400 mb-2">Selecciona tu Usuario</label>
+            <select id="loginUserSelect" class="w-full bg-black border border-gray-600 rounded-lg p-3 text-white mb-6 focus:border-brand-yellow outline-none appearance-none">
+                <option value="">Cargando usuarios...</option>
+            </select>
+            
+            <label class="block text-sm text-gray-400 mb-2">PIN de Acceso</label>
+            <input type="password" id="loginPin" pattern="[0-9]*" inputmode="numeric" class="w-full bg-black border border-gray-600 rounded-lg p-3 text-white text-center text-2xl tracking-[0.5em] mb-6 focus:border-brand-yellow outline-none" placeholder="••••">
+            
+            <button onclick="ejecutarLogin()" class="w-full bg-brand-yellow text-black font-bold py-4 rounded-lg text-lg uppercase tracking-wide hover:bg-yellow-500 transition-colors">
+                Entrar al Sistema
+            </button>
         </div>
     </div>
 
-    <div id="pantalla-tienda" class="hidden flex flex-col h-screen">
-        <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-50">
-            <div>
-                <h2 id="tienda-nombre" class="font-bold text-slate-900 text-xl leading-none"></h2>
-                <p id="tienda-zona" class="text-[10px] text-slate-400 uppercase tracking-widest mt-1 font-bold"></p>
-            </div>
-            <button onclick="location.reload()" class="text-[10px] bg-slate-100 text-slate-500 px-4 py-2 rounded-full font-black uppercase">Cerrar Sesión</button>
+    <nav id="mainNav" class="hidden bg-brand-gray border-b border-gray-800 p-4 flex justify-between items-center shrink-0">
+        <div class="font-bold text-brand-yellow text-xl tracking-tighter">LIAO<span class="text-white">GESTIÓN</span></div>
+        <div class="flex items-center gap-4">
+            <span id="navUserName" class="text-sm text-gray-300"></span>
+            <button onclick="cerrarSesion()" class="text-xs bg-red-600/20 text-red-500 px-3 py-1 rounded">Salir</button>
         </div>
-        
-        <div class="p-5 bg-white border-b border-slate-100 space-y-4 shadow-sm">
-            <div class="flex gap-3">
-                <input type="date" id="tienda-fecha" class="input-liao flex-1 p-3 text-sm font-bold">
-                <select id="tienda-tipo" onchange="actualizarInterfazTurnos()" class="input-liao flex-1 p-3 text-sm font-bold">
-                    <option value="PRODUCCIÓN">PRODUCCIÓN</option>
-                    <option value="MERMA">MERMA</option>
-                </select>
-            </div>
-            <div id="tienda-turnos" class="flex gap-3">
-                <button onclick="seleccionarTurno('Obrador')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-black border border-slate-200 uppercase">Obrador</button>
-                <button onclick="seleccionarTurno('Mediodía')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-black border border-slate-200 uppercase">Mediodía</button>
-                <button onclick="seleccionarTurno('Tarde')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-black border border-slate-200 uppercase">Tarde</button>
-            </div>
-        </div>
-        
-        <div class="p-5 space-y-4">
-            <input type="text" id="tienda-buscador" oninput="renderizarListaProductos()" placeholder="Buscar producto..." class="input-liao w-full p-4 text-sm font-medium">
-            <div id="tienda-categorias" class="flex gap-2 overflow-x-auto no-scrollbar"></div>
-            <div id="tienda-subcategorias" class="flex gap-2 overflow-x-auto no-scrollbar h-9"></div>
-        </div>
-        
-        <div id="tienda-lista-productos" class="flex-grow overflow-y-auto p-5 space-y-3 pb-32"></div>
-        
-        <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#F8FAFC] to-transparent">
-            <button onclick="enviarReporteTienda()" id="btn-guardar-tienda" class="btn-blue w-full py-5 text-lg uppercase tracking-widest shadow-xl shadow-blue-500/20">Guardar Registros</button>
-        </div>
+    </nav>
+
+    <div id="tabsTienda" class="hidden bg-brand-black flex border-b border-gray-800 shrink-0">
+        <button onclick="cambiarTab('produccion')" id="tab-produccion" class="flex-1 py-3 text-sm font-semibold border-b-2 border-brand-yellow text-brand-yellow transition-colors">PRODUCCIÓN</button>
+        <button onclick="cambiarTab('merma')" id="tab-merma" class="flex-1 py-3 text-sm font-semibold border-b-2 border-transparent text-gray-500 transition-colors">MERMA</button>
+        <button onclick="cambiarTab('dashboard')" id="tab-dashboard" class="flex-1 py-3 text-sm font-semibold border-b-2 border-transparent text-gray-500 transition-colors">DASHBOARD</button>
     </div>
 
-    <div id="pantalla-admin" class="hidden flex flex-col h-screen bg-[#F8FAFC]">
-        <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-50">
-            <div>
-                <h2 id="admin-titulo" class="font-bold text-slate-900 text-xl">Panel Director</h2>
-                <p id="admin-info" class="text-[10px] text-slate-400 font-bold uppercase"></p>
-            </div>
-            <button onclick="location.reload()" class="text-[10px] bg-slate-100 text-slate-500 px-4 py-2 rounded-full font-black uppercase">Salir</button>
-        </div>
+    <div id="mainContent" class="hidden flex-1 overflow-y-auto hide-scrollbar bg-brand-black p-4 pb-24">
         
-        <div id="nav-administrador" class="hidden flex p-3 bg-white border-b border-slate-100 gap-2 overflow-x-auto no-scrollbar shadow-sm">
-            <button onclick="cambiarVistaAdmin('dashboard')" class="pill active flex-1">Dashboard</button>
-            <button onclick="cambiarVistaAdmin('usuarios')" class="pill flex-1">Usuarios</button>
-            <button onclick="cambiarVistaAdmin('productos')" class="pill flex-1">Productos</button>
-            <button onclick="exportarBaseDatos()" class="pill flex-1">↓ Exportar CSV</button>
-        </div>
-
-        <div id="vista-dashboard" class="flex-grow overflow-y-auto p-5 space-y-6">
-            <div id="contenedor-grafica" class="hidden card-liao p-6">
-                <h3 class="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wider">Mermas por Zona (%)</h3>
-                <canvas id="graficaZonas"></canvas>
+        <div id="secRegistro" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="tituloRegistro" class="text-xl font-bold text-white">Registro</h2>
+                <input type="date" id="fechaRegistro" class="bg-brand-gray border border-gray-700 text-white p-2 rounded text-sm outline-none">
             </div>
-            <div id="admin-lista-tiendas" class="space-y-4"></div>
-        </div>
 
-        <div id="vista-usuarios" class="hidden flex-grow overflow-y-auto p-5 space-y-6">
-            <div class="card-liao p-6 space-y-4">
-                <h3 class="font-black text-lg text-slate-800">Dar de Alta Tienda/Usuario</h3>
-                <input id="nuevo-usr-nombre" placeholder="Nombre de la Tienda o Manager" class="input-liao w-full p-4 text-sm font-medium">
-                <div class="flex gap-2">
-                    <input id="nuevo-usr-pin" type="number" placeholder="PIN Numérico" class="input-liao w-1/2 p-4 text-sm font-medium">
-                    <select id="nuevo-usr-rol" class="input-liao w-1/2 p-4 text-sm font-medium">
-                        <option value="TIENDA">Pto. Venta (TIENDA)</option>
-                        <option value="AM">Area Manager (AM)</option>
-                        <option value="ADMIN">Administrador Superior</option>
-                    </select>
+            <div class="flex overflow-x-auto hide-scrollbar gap-2 mb-6" id="filtroCategorias">
                 </div>
-                <input id="nuevo-usr-zona" placeholder="Zona Asignada (Ej: Madrid Norte)" class="input-liao w-full p-4 text-sm font-medium">
-                <button onclick="crearNuevoUsuario()" class="btn-blue w-full p-4 text-sm tracking-widest uppercase">Guardar Usuario</button>
-            </div>
-            <div id="lista-gest-usuarios" class="space-y-2"></div>
-        </div>
 
-        <div id="vista-productos" class="hidden flex-grow overflow-y-auto p-5 space-y-6">
-            <div class="card-liao p-6 space-y-4">
-                <h3 class="font-black text-lg text-slate-800">Nuevo Producto</h3>
-                <input id="nuevo-prod-nombre" placeholder="Nombre del Producto" class="input-liao w-full p-4 text-sm font-medium">
-                <div class="flex gap-2">
-                    <input id="nuevo-prod-cat" placeholder="Categoría (Ej: DULCE)" class="input-liao flex-1 p-4 text-sm font-medium uppercase">
-                    <input id="nuevo-prod-sub" placeholder="Subcategoría (Ej: TARTAS)" class="input-liao flex-1 p-4 text-sm font-medium uppercase">
+            <div id="listaProductos" class="space-y-4">
                 </div>
-                <button onclick="crearNuevoProducto()" class="btn-blue w-full p-4 text-sm tracking-widest uppercase">Añadir al Catálogo</button>
-            </div>
-            <h3 class="font-bold text-slate-700 uppercase tracking-wider mt-4">Catálogo Existente</h3>
-            <div id="lista-gest-productos" class="space-y-3"></div>
+
+            <button onclick="guardarDatosRegistro()" class="fixed bottom-6 left-4 right-4 bg-brand-yellow text-black font-bold py-4 rounded-xl text-lg uppercase shadow-[0_0_20px_rgba(255,215,0,0.3)] z-40">
+                Guardar Datos
+            </button>
         </div>
 
-        <div id="modal-detalle-tienda" class="hidden fixed inset-0 bg-white/95 z-[100] p-6 flex flex-col backdrop-blur-sm">
-            <div class="flex justify-between items-center mb-8 border-b border-slate-200 pb-5 mt-4">
+        <div id="secDashboard" class="hidden space-y-6">
+            
+            <div id="panelAlertas" class="hidden bg-brand-gray rounded-xl p-4 border border-gray-700">
+                <h3 class="text-brand-yellow font-bold mb-3 flex items-center gap-2">⚠️ Estado de Tiendas (Hoy)</h3>
+                <div id="listaAlertas" class="grid grid-cols-2 gap-2 text-sm">
+                    </div>
+            </div>
+
+            <div class="bg-brand-gray rounded-xl p-4 border border-gray-700 grid grid-cols-2 gap-4">
+                <div class="col-span-2">
+                    <label class="block text-xs text-gray-400 mb-1">Tienda</label>
+                    <select id="filtroDashTienda" class="w-full bg-black text-white p-2 rounded border border-gray-600 text-sm outline-none" onchange="cargarDashboard()"></select>
+                </div>
                 <div>
-                    <h3 id="modal-titulo" class="text-3xl font-black text-slate-900 tracking-tight"></h3>
-                    <p class="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-1">Análisis Crítico (15 días)</p>
+                    <label class="block text-xs text-gray-400 mb-1">Desde</label>
+                    <input type="date" id="filtroDashInicio" class="w-full bg-black text-white p-2 rounded border border-gray-600 text-sm outline-none" onchange="cargarDashboard()">
                 </div>
-                <button onclick="cerrarModal()" class="text-4xl font-light text-slate-400">&times;</button>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Hasta</label>
+                    <input type="date" id="filtroDashFin" class="w-full bg-black text-white p-2 rounded border border-gray-600 text-sm outline-none" onchange="cargarDashboard()">
+                </div>
             </div>
-            <div id="modal-contenido" class="space-y-4 flex-grow overflow-y-auto"></div>
-            <button onclick="cerrarModal()" class="btn-blue w-full py-5 text-lg uppercase tracking-widest shadow-lg">Cerrar Análisis</button>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-brand-gray rounded-xl p-4 border border-gray-700 flex flex-col justify-center items-center">
+                    <span class="text-gray-400 text-xs uppercase tracking-wide">Producción Total</span>
+                    <span id="kpiProduccion" class="text-2xl font-bold text-white mt-1">0</span>
+                </div>
+                <div class="bg-brand-gray rounded-xl p-4 border border-red-900 flex flex-col justify-center items-center">
+                    <span class="text-red-400 text-xs uppercase tracking-wide">Merma Total</span>
+                    <span id="kpiMerma" class="text-2xl font-bold text-red-500 mt-1">0</span>
+                </div>
+            </div>
+
+            <div class="bg-brand-gray rounded-xl p-4 border border-gray-700">
+                <h3 class="text-sm font-bold text-gray-300 mb-4">Top 5 Mermas</h3>
+                <canvas id="chartMerma"></canvas>
+            </div>
+
+            <div class="bg-brand-gray rounded-xl p-4 border border-gray-700 overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-bold text-gray-300">Detalle de Registros</h3>
+                    <button onclick="exportarCSV()" class="text-xs bg-brand-yellow text-black px-3 py-1 rounded font-bold">⬇ CSV</button>
+                </div>
+                <div class="overflow-x-auto hide-scrollbar">
+                    <table class="w-full text-left text-xs whitespace-nowrap">
+                        <thead class="text-gray-400 border-b border-gray-700">
+                            <tr>
+                                <th class="pb-2 pr-4">Fecha</th>
+                                <th class="pb-2 pr-4">Producto</th>
+                                <th class="pb-2 pr-4">Tipo</th>
+                                <th class="pb-2 text-right">Cant.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaDetalle" class="text-white divide-y divide-gray-800">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // ¡OBLIGATORIO! Pega aquí la URL terminada en /exec de tu Google Apps Script
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyHTg2_WBm4n5Dyy0lpwDnGxW33kpvSTaH4l363A-XpTfgymuxaq7TctXt7HsDbbPaJIg/exec"; 
+        // --- ESTADO GLOBAL ---
+        const State = {
+            usuario: null, // {id, nombre, rol}
+            catalogo: [],
+            entidades: [],
+            modoActual: 'produccion', // produccion, merma, dashboard
+            datosInput: {}, // { idProducto: { obrador: 0, mediodia: 0, tarde: 0, unico: 0 } }
+            dashData: null,
+            chartInstance: null
+        };
 
-        // Variables Globales de Estado
-        let USUARIO_ACTUAL = null;
-        let DATOS_CATALOGO = { productos: [], filtros: [] };
-        let REGISTROS_TEMPORALES = {}; // Almacena lo que la tienda va sumando
-        let ESTADO_TIENDA = { categoria: "TODOS", subcategoria: "TODOS", turno: "Obrador" };
-        let GRAFICO_ADMIN = null;
+        // --- INICIALIZACIÓN ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('fechaRegistro').valueAsDate = new Date();
+            let inicioMes = new Date();
+            inicioMes.setDate(1);
+            document.getElementById('filtroDashInicio').valueAsDate = inicioMes;
+            document.getElementById('filtroDashFin').valueAsDate = new Date();
 
-        /**
-         * Controlador Principal de Comunicaciones (API)
-         * Añade un sello de tiempo para saltarse el caché de los navegadores móviles.
-         */
-        async function llamarServidor(accion, datos = {}) {
-            try {
-                const urlSegura = WEB_APP_URL + "?anticache=" + new Date().getTime();
-                const configuracion = {
-                    method: 'POST',
-                    body: JSON.stringify({ action: accion, ...datos })
-                };
-                const respuesta = await fetch(urlSegura, configuracion);
-                return await respuesta.json();
-            } catch (error) {
-                console.error("Error de Red:", error);
-                return { success: false, msg: "Fallo de conexión. Comprueba internet o la URL." };
-            }
+            mostrarLoader('Cargando sistema...');
+            google.script.run
+                .withSuccessHandler(entidades => {
+                    State.entidades = entidades;
+                    const select = document.getElementById('loginUserSelect');
+                    select.innerHTML = '<option value="">Selecciona...</option>' + 
+                        entidades.map(e => `<option value="${e.id}">${e.nombre} (${e.rol})</option>`).join('');
+                    ocultarLoader();
+                    document.getElementById('viewLogin').classList.remove('hidden');
+                })
+                .withFailureHandler(err => alertCritico(err))
+                .obtenerEntidadesActivas();
+        });
+
+        // --- UTILIDADES ---
+        function mostrarLoader(texto) {
+            document.getElementById('loadingText').innerText = texto;
+            document.getElementById('loadingOverlay').classList.remove('hidden');
         }
+        function ocultarLoader() { document.getElementById('loadingOverlay').classList.add('hidden'); }
+        function alertCritico(err) { ocultarLoader(); alert("Error crítico del sistema: " + err); }
 
-        // ==========================================
-        // MÓDULO: ARRANQUE Y LOGIN
-        // ==========================================
-        function inicializarApp() {
-            llamarServidor('get_users').then(respuesta => {
-                const selector = document.getElementById('login-user');
-                if (respuesta && respuesta.success) {
-                    selector.innerHTML = '<option value="">-- Selecciona tu Usuario --</option>';
-                    respuesta.usuarios.forEach(u => {
-                        selector.innerHTML += `<option value="${u.id}">${u.nombre}</option>`;
-                    });
-                } else {
-                    selector.innerHTML = '<option value="">Error al contactar con Base de Datos</option>';
-                }
-            });
-        }
-
+        // --- AUTENTICACIÓN ---
         function ejecutarLogin() {
-            const idUsuario = document.getElementById('login-user').value;
-            const pinUsuario = document.getElementById('login-pin').value;
-            
-            if (!idUsuario || !pinUsuario) return;
-            
-            const btn = document.getElementById('btn-login');
-            btn.innerText = "VERIFICANDO...";
-            btn.disabled = true;
+            const id = document.getElementById('loginUserSelect').value;
+            const pin = document.getElementById('loginPin').value;
+            if(!id || !pin) return alert("Selecciona usuario e introduce el PIN.");
 
-            llamarServidor('verificar_pin', { userId: idUsuario, pin: pinUsuario }).then(respuesta => {
-                if (respuesta.success) {
-                    USUARIO_ACTUAL = respuesta.usuario;
-                    document.getElementById('pantalla-login').classList.add('hidden');
-                    
-                    // Enrutamiento según el nivel de permisos
-                    if (USUARIO_ACTUAL.rol === 'TIENDA') {
-                        arrancarModuloTienda();
+            mostrarLoader('Validando credenciales...');
+            google.script.run
+                .withSuccessHandler(res => {
+                    if(res.exito) {
+                        State.usuario = res;
+                        document.getElementById('navUserName').innerText = res.nombre;
+                        document.getElementById('viewLogin').classList.add('hidden');
+                        document.getElementById('mainNav').classList.remove('hidden');
+                        document.getElementById('mainContent').classList.remove('hidden');
+                        
+                        cargarCatalogoCore(); // Cargar productos
                     } else {
-                        arrancarModuloAdmin();
+                        ocultarLoader();
+                        alert("Acceso denegado: " + res.error);
                     }
+                })
+                .withFailureHandler(err => alertCritico(err))
+                .validarLogin(id, pin);
+        }
+
+        function cerrarSesion() { location.reload(); }
+
+        // --- FLUJO PRINCIPAL POST-LOGIN ---
+        function cargarCatalogoCore() {
+            mostrarLoader('Descargando catálogo...');
+            google.script.run
+                .withSuccessHandler(productos => {
+                    State.catalogo = productos;
+                    prepararInterfazSegunRol();
+                    ocultarLoader();
+                })
+                .withFailureHandler(err => alertCritico(err))
+                .obtenerCatalogo();
+        }
+
+        function prepararInterfazSegunRol() {
+            if (State.usuario.rol === 'Tienda') {
+                document.getElementById('tabsTienda').classList.remove('hidden');
+                cambiarTab('produccion');
+            } else if (State.usuario.rol === 'AM' || State.usuario.rol === 'Admin') {
+                // AM y Admin van directo al Dashboard
+                document.getElementById('secRegistro').classList.add('hidden');
+                document.getElementById('secDashboard').classList.remove('hidden');
+                document.getElementById('panelAlertas').classList.remove('hidden'); // Solo AM ve alertas visuales rápidas
+                
+                // Llenar select de tiendas en Dashboard
+                const selectDash = document.getElementById('filtroDashTienda');
+                selectDash.innerHTML = '<option value="Todas">Todas mis tiendas</option>' + 
+                    State.entidades.filter(e => e.rol === 'Tienda').map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+                
+                cargarDashboard();
+            }
+        }
+
+        // --- LÓGICA DE UI (TIENDA) ---
+        function cambiarTab(tab) {
+            State.modoActual = tab;
+            // Estilos de tabs
+            ['produccion', 'merma', 'dashboard'].forEach(t => {
+                const el = document.getElementById('tab-' + t);
+                if(t === tab) {
+                    el.classList.replace('border-transparent', 'border-brand-yellow');
+                    el.classList.replace('text-gray-500', 'text-brand-yellow');
                 } else {
-                    document.getElementById('login-error').innerText = respuesta.msg;
-                    btn.innerText = "ACCEDER";
-                    btn.disabled = false;
+                    el.classList.replace('border-brand-yellow', 'border-transparent');
+                    el.classList.replace('text-brand-yellow', 'text-gray-500');
                 }
             });
-        }
 
-        // ==========================================
-        // MÓDULO: TIENDA (UI DE ENTRADA DE DATOS)
-        // ==========================================
-        function arrancarModuloTienda() {
-            document.getElementById('pantalla-tienda').classList.remove('hidden');
-            document.getElementById('tienda-nombre').innerText = USUARIO_ACTUAL.nombre;
-            document.getElementById('tienda-zona').innerText = USUARIO_ACTUAL.zona;
-            document.getElementById('tienda-fecha').valueAsDate = new Date(); // Establece la fecha de hoy
-            
-            seleccionarTurno('Obrador');
-            
-            llamarServidor('get_catalog').then(respuesta => {
-                if (respuesta.success) {
-                    DATOS_CATALOGO.productos = respuesta.productos;
-                    DATOS_CATALOGO.filtros = respuesta.filtros;
-                    renderizarPildorasCategorias();
-                    renderizarListaProductos();
-                }
-            });
-        }
+            const secRegistro = document.getElementById('secRegistro');
+            const secDashboard = document.getElementById('secDashboard');
 
-        function actualizarInterfazTurnos() {
-            const tipoSeleccionado = document.getElementById('tienda-tipo').value;
-            const contenedorTurnos = document.getElementById('tienda-turnos');
-            
-            if (tipoSeleccionado === "MERMA") {
-                contenedorTurnos.style.display = 'none'; // La merma no tiene turno específico
-                ESTADO_TIENDA.turno = "Cierre";
+            if (tab === 'dashboard') {
+                secRegistro.classList.add('hidden');
+                secDashboard.classList.remove('hidden');
+                
+                const selectDash = document.getElementById('filtroDashTienda');
+                selectDash.innerHTML = `<option value="${State.usuario.id}">${State.usuario.nombre}</option>`;
+                selectDash.disabled = true; // Tienda no puede cambiar filtro de tienda
+                
+                cargarDashboard();
             } else {
-                contenedorTurnos.style.display = 'flex';
-                seleccionarTurno('Obrador'); // Vuelve al valor por defecto
+                secDashboard.classList.add('hidden');
+                secRegistro.classList.remove('hidden');
+                document.getElementById('tituloRegistro').innerText = tab === 'produccion' ? 'Producción del Día' : 'Merma del Día';
+                renderizarFormulario();
             }
         }
 
-        function seleccionarTurno(nombreTurno) {
-            ESTADO_TIENDA.turno = nombreTurno;
-            document.querySelectorAll('.turno-btn').forEach(boton => {
-                const esActivo = (boton.innerText.toUpperCase() === nombreTurno.toUpperCase());
-                boton.style.backgroundColor = esActivo ? "#2563EB" : "#FFFFFF";
-                boton.style.color = esActivo ? "#FFFFFF" : "#94A3B8";
-                boton.style.borderColor = esActivo ? "#2563EB" : "#E2E8F0";
-            });
-        }
+        function renderizarFormulario(categoriaFiltro = 'Todas') {
+            State.datosInput = {}; // Reset local state
+            
+            // Extraer categorías únicas
+            const categorias = ['Todas', ...new Set(State.catalogo.map(p => p.categoria))];
+            
+            // Renderizar Filtros
+            document.getElementById('filtroCategorias').innerHTML = categorias.map(c => 
+                `<button onclick="renderizarFormulario('${c}')" class="px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap ${c === categoriaFiltro ? 'bg-brand-yellow text-black' : 'bg-gray-800 text-gray-400'}">${c}</button>`
+            ).join('');
 
-        function renderizarPildorasCategorias() {
-            const cont = document.getElementById('tienda-categorias');
-            cont.innerHTML = `<button onclick="filtrarCategoria('TODOS')" class="pill ${ESTADO_TIENDA.categoria === 'TODOS' ? 'active' : ''}">TODOS</button>`;
-            
-            DATOS_CATALOGO.filtros.forEach(f => {
-                const activo = ESTADO_TIENDA.categoria === f.nombre ? 'active' : '';
-                cont.innerHTML += `<button onclick="filtrarCategoria('${f.nombre}')" class="pill ${activo}">${f.nombre}</button>`;
-            });
-            renderizarPildorasSubcategorias();
-        }
+            // Filtrar productos
+            const prodFiltrados = categoriaFiltro === 'Todas' ? State.catalogo : State.catalogo.filter(p => p.categoria === categoriaFiltro);
 
-        function renderizarPildorasSubcategorias() {
-            const cont = document.getElementById('tienda-subcategorias');
-            cont.innerHTML = "";
-            
-            if (ESTADO_TIENDA.categoria === "TODOS") return; // Si están todos, no hay subcategorías que mostrar
-            
-            const categoriaActual = DATOS_CATALOGO.filtros.find(f => f.nombre === ESTADO_TIENDA.categoria);
-            if (categoriaActual) {
-                cont.innerHTML = `<button onclick="filtrarSubcategoria('TODOS')" class="pill ${ESTADO_TIENDA.subcategoria === 'TODOS' ? 'active' : ''} text-[10px] py-1">TODAS</button>`;
-                categoriaActual.subcategorias.forEach(sub => {
-                    const activo = ESTADO_TIENDA.subcategoria === sub ? 'active' : '';
-                    cont.innerHTML += `<button onclick="filtrarSubcategoria('${sub}')" class="pill ${activo} text-[10px] py-1">${sub}</button>`;
-                });
-            }
-        }
-
-        function filtrarCategoria(cat) { ESTADO_TIENDA.categoria = cat; ESTADO_TIENDA.subcategoria = "TODOS"; renderizarPildorasCategorias(); renderizarListaProductos(); }
-        function filtrarSubcategoria(sub) { ESTADO_TIENDA.subcategoria = sub; renderizarPildorasSubcategorias(); renderizarListaProductos(); }
-
-        function renderizarListaProductos() {
-            const contenedor = document.getElementById('tienda-lista-productos');
-            const textoBusqueda = document.getElementById('tienda-buscador').value.toLowerCase();
-            contenedor.innerHTML = "";
-            
-            // Filtro maestro (Categoría + Subcategoría + Buscador)
-            const productosFiltrados = DATOS_CATALOGO.productos.filter(p => {
-                const matchCat = (ESTADO_TIENDA.categoria === "TODOS" || p.categoria === ESTADO_TIENDA.categoria);
-                const matchSub = (ESTADO_TIENDA.subcategoria === "TODOS" || p.subcategoria === ESTADO_TIENDA.subcategoria);
-                const matchTxt = p.nombre.toLowerCase().includes(textoBusqueda);
-                return matchCat && matchSub && matchTxt;
-            });
-            
-            productosFiltrados.forEach(p => {
-                const cantidadActual = REGISTROS_TEMPORALES[p.id] || 0;
-                contenedor.innerHTML += `
-                    <div class="card-liao p-4 flex items-center justify-between shadow-sm">
-                        <div class="flex-1 pr-2">
-                            <h3 class="font-bold text-sm text-slate-800 leading-tight">${p.nombre}</h3>
-                            <p class="text-[9px] text-blue-500 font-bold mt-1 uppercase tracking-wider">${p.subcategoria}</p>
+            // Renderizar Cards
+            const container = document.getElementById('listaProductos');
+            container.innerHTML = prodFiltrados.map(p => {
+                State.datosInput[p.id] = { obrador: 0, mediodia: 0, tarde: 0, unico: 0 };
+                
+                let inputsHTML = '';
+                if (State.modoActual === 'produccion') {
+                    inputsHTML = ['obrador', 'mediodia', 'tarde'].map(turno => `
+                        <div class="flex flex-col items-center">
+                            <span class="text-[10px] text-gray-500 uppercase">${turno}</span>
+                            <div class="flex items-center bg-black rounded border border-gray-700 mt-1">
+                                <button onclick="modificarCantidad('${p.id}', '${turno}', -1)" class="w-10 h-10 text-xl text-brand-yellow">-</button>
+                                <input type="number" id="inp_${p.id}_${turno}" value="0" readonly class="w-10 h-10 bg-transparent text-center text-white font-bold outline-none border-x border-gray-700">
+                                <button onclick="modificarCantidad('${p.id}', '${turno}', 1)" class="w-10 h-10 text-xl text-brand-yellow">+</button>
+                            </div>
                         </div>
-                        <div class="flex items-center bg-slate-50 rounded-full p-1 border border-slate-100">
-                            <button onclick="cambiarCantidad('${p.id}', -1)" class="w-10 h-10 rounded-full bg-white text-xl font-black text-slate-400 active:bg-slate-200">-</button>
-                            <input type="number" value="${cantidadActual}" onchange="asignarCantidad('${p.id}', this.value)" class="w-10 bg-transparent text-center text-lg font-bold text-blue-600 outline-none">
-                            <button onclick="cambiarCantidad('${p.id}', 1)" class="w-10 h-10 rounded-full btn-blue text-xl font-black">+</button>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function cambiarCantidad(idProd, delta) {
-            REGISTROS_TEMPORALES[idProd] = Math.max(0, (REGISTROS_TEMPORALES[idProd] || 0) + delta);
-            renderizarListaProductos();
-        }
-        function asignarCantidad(idProd, valor) {
-            REGISTROS_TEMPORALES[idProd] = Math.max(0, parseInt(valor) || 0);
-        }
-
-        function enviarReporteTienda() {
-            const boton = document.getElementById('btn-guardar-tienda');
-            
-            // Transformamos el objeto temporal en el array que espera el backend
-            const itemsProcesados = [];
-            for (let id in REGISTROS_TEMPORALES) {
-                if (REGISTROS_TEMPORALES[id] > 0) {
-                    itemsProcesados.push({ id: id, cantidad: REGISTROS_TEMPORALES[id] });
-                }
-            }
-            
-            if (itemsProcesados.length === 0) {
-                alert("No has introducido ninguna cantidad.");
-                return;
-            }
-            
-            boton.disabled = true;
-            boton.innerText = "ENVIANDO DATOS...";
-            
-            const paqueteDatos = {
-                tiendaId: USUARIO_ACTUAL.id,
-                fecha: document.getElementById('tienda-fecha').value,
-                tipo: document.getElementById('tienda-tipo').value,
-                turno: ESTADO_TIENDA.turno,
-                items: itemsProcesados
-            };
-            
-            llamarServidor('save_records', { payload: paqueteDatos }).then(respuesta => {
-                if (respuesta.success) {
-                    alert("¡Registros guardados correctamente!");
-                    REGISTROS_TEMPORALES = {}; // Limpiamos la memoria
-                    renderizarListaProductos();
+                    `).join('');
                 } else {
-                    alert("Fallo al guardar: " + respuesta.msg);
+                    inputsHTML = `
+                        <div class="flex flex-col items-end w-full">
+                            <span class="text-[10px] text-red-500 uppercase">Cantidad Total</span>
+                            <div class="flex items-center bg-black rounded border border-red-900 mt-1">
+                                <button onclick="modificarCantidad('${p.id}', 'unico', -1)" class="w-12 h-12 text-2xl text-red-500">-</button>
+                                <input type="number" id="inp_${p.id}_unico" value="0" readonly class="w-16 h-12 bg-transparent text-center text-white text-lg font-bold outline-none border-x border-red-900">
+                                <button onclick="modificarCantidad('${p.id}', 'unico', 1)" class="w-12 h-12 text-2xl text-red-500">+</button>
+                            </div>
+                        </div>
+                    `;
                 }
-                boton.disabled = false;
-                boton.innerText = "GUARDAR REGISTROS";
-            });
+
+                return `
+                    <div class="bg-brand-gray p-4 rounded-xl border border-gray-800 flex flex-col gap-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="font-bold text-white text-sm">${p.nombre}</h4>
+                                <span class="text-xs text-gray-500">${p.subcategoria || ''}</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-end gap-2">
+                            ${inputsHTML}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        // ==========================================
-        // MÓDULO: ADMINISTRACIÓN Y AREA MANAGER
-        // ==========================================
-        function arrancarModuloAdmin() {
-            document.getElementById('pantalla-admin').classList.remove('hidden');
-            document.getElementById('admin-info').innerText = `${USUARIO_ACTUAL.nombre} | ${USUARIO_ACTUAL.zona}`;
-            
-            if (USUARIO_ACTUAL.rol === 'ADMIN') {
-                document.getElementById('nav-administrador').classList.remove('hidden');
+        function modificarCantidad(idProducto, turno, delta) {
+            let actual = State.datosInput[idProducto][turno];
+            let nuevo = actual + delta;
+            if (nuevo < 0) nuevo = 0;
+            State.datosInput[idProducto][turno] = nuevo;
+            document.getElementById(`inp_${idProducto}_${turno}`).value = nuevo;
+        }
+
+        // --- ENVÍO DE DATOS A BACKEND ---
+        function guardarDatosRegistro() {
+            const fechaStr = document.getElementById('fechaRegistro').value;
+            if(!fechaStr) return alert("Selecciona una fecha válida.");
+
+            // Validar restricción de 7 días
+            const fechaElegida = new Date(fechaStr);
+            const hoy = new Date();
+            const diffTime = Math.abs(hoy - fechaElegida);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            if(diffDays > 7) return alert("No puedes insertar/editar datos con más de 7 días de antigüedad.");
+
+            let movimientos = [];
+            const tipoMov = State.modoActual === 'produccion' ? 'Producción' : 'Merma';
+
+            for (const [idProd, turnos] of Object.entries(State.datosInput)) {
+                if (State.modoActual === 'produccion') {
+                    if (turnos.obrador > 0) movimientos.push({fecha: fechaStr, idTienda: State.usuario.id, idProducto: idProd, tipo: tipoMov, turno: 'Obrador', cantidad: turnos.obrador});
+                    if (turnos.mediodia > 0) movimientos.push({fecha: fechaStr, idTienda: State.usuario.id, idProducto: idProd, tipo: tipoMov, turno: 'Mediodia', cantidad: turnos.mediodia});
+                    if (turnos.tarde > 0) movimientos.push({fecha: fechaStr, idTienda: State.usuario.id, idProducto: idProd, tipo: tipoMov, turno: 'Tarde', cantidad: turnos.tarde});
+                } else {
+                    if (turnos.unico > 0) movimientos.push({fecha: fechaStr, idTienda: State.usuario.id, idProducto: idProd, tipo: tipoMov, turno: 'Unico', cantidad: turnos.unico});
+                }
             }
-            
-            cargarDatosDashboard();
-        }
 
-        function cambiarVistaAdmin(vistaRequerida) {
-            document.getElementById('vista-dashboard').classList.toggle('hidden', vistaRequerida !== 'dashboard');
-            document.getElementById('vista-usuarios').classList.toggle('hidden', vistaRequerida !== 'usuarios');
-            document.getElementById('vista-productos').classList.toggle('hidden', vistaRequerida !== 'productos');
-            
-            // Efecto visual en los botones del navbar
-            document.querySelectorAll('#nav-administrador .pill').forEach(btn => {
-                btn.classList.toggle('active', btn.innerText.toLowerCase().includes(vistaRequerida.substring(0,4)));
-            });
+            if(movimientos.length === 0) return alert("No hay cantidades mayores a 0 para guardar.");
 
-            // Si entra a gestión, pre-cargamos la lista de productos actuales
-            if(vistaRequerida === 'productos' || vistaRequerida === 'usuarios'){
-                cargarDatosGestion();
-            }
-        }
-
-        function cargarDatosDashboard() {
-            const contenedorLista = document.getElementById('admin-lista-tiendas');
-            contenedorLista.innerHTML = '<p class="text-center text-slate-400 mt-20 animate-pulse font-bold tracking-widest">Calculando Eficiencias...</p>';
-            
-            const accionBackend = (USUARIO_ACTUAL.rol === 'ADMIN') ? 'get_admin_report' : 'get_am_report';
-            
-            llamarServidor(accionBackend, { rol: USUARIO_ACTUAL.rol, zona: USUARIO_ACTUAL.zona }).then(respuesta => {
-                if (respuesta.success) {
-                    contenedorLista.innerHTML = "";
-                    
-                    // Si es Admin, renderizamos el gráfico global
-                    if (USUARIO_ACTUAL.rol === 'ADMIN' && respuesta.zonas) {
-                        document.getElementById('contenedor-grafica').classList.remove('hidden');
-                        renderizarGrafica(respuesta.zonas);
+            mostrarLoader('Cifrando y guardando en Sheets...');
+            google.script.run
+                .withSuccessHandler(res => {
+                    ocultarLoader();
+                    if(res.exito) {
+                        alert("✅ Datos guardados correctamente.");
+                        renderizarFormulario(); // Reset inputs
+                    } else {
+                        alert("❌ Error: " + res.error);
                     }
-                    
-                    // Renderizamos las tarjetas de las tiendas auditadas
-                    const tiendasParaMostrar = (USUARIO_ACTUAL.rol === 'ADMIN') ? respuesta.tiendas : respuesta.reporte;
-                    
-                    tiendasParaMostrar.forEach(tienda => {
-                        const enRiesgo = tienda.pendientes > 0;
-                        contenedorLista.innerHTML += `
-                            <div onclick="abrirModalDetalle('${tienda.id}', '${tienda.nombre}')" class="card-liao p-6 cursor-pointer active:scale-95 transition-transform">
-                                <div class="flex justify-between items-start mb-4">
-                                    <h2 class="font-bold text-xl text-slate-900 leading-tight">${tienda.nombre} <br><span class="text-[10px] text-slate-400 uppercase">${tienda.zona}</span></h2>
-                                    <span class="text-[10px] font-black px-3 py-1.5 rounded-full ${enRiesgo ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}">
-                                        ${enRiesgo ? 'INCOMPLETO' : 'AL DÍA'}
-                                    </span>
-                                </div>
-                                <div class="text-xs text-slate-500 font-medium h-12">
-                                    ${enRiesgo ? 'Faltan <b>'+tienda.pendientes+'</b> turnos/días' : 'Registro de 15 días completado.'}
-                                    ${enRiesgo ? '<p class="text-[10px] text-red-500 mt-1 italic font-bold leading-tight">'+tienda.faltas.join(', ')+'</p>' : ''}
-                                </div>
-                                <div class="grid grid-cols-2 gap-4 mt-4 pt-5 border-t border-slate-100">
-                                    <div class="bg-blue-50/60 p-4 rounded-2xl">
-                                        <p class="text-[9px] text-blue-500 uppercase font-black tracking-widest">Merma Histórica</p>
-                                        <p class="text-2xl font-black text-blue-700">${tienda.ratio}%</p>
-                                    </div>
-                                    <div class="bg-slate-50 p-4 rounded-2xl text-right">
-                                        <p class="text-[9px] text-slate-500 uppercase font-black tracking-widest">Ranking / Eficiencia</p>
-                                        <p class="text-2xl font-black text-slate-800">#${tienda.puesto}<small class="text-xs text-slate-400 ml-1">/ ${tienda.totalTiendas}</small></p>
-                                    </div>
-                                </div>
-                            </div>`;
-                    });
-                } else {
-                    contenedorLista.innerHTML = `<p class="text-center text-red-500 mt-10 font-bold">${respuesta.msg}</p>`;
-                }
-            });
+                })
+                .withFailureHandler(err => alertCritico(err))
+                .guardarMovimientos(movimientos);
         }
 
-        // Inicializa Chart.js
-        function renderizarGrafica(datosZonas) {
-            if (GRAFICO_ADMIN) GRAFICO_ADMIN.destroy(); // Limpia la gráfica anterior si existe
+        // --- DASHBOARD Y ANÁLISIS ---
+        function cargarDashboard() {
+            const filtros = {
+                tienda: document.getElementById('filtroDashTienda').value,
+                fechaInicio: document.getElementById('filtroDashInicio').value,
+                fechaFin: document.getElementById('filtroDashFin').value
+            };
+
+            mostrarLoader('Analizando datos...');
+            google.script.run
+                .withSuccessHandler(data => {
+                    State.dashData = data;
+                    renderizarDashboard(data);
+                    ocultarLoader();
+                })
+                .withFailureHandler(err => alertCritico(err))
+                .obtenerDatosDashboard(State.usuario.id, State.usuario.rol, filtros);
+        }
+
+        function renderizarDashboard(data) {
+            // KPIs
+            document.getElementById('kpiProduccion').innerText = data.produccionGlobal.toLocaleString();
+            document.getElementById('kpiMerma').innerText = data.mermaGlobal.toLocaleString();
+
+            // Tareas Pendientes (Solo util si es AM)
+            if (State.usuario.rol === 'AM' || State.usuario.rol === 'Admin') {
+                const htmlAlertas = Object.entries(data.tareasPendientes).map(([idT, estado]) => {
+                    let nombreT = State.entidades.find(e => e.id === idT)?.nombre || idT;
+                    let prodColor = estado.prod ? 'text-green-500' : 'text-red-500';
+                    let mermaColor = estado.merma ? 'text-green-500' : 'text-red-500';
+                    return `
+                        <div class="bg-black p-2 rounded border border-gray-800 flex justify-between items-center">
+                            <span class="text-white truncate">${nombreT}</span>
+                            <div class="flex gap-2">
+                                <span class="${prodColor}" title="Producción">P: ${estado.prod ? '✓' : '✗'}</span>
+                                <span class="${mermaColor}" title="Merma">M: ${estado.merma ? '✓' : '✗'}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                document.getElementById('listaAlertas').innerHTML = htmlAlertas || '<span class="text-gray-500">No hay tiendas asignadas.</span>';
+            }
+
+            // Mapear nombres de productos para gráfico y tabla
+            const getNombreProd = (id) => State.catalogo.find(p => p.id === id)?.nombre || id;
+
+            // Gráfico Chart.js
+            const ctx = document.getElementById('chartMerma').getContext('2d');
+            if(State.chartInstance) State.chartInstance.destroy();
             
-            const etiquetas = datosZonas.map(d => d.zona || "General");
-            const valores = datosZonas.map(d => d.ratio);
-            
-            const ctx = document.getElementById('graficaZonas').getContext('2d');
-            GRAFICO_ADMIN = new Chart(ctx, {
+            State.chartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: etiquetas,
+                    labels: data.top5Mermas.map(item => getNombreProd(item.idProducto)),
                     datasets: [{
-                        label: '% Merma',
-                        data: valores,
-                        backgroundColor: '#2563EB',
-                        borderRadius: 6
+                        label: 'Unidades Desperdiciadas',
+                        data: data.top5Mermas.map(item => item.cantidad),
+                        backgroundColor: '#ef4444',
+                        borderRadius: 4
                     }]
                 },
                 options: {
+                    responsive: true,
                     plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#374151' }, ticks: { color: '#9CA3AF' } },
+                        x: { grid: { display: false }, ticks: { color: '#9CA3AF', maxRotation: 45, minRotation: 45 } }
+                    }
                 }
             });
+
+            // Tabla Detalle
+            document.getElementById('tablaDetalle').innerHTML = data.tablaDinamica.map(row => {
+                const dateObj = new Date(row.fecha);
+                const formatFecha = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth()+1).padStart(2, '0')}`;
+                const colorTipo = row.tipo === 'Merma' ? 'text-red-400' : 'text-brand-yellow';
+                return `
+                    <tr>
+                        <td class="py-2 pr-4 text-gray-400">${formatFecha}</td>
+                        <td class="py-2 pr-4 truncate max-w-[120px]">${getNombreProd(row.idProd)}</td>
+                        <td class="py-2 pr-4 ${colorTipo}">${row.tipo}</td>
+                        <td class="py-2 text-right font-bold">${row.cantidad}</td>
+                    </tr>
+                `;
+            }).join('');
         }
 
-        async function abrirModalDetalle(idTienda, nombreTienda) {
-            document.getElementById('modal-detalle-tienda').classList.remove('hidden');
-            document.getElementById('modal-titulo').innerText = nombreTienda;
-            const contenedor = document.getElementById('modal-contenido');
+        // --- EXPORTACIÓN ---
+        function exportarCSV() {
+            if(!State.dashData || State.dashData.tablaDinamica.length === 0) return alert("No hay datos para exportar.");
             
-            contenedor.innerHTML = '<p class="text-center text-slate-400 mt-16 font-bold animate-pulse tracking-widest uppercase">Consultando Base de Datos...</p>';
-            
-            const respuesta = await llamarServidor('get_store_detail', { tiendaId: idTienda });
-            if (respuesta.success) {
-                if(respuesta.ranking.length === 0){
-                    contenedor.innerHTML = '<p class="text-center text-slate-500 mt-16 font-medium">Esta tienda no ha reportado mermas en la última quincena.</p>';
-                    return;
-                }
-                
-                contenedor.innerHTML = "";
-                respuesta.ranking.forEach(prod => {
-                    contenedor.innerHTML += `
-                        <div class="flex justify-between items-center p-5 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
-                            <span class="font-bold text-slate-800">${prod.nombre}</span>
-                            <span class="text-blue-600 font-black text-2xl">${prod.total} <small class="text-xs text-blue-400">uds</small></span>
-                        </div>`;
-                });
-            }
-        }
-
-        function cerrarModal() {
-            document.getElementById('modal-detalle-tienda').classList.add('hidden');
-        }
-
-        // ==========================================
-        // MÓDULO: CRUD ADMIN (GESTIÓN EN VIVO)
-        // ==========================================
-        function cargarDatosGestion() {
-            llamarServidor('admin_get_data').then(res => {
-                if(res.success) {
-                    // Renderizamos Usuarios
-                    const contUsr = document.getElementById('lista-gest-usuarios');
-                    contUsr.innerHTML = res.usuarios.map(u => `<div class="p-3 text-xs border-b border-slate-100 flex justify-between"><span class="font-bold text-slate-700">${u.nombre}</span><span class="text-slate-400">${u.rol} | ${u.zona}</span></div>`).join('');
-                    
-                    // Renderizamos Productos (Con botón de Activar/Desactivar)
-                    const contProd = document.getElementById('lista-gest-productos');
-                    contProd.innerHTML = res.productos.map(p => {
-                        const esActivo = p.estado === 'ACTIVO';
-                        const colorBtn = esActivo ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600';
-                        const txtBtn = esActivo ? 'Desactivar' : 'Activar';
-                        const nuevoEstado = esActivo ? 'INACTIVO' : 'ACTIVO';
-                        
-                        return `
-                        <div class="p-4 card-liao flex justify-between items-center mb-2">
-                            <div><p class="font-bold text-slate-800 text-sm">${p.nombre}</p><p class="text-[9px] text-slate-400 uppercase">${p.cat}</p></div>
-                            <button onclick="alternarEstadoProducto('${p.id}', '${nuevoEstado}')" class="px-3 py-1.5 rounded-full text-[10px] font-black uppercase ${colorBtn}">${txtBtn}</button>
-                        </div>`;
-                    }).join('');
-                }
+            let csvContent = "data:text/csv;charset=utf-8,Fecha,Tienda,Producto,Tipo,Cantidad\n";
+            State.dashData.tablaDinamica.forEach(row => {
+                const nomTienda = State.entidades.find(e => e.id === row.idTienda)?.nombre || row.idTienda;
+                const nomProd = State.catalogo.find(p => p.id === row.idProd)?.nombre || row.idProd;
+                // Escapar comillas dobles si las hay en el nombre del producto
+                const escProd = `"${nomProd.replace(/"/g, '""')}"`;
+                csvContent += `${row.fecha.split('T')[0]},"${nomTienda}",${escProd},${row.tipo},${row.cantidad}\n`;
             });
-        }
 
-        function crearNuevoUsuario() {
-            const payload = {
-                nombre: document.getElementById('nuevo-usr-nombre').value,
-                pin: document.getElementById('nuevo-usr-pin').value,
-                rol: document.getElementById('nuevo-usr-rol').value,
-                zona: document.getElementById('nuevo-usr-zona').value
-            };
-            if(!payload.nombre || !payload.pin) return alert("Rellena nombre y PIN");
-            
-            llamarServidor('admin_add_user', { payload: payload }).then(res => {
-                if(res.success) { alert("Usuario creado. Recargando..."); cargarDatosGestion(); }
-            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `LioGestion_Export_${new Date().getTime()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
-
-        function crearNuevoProducto() {
-            const payload = {
-                nombre: document.getElementById('nuevo-prod-nombre').value,
-                cat: document.getElementById('nuevo-prod-cat').value.toUpperCase(),
-                sub: document.getElementById('nuevo-prod-sub').value.toUpperCase()
-            };
-            if(!payload.nombre) return alert("Introduce el nombre del producto");
-            
-            llamarServidor('admin_add_product', { payload: payload }).then(res => {
-                if(res.success) { alert("Producto añadido."); cargarDatosGestion(); }
-            });
-        }
-
-        function alternarEstadoProducto(id, nuevoEstado) {
-            llamarServidor('admin_toggle_product', { productId: id, newStatus: nuevoEstado }).then(res => {
-                if(res.success) cargarDatosGestion(); // Refresca la lista
-            });
-        }
-
-        // ==========================================
-        // MÓDULO: EXPORTACIÓN DE DATOS (CSV)
-        // ==========================================
-        function exportarBaseDatos() {
-            alert("Preparando archivo de exportación. Esto puede tardar unos segundos...");
-            llamarServidor('export_csv').then(res => {
-                if (res.success) {
-                    // Generar estructura de texto separada por comas
-                    let contenidoCsv = res.csvData.map(fila => fila.join(",")).join("\n");
-                    
-                    // Crear un "Blob" (Archivo virtual en el navegador)
-                    const blob = new Blob([contenidoCsv], { type: 'text/csv;charset=utf-8;' });
-                    const linkDescarga = document.createElement("a");
-                    const url = URL.createObjectURL(blob);
-                    
-                    // Forzar la descarga
-                    linkDescarga.setAttribute("href", url);
-                    linkDescarga.setAttribute("download", "Liao_Exportacion_Total.csv");
-                    linkDescarga.style.visibility = 'hidden';
-                    document.body.appendChild(linkDescarga);
-                    linkDescarga.click();
-                    document.body.removeChild(linkDescarga);
-                } else {
-                    alert("Error al exportar: " + res.msg);
-                }
-            });
-        }
-
     </script>
 </body>
 </html>
