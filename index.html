@@ -7,26 +7,26 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        tailwind.config = {
-            theme: { extend: { colors: { brand: { black: '#000000', yellow: '#FFD700', gray: '#1F2937' } } } }
-        }
+        tailwind.config = { theme: { extend: { colors: { brand: { black: '#000000', yellow: '#FFD700', gray: '#1F2937' } } } } }
     </script>
     <style>
-        body { background-color: #000000; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #000000; color: #ffffff; font-family: -apple-system, sans-serif; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .loader { border: 4px solid #1F2937; border-top: 4px solid #FFD700; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         .tab-btn { transition: all 0.2s; border-bottom: 2px solid transparent; color: #6B7280; font-weight: 600; padding-bottom: 0.5rem; font-size: 0.875rem;}
         .tab-btn.active { border-color: #FFD700; color: #FFD700; }
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
 <body class="antialiased h-screen flex flex-col overflow-hidden">
 
+    <div id="errorBox" class="hidden fixed top-0 left-0 w-full bg-red-600 text-white p-4 z-[9999] font-mono text-xs overflow-auto max-h-40 border-b-4 border-black"></div>
+
     <div id="loadingOverlay" class="fixed inset-0 bg-brand-black bg-opacity-90 z-50 flex flex-col items-center justify-center">
         <div class="loader mb-4"></div>
-        <p id="loadingText" class="text-brand-yellow font-semibold">Conectando API...</p>
+        <p id="loadingText" class="text-brand-yellow font-semibold">Iniciando sistema...</p>
     </div>
 
     <div id="viewLogin" class="hidden flex-1 flex flex-col items-center justify-center p-6">
@@ -55,8 +55,8 @@
     </div>
 
     <div id="tabsAM" class="hidden bg-brand-black flex border-b border-gray-800 shrink-0 px-4 pt-4 gap-4">
-        <button onclick="cambiarVista('amResumen')" id="btn-amResumen" class="tab-btn flex-1 active">RESUMEN Y KPIs</button>
-        <button onclick="cambiarVista('amAnalisis')" id="btn-amAnalisis" class="tab-btn flex-1">ANÁLISIS GLOBAL</button>
+        <button onclick="cambiarVista('amResumen')" id="btn-amResumen" class="tab-btn flex-1 active">RESUMEN</button>
+        <button onclick="cambiarVista('amAnalisis')" id="btn-amAnalisis" class="tab-btn flex-1">ANÁLISIS</button>
     </div>
 
     <div id="mainContent" class="hidden flex-1 overflow-y-auto hide-scrollbar bg-brand-black p-4 pb-24">
@@ -68,23 +68,16 @@
             </div>
             <div class="flex overflow-x-auto gap-2 mb-6" id="filtroCategorias"></div>
             <div id="listaProductos" class="space-y-4"></div>
-            <button onclick="guardarDatos()" class="fixed bottom-6 left-4 right-4 bg-brand-yellow text-black font-bold py-4 rounded-xl text-lg uppercase z-40 shadow-[0_0_20px_rgba(255,215,0,0.3)]">Guardar Datos</button>
+            <button onclick="guardarDatos()" class="fixed bottom-6 left-4 right-4 bg-brand-yellow text-black font-bold py-4 rounded-xl text-lg uppercase z-40">Guardar Datos</button>
         </div>
 
         <div id="secDashboard" class="hidden space-y-6">
-            
             <div id="panelResumenAM" class="hidden space-y-4">
-                <h3 class="text-brand-yellow font-bold text-lg">Resumen de Tiendas (Hoy)</h3>
+                <h3 class="text-brand-yellow font-bold text-lg">Alertas de Tiendas (Hoy)</h3>
                 <div id="listaAlertasAM" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm"></div>
-                
-                <h3 class="text-brand-yellow font-bold text-lg mt-6">Ranking General (Acumulado)</h3>
+                <h3 class="text-brand-yellow font-bold text-lg mt-6">Ranking General</h3>
                 <div class="bg-brand-gray rounded-xl p-4 border border-gray-700 overflow-x-auto">
-                    <table class="w-full text-left text-xs whitespace-nowrap">
-                        <thead class="text-gray-400 border-b border-gray-700">
-                            <tr><th class="pb-2">Tienda</th><th class="pb-2">Prod.</th><th class="pb-2">Merma</th><th class="pb-2">% Merma</th></tr>
-                        </thead>
-                        <tbody id="tablaRankingAM" class="text-white divide-y divide-gray-800"></tbody>
-                    </table>
+                    <table class="w-full text-left text-xs whitespace-nowrap"><thead class="text-gray-400 border-b border-gray-700"><tr><th class="pb-2">Tienda</th><th class="pb-2">Prod.</th><th class="pb-2">Merma</th><th class="pb-2">%</th></tr></thead><tbody id="tablaRankingAM" class="text-white divide-y divide-gray-800"></tbody></table>
                 </div>
             </div>
 
@@ -93,14 +86,8 @@
                     <label class="block text-xs text-gray-400 mb-1">Tiendas a comparar</label>
                     <div id="checkTiendas" class="max-h-24 overflow-y-auto bg-black p-2 rounded border border-gray-600 text-sm grid grid-cols-2 gap-1"></div>
                 </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1">Desde</label>
-                    <input type="date" id="dashInicio" class="w-full bg-black p-2 rounded border border-gray-600 text-xs" onchange="aplicarFiltrosDashboard()">
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1">Hasta</label>
-                    <input type="date" id="dashFin" class="w-full bg-black p-2 rounded border border-gray-600 text-xs" onchange="aplicarFiltrosDashboard()">
-                </div>
+                <div><label class="block text-xs text-gray-400 mb-1">Desde</label><input type="date" id="dashInicio" class="w-full bg-black p-2 rounded border border-gray-600 text-xs" onchange="aplicarFiltrosDashboard()"></div>
+                <div><label class="block text-xs text-gray-400 mb-1">Hasta</label><input type="date" id="dashFin" class="w-full bg-black p-2 rounded border border-gray-600 text-xs" onchange="aplicarFiltrosDashboard()"></div>
                 <div class="col-span-2 grid grid-cols-3 gap-2 mt-2">
                     <select id="dashCat" class="bg-black p-2 rounded border border-gray-600 text-xs" onchange="actualizarDesplegablesFiltro(); aplicarFiltrosDashboard();"><option value="ALL">Todas las Categorías</option></select>
                     <select id="dashSubcat" class="bg-black p-2 rounded border border-gray-600 text-xs" onchange="actualizarDesplegablesFiltro(true); aplicarFiltrosDashboard();"><option value="ALL">Todas Subcat.</option></select>
@@ -109,53 +96,37 @@
             </div>
 
             <div id="panelKpis" class="hidden grid-cols-2 gap-4">
-                <div class="bg-brand-gray rounded-xl p-4 border border-gray-700 text-center">
-                    <span class="text-gray-400 text-xs uppercase">Producción Total</span>
-                    <span id="kpiProduccion" class="block text-2xl font-bold mt-1">0</span>
-                </div>
-                <div class="bg-brand-gray rounded-xl p-4 border border-red-900 text-center">
-                    <span class="text-red-400 text-xs uppercase">Merma Total (<span id="kpiPorcentaje">0</span>%)</span>
-                    <span id="kpiMerma" class="block text-2xl font-bold text-red-500 mt-1">0</span>
-                </div>
+                <div class="bg-brand-gray rounded-xl p-4 border border-gray-700 text-center"><span class="text-gray-400 text-xs uppercase">Producción</span><span id="kpiProduccion" class="block text-2xl font-bold mt-1">0</span></div>
+                <div class="bg-brand-gray rounded-xl p-4 border border-red-900 text-center"><span class="text-red-400 text-xs uppercase">Merma (<span id="kpiPorcentaje">0</span>%)</span><span id="kpiMerma" class="block text-2xl font-bold text-red-500 mt-1">0</span></div>
             </div>
 
-            <div id="panelGrafico" class="hidden bg-brand-gray rounded-xl p-4 border border-gray-700">
-                <h3 class="text-sm font-bold text-gray-300 mb-4">Top Productos (Merma)</h3>
-                <canvas id="chartMerma"></canvas>
-            </div>
+            <div id="panelGrafico" class="hidden bg-brand-gray rounded-xl p-4 border border-gray-700"><h3 class="text-sm font-bold text-gray-300 mb-4">Top Merma</h3><canvas id="chartMerma"></canvas></div>
 
             <div id="panelTabla" class="hidden bg-brand-gray rounded-xl p-4 border border-gray-700">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-sm font-bold text-gray-300">Detalle Filtrado</h3>
-                    <button onclick="exportarCSV()" class="text-xs bg-brand-yellow text-black px-3 py-1 rounded font-bold">⬇ CSV</button>
-                </div>
-                <div class="overflow-x-auto hide-scrollbar">
-                    <table class="w-full text-left text-xs whitespace-nowrap">
-                        <thead class="text-gray-400 border-b border-gray-700">
-                            <tr><th class="pb-2">Fecha</th><th class="pb-2">Tienda</th><th class="pb-2">Producto</th><th class="pb-2">Tipo</th><th class="pb-2 text-right">Cant.</th></tr>
-                        </thead>
-                        <tbody id="tablaDetalle" class="divide-y divide-gray-800"></tbody>
-                    </table>
-                </div>
+                <div class="flex justify-between items-center mb-4"><h3 class="text-sm font-bold text-gray-300">Detalle</h3><button onclick="exportarCSV()" class="text-xs bg-brand-yellow text-black px-3 py-1 rounded font-bold">CSV</button></div>
+                <div class="overflow-x-auto hide-scrollbar"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="text-gray-400 border-b border-gray-700"><tr><th class="pb-2">Fecha</th><th class="pb-2">Tienda</th><th class="pb-2">Producto</th><th class="pb-2">Tipo</th><th class="pb-2 text-right">Cant.</th></tr></thead><tbody id="tablaDetalle" class="divide-y divide-gray-800"></tbody></table></div>
             </div>
         </div>
     </div>
 
     <script>
-        // PEGA AQUÍ LA NUEVA URL TRAS IMPLEMENTAR EL BACKEND
+        // --- CHIVATO DE ERRORES GLOBALES (Para que no se quede en blanco) ---
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            document.getElementById('errorBox').innerHTML += `<p>ERROR (Línea ${lineNo}): ${msg}</p>`;
+            document.getElementById('errorBox').classList.remove('hidden');
+            ocultarLoader();
+            return false;
+        };
+        window.addEventListener("unhandledrejection", function(event) {
+            document.getElementById('errorBox').innerHTML += `<p>PROMESA FALLIDA: ${event.reason}</p>`;
+            document.getElementById('errorBox').classList.remove('hidden');
+            ocultarLoader();
+        });
+
+        // ⚠️ PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT
         const API_URL = 'https://script.google.com/macros/s/AKfycby9ZSa31x9_XPvtKgOfoPXsuPoX_t54CFOVxvqiWJ7eKLXHYYv-N0y9Rp2ex7X-sWzk7w/exec'; 
         
-        const State = {
-            usuario: null,
-            catalogo: [],
-            entidades: [],
-            config: { alertaMerma: 12 },
-            datosInput: {},
-            vistaActual: '',
-            rawMovimientos: [],
-            tareasAM: {}
-        };
-
+        const State = { usuario: null, catalogo: [], entidades: [], config: { alertaMerma: 12 }, datosInput: {}, vistaActual: '', rawMovimientos: [], tareasAM: {} };
         let chartInstance = null;
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -167,26 +138,23 @@
         });
 
         async function apiCall(action, payload = {}) {
-            try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action, payload, rol: State.usuario?.rol })
-                });
-                return await res.json();
-            } catch (e) { throw new Error("Fallo de red: " + e.message); }
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action, payload, rol: State.usuario?.rol || '' })
+            });
+            const text = await res.text();
+            try { return JSON.parse(text); } 
+            catch (e) { throw new Error("La API no devolvió JSON válido. Revisar permisos de Google. Respuesta parcial: " + text.substring(0, 50)); }
         }
 
         async function iniciarApp() {
-            mostrarLoader('Conectando con DB...');
-            try {
-                State.config = await apiCall('getConfig');
-                State.entidades = await apiCall('getEntidades');
-                document.getElementById('loginUserSelect').innerHTML = '<option value="">Selecciona...</option>' + 
-                    State.entidades.map(e => `<option value="${e.id}">${e.nombre} (${e.rol})</option>`).join('');
-                ocultarLoader();
-                document.getElementById('viewLogin').classList.remove('hidden');
-            } catch (e) { alertCritico(e); }
+            mostrarLoader('Conectando...');
+            State.config = await apiCall('getConfig');
+            State.entidades = await apiCall('getEntidades') || [];
+            document.getElementById('loginUserSelect').innerHTML = '<option value="">Selecciona...</option>' + State.entidades.map(e => `<option value="${e.id}">${e.nombre} (${e.rol})</option>`).join('');
+            ocultarLoader();
+            document.getElementById('viewLogin').classList.remove('hidden');
         }
 
         async function ejecutarLogin() {
@@ -195,61 +163,48 @@
             if(!id || !pin) return alert("Rellena todos los campos.");
 
             mostrarLoader('Validando...');
-            try {
-                const res = await apiCall('login', {id, pin});
-                if(res.exito) {
-                    State.usuario = res;
-                    document.getElementById('navUserName').innerText = res.nombre;
-                    document.getElementById('viewLogin').classList.add('hidden');
-                    document.getElementById('mainNav').classList.remove('hidden');
-                    cargarCatalogoPostLogin();
-                } else {
-                    ocultarLoader(); alert(res.error);
-                }
-            } catch(e) { alertCritico(e); }
+            const res = await apiCall('login', {id, pin});
+            if(res.exito) {
+                State.usuario = res;
+                document.getElementById('navUserName').innerText = res.nombre;
+                document.getElementById('viewLogin').classList.add('hidden');
+                document.getElementById('mainNav').classList.remove('hidden');
+                cargarCatalogoPostLogin();
+            } else {
+                ocultarLoader(); alert(res.error);
+            }
         }
 
         async function cargarCatalogoPostLogin() {
-            mostrarLoader('Cargando motor y catálogo...');
-            try {
-                State.catalogo = await apiCall('getCatalogo');
-                
-                if(State.usuario.rol === 'Tienda') {
-                    document.getElementById('tabsTienda').classList.remove('hidden');
-                    cambiarVista('dashTienda'); // <-- Ahora arranca aquí por defecto
-                } else {
-                    document.getElementById('tabsAM').classList.remove('hidden');
-                    const checks = State.entidades.filter(e => e.rol === 'Tienda').map(e => `
-                        <label class="flex items-center gap-2"><input type="checkbox" value="${e.id}" class="chk-tienda" checked onchange="aplicarFiltrosDashboard()"> <span class="truncate">${e.nombre}</span></label>
-                    `).join('');
-                    document.getElementById('checkTiendas').innerHTML = checks;
-                    cambiarVista('amResumen');
-                }
-                
-                const cats = [...new Set(State.catalogo.map(p => p.categoria))];
-                document.getElementById('dashCat').innerHTML += cats.map(c => `<option value="${c}">${c}</option>`).join('');
-                
-                ocultarLoader();
-            } catch(e) { alertCritico(e); }
+            mostrarLoader('Cargando motor...');
+            State.catalogo = await apiCall('getCatalogo') || [];
+            
+            if(State.usuario.rol === 'Tienda') {
+                document.getElementById('tabsTienda').classList.remove('hidden');
+                cambiarVista('dashTienda'); 
+            } else {
+                document.getElementById('tabsAM').classList.remove('hidden');
+                const checks = State.entidades.filter(e => e.rol === 'Tienda').map(e => `<label class="flex items-center gap-2"><input type="checkbox" value="${e.id}" class="chk-tienda" checked onchange="aplicarFiltrosDashboard()"> <span class="truncate">${e.nombre}</span></label>`).join('');
+                document.getElementById('checkTiendas').innerHTML = checks;
+                cambiarVista('amResumen');
+            }
+            
+            const cats = [...new Set(State.catalogo.map(p => p.categoria).filter(c=>c))];
+            document.getElementById('dashCat').innerHTML += cats.map(c => `<option value="${c}">${c}</option>`).join('');
+            ocultarLoader();
         }
 
         function cambiarVista(vista) {
             State.vistaActual = vista;
-            
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + vista)?.classList.add('active');
 
-            document.getElementById('secRegistro').classList.add('hidden');
-            document.getElementById('secDashboard').classList.add('hidden');
-            document.getElementById('panelResumenAM').classList.add('hidden');
-            document.getElementById('panelFiltros').classList.add('hidden');
+            ['secRegistro', 'secDashboard', 'panelResumenAM', 'panelFiltros', 'panelGrafico', 'panelTabla'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById('panelKpis').classList.remove('grid'); document.getElementById('panelKpis').classList.add('hidden');
-            document.getElementById('panelGrafico').classList.add('hidden');
-            document.getElementById('panelTabla').classList.add('hidden');
 
             if(vista === 'produccion' || vista === 'merma') {
                 document.getElementById('secRegistro').classList.remove('hidden');
-                document.getElementById('tituloRegistro').innerText = vista === 'produccion' ? 'Producción del Día' : 'Merma del Día';
+                document.getElementById('tituloRegistro').innerText = vista === 'produccion' ? 'Producción' : 'Merma';
                 renderizarFormulario();
             } else if (vista === 'dashTienda') {
                 document.getElementById('secDashboard').classList.remove('hidden');
@@ -276,132 +231,89 @@
 
         function renderizarFormulario(filtroCat = 'Todas') {
             State.datosInput = {};
-            const cats = ['Todas', ...new Set(State.catalogo.map(p => p.categoria))];
-            document.getElementById('filtroCategorias').innerHTML = cats.map(c => 
-                `<button onclick="renderizarFormulario('${c}')" class="px-3 py-1 rounded-full text-xs font-bold ${c === filtroCat ? 'bg-brand-yellow text-black' : 'bg-gray-800 text-gray-400'}">${c}</button>`
-            ).join('');
+            const cats = ['Todas', ...new Set(State.catalogo.map(p => p.categoria).filter(c=>c))];
+            document.getElementById('filtroCategorias').innerHTML = cats.map(c => `<button onclick="renderizarFormulario('${c}')" class="px-3 py-1 rounded-full text-xs font-bold ${c === filtroCat ? 'bg-brand-yellow text-black' : 'bg-gray-800 text-gray-400'}">${c}</button>`).join('');
 
             const prods = filtroCat === 'Todas' ? State.catalogo : State.catalogo.filter(p => p.categoria === filtroCat);
             document.getElementById('listaProductos').innerHTML = prods.map(p => {
                 State.datosInput[p.id] = { obrador: 0, mediodia: 0, tarde: 0, unico: 0 };
                 let inputs = State.vistaActual === 'produccion' 
-                    ? ['obrador', 'mediodia', 'tarde'].map(t => `
-                        <div class="flex flex-col items-center">
-                            <span class="text-[10px] text-gray-500 uppercase">${t}</span>
-                            <div class="flex items-center bg-black border border-gray-700 mt-1 rounded">
-                                <button onclick="mod(this, '${p.id}', '${t}', -1)" class="w-8 h-8 text-brand-yellow">-</button>
-                                <input readonly value="0" class="w-8 h-8 bg-transparent text-center text-white border-x border-gray-700 outline-none">
-                                <button onclick="mod(this, '${p.id}', '${t}', 1)" class="w-8 h-8 text-brand-yellow">+</button>
-                            </div>
-                        </div>`).join('')
+                    ? ['obrador', 'mediodia', 'tarde'].map(t => `<div class="flex flex-col items-center"><span class="text-[10px] text-gray-500 uppercase">${t}</span><div class="flex items-center bg-black border border-gray-700 mt-1 rounded"><button onclick="mod(this, '${p.id}', '${t}', -1)" class="w-8 h-8 text-brand-yellow">-</button><input readonly value="0" class="w-8 h-8 bg-transparent text-center text-white border-x border-gray-700 outline-none"><button onclick="mod(this, '${p.id}', '${t}', 1)" class="w-8 h-8 text-brand-yellow">+</button></div></div>`).join('')
                     : `<div class="flex items-center bg-black border border-red-900 rounded"><button onclick="mod(this, '${p.id}', 'unico', -1)" class="w-10 h-10 text-red-500 text-xl">-</button><input readonly value="0" class="w-12 h-10 bg-transparent text-center text-white font-bold border-x border-red-900 outline-none"><button onclick="mod(this, '${p.id}', 'unico', 1)" class="w-10 h-10 text-red-500 text-xl">+</button></div>`;
-
-                return `<div class="bg-brand-gray p-3 rounded-xl border border-gray-800 flex justify-between items-center"><div class="max-w-[120px]"><h4 class="font-bold text-xs truncate">${p.nombre}</h4><span class="text-[10px] text-gray-500">${p.subcategoria || ''}</span></div><div class="flex gap-2">${inputs}</div></div>`;
+                return `<div class="bg-brand-gray p-3 rounded-xl border border-gray-800 flex justify-between items-center"><div class="max-w-[120px]"><h4 class="font-bold text-xs truncate">${p.nombre || 'Sin nombre'}</h4><span class="text-[10px] text-gray-500">${p.subcategoria || ''}</span></div><div class="flex gap-2">${inputs}</div></div>`;
             }).join('');
         }
 
-        function mod(btn, id, t, val) {
-            let n = State.datosInput[id][t] + val;
-            if(n < 0) n = 0;
-            State.datosInput[id][t] = n;
-            btn.parentNode.querySelector('input').value = n;
-        }
+        function mod(btn, id, t, val) { let n = State.datosInput[id][t] + val; if(n < 0) n = 0; State.datosInput[id][t] = n; btn.parentNode.querySelector('input').value = n; }
 
         async function guardarDatos() {
             const f = document.getElementById('fechaRegistro').value;
             if(!f) return alert("Falta fecha.");
-            
             let movs = [];
             let tipo = State.vistaActual === 'produccion' ? 'Producción' : 'Merma';
-            
             for (let [id, t] of Object.entries(State.datosInput)) {
                 if(t.obrador > 0) movs.push({fecha: f, idTienda: State.usuario.id, idProducto: id, tipo: tipo, turno: 'Obrador', cantidad: t.obrador});
                 if(t.mediodia > 0) movs.push({fecha: f, idTienda: State.usuario.id, idProducto: id, tipo: tipo, turno: 'Mediodia', cantidad: t.mediodia});
                 if(t.tarde > 0) movs.push({fecha: f, idTienda: State.usuario.id, idProducto: id, tipo: tipo, turno: 'Tarde', cantidad: t.tarde});
                 if(t.unico > 0) movs.push({fecha: f, idTienda: State.usuario.id, idProducto: id, tipo: tipo, turno: 'Unico', cantidad: t.unico});
             }
-
             if(movs.length === 0) return alert("Nada que guardar.");
-            
-            mostrarLoader('Enviando API...');
-            try {
-                const res = await apiCall('guardar', {movimientos: movs});
-                ocultarLoader();
-                if(res.exito) { alert("Guardado OK"); renderizarFormulario(); }
-                else alert("Error: " + res.error);
-            } catch(e) { alertCritico(e); }
+            mostrarLoader('Enviando...');
+            const res = await apiCall('guardar', {movimientos: movs});
+            ocultarLoader();
+            if(res.exito) { alert("Guardado OK"); renderizarFormulario(); } else alert("Error: " + res.error);
         }
 
         async function descargarYProcesarDashboard() {
             mostrarLoader('Obteniendo datos...');
-            try {
-                const data = await apiCall('getDashboard', { idEntidad: State.usuario.id });
-                State.rawMovimientos = data.movimientos || [];
-                State.tareasAM = data.tareasPendientes || {};
-                
-                if (State.vistaActual === 'amResumen') renderizarResumenAM(data.tiendasAsignadas);
-                else aplicarFiltrosDashboard();
-                
-                ocultarLoader();
-            } catch (e) { alertCritico(e); }
+            const data = await apiCall('getDashboard', { idEntidad: State.usuario.id });
+            State.rawMovimientos = data.movimientos || [];
+            State.tareasAM = data.tareasPendientes || {};
+            
+            if (State.vistaActual === 'amResumen') renderizarResumenAM(data.tiendasAsignadas || []);
+            else aplicarFiltrosDashboard();
+            ocultarLoader();
         }
 
         function renderizarResumenAM(tiendasAM) {
             document.getElementById('listaAlertasAM').innerHTML = tiendasAM.map(id => {
                 let n = State.entidades.find(e => e.id === id)?.nombre || id;
                 let t = State.tareasAM[id] || {prod: false, merma: false};
-                return `<div class="bg-black p-3 rounded border border-gray-800 flex justify-between">
-                    <span class="truncate">${n}</span>
-                    <div class="flex gap-3 text-xs font-bold">
-                        <span class="${t.prod ? 'text-green-500' : 'text-red-500'}">P: ${t.prod?'OK':'Falta'}</span>
-                        <span class="${t.merma ? 'text-green-500' : 'text-red-500'}">M: ${t.merma?'OK':'Falta'}</span>
-                    </div>
-                </div>`;
+                return `<div class="bg-black p-3 rounded border border-gray-800 flex justify-between"><span class="truncate">${n}</span><div class="flex gap-3 text-xs font-bold"><span class="${t.prod ? 'text-green-500' : 'text-red-500'}">P: ${t.prod?'OK':'Falta'}</span><span class="${t.merma ? 'text-green-500' : 'text-red-500'}">M: ${t.merma?'OK':'Falta'}</span></div></div>`;
             }).join('');
 
             let rank = {};
             tiendasAM.forEach(id => rank[id] = { p: 0, m: 0 });
             State.rawMovimientos.forEach(row => {
                 if(rank[row.idTienda]) {
-                    if(row.tipo === 'Producción') rank[row.idTienda].p += row.cantidad;
-                    if(row.tipo === 'Merma') rank[row.idTienda].m += row.cantidad;
+                    if(row.tipo === 'Producción') rank[row.idTienda].p += Number(row.cantidad) || 0;
+                    if(row.tipo === 'Merma') rank[row.idTienda].m += Number(row.cantidad) || 0;
                 }
             });
 
-            const htmlTable = tiendasAM.map(id => {
+            document.getElementById('tablaRankingAM').innerHTML = tiendasAM.map(id => {
                 let d = rank[id];
                 let perc = d.p > 0 ? ((d.m / d.p) * 100).toFixed(1) : 0;
                 let n = State.entidades.find(e => e.id === id)?.nombre || id;
-                let isCritico = perc >= State.config.alertaMerma;
-                let color = isCritico ? 'text-red-500 font-bold animate-pulse' : 'text-gray-300';
-                let icon = isCritico ? ' ⚠️' : '';
-                return `<tr><td class="py-2">${n}${icon}</td><td class="py-2">${d.p}</td><td class="py-2 text-red-400">${d.m}</td><td class="py-2 ${color}">${perc}%</td></tr>`;
+                let color = perc >= State.config.alertaMerma ? 'text-red-500 font-bold' : 'text-gray-300';
+                return `<tr><td class="py-2">${n}</td><td class="py-2">${d.p}</td><td class="py-2 text-red-400">${d.m}</td><td class="py-2 ${color}">${perc}%</td></tr>`;
             }).join('');
-            document.getElementById('tablaRankingAM').innerHTML = htmlTable;
         }
 
         function actualizarDesplegablesFiltro(mantieneSubcat = false) {
             const cat = document.getElementById('dashCat').value;
             const sub = document.getElementById('dashSubcat');
-            const pro = document.getElementById('dashProd');
-
-            let filtrados = State.catalogo;
-            if(cat !== 'ALL') filtrados = filtrados.filter(p => p.categoria === cat);
-            
+            let f = State.catalogo;
+            if(cat !== 'ALL') f = f.filter(p => p.categoria === cat);
             if(!mantieneSubcat) {
-                const subs = [...new Set(filtrados.map(p => p.subcategoria).filter(s => s))];
+                const subs = [...new Set(f.map(p => p.subcategoria).filter(s => s))];
                 sub.innerHTML = '<option value="ALL">Todas Subcat.</option>' + subs.map(s => `<option value="${s}">${s}</option>`).join('');
             }
-
-            const subVal = sub.value;
-            if(subVal !== 'ALL') filtrados = filtrados.filter(p => p.subcategoria === subVal);
-
-            pro.innerHTML = '<option value="ALL">Todos los Prod.</option>' + filtrados.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+            if(sub.value !== 'ALL') f = f.filter(p => p.subcategoria === sub.value);
+            document.getElementById('dashProd').innerHTML = '<option value="ALL">Todos los Prod.</option>' + f.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
         }
 
         function aplicarFiltrosDashboard() {
-            // ELIMINADA LA REGLA DE RETORNO QUE CAUSABA EL ERROR. AHORA DIBUJA CERO.
-            
             const iF = document.getElementById('dashInicio').value;
             const fF = document.getElementById('dashFin').value;
             const cF = document.getElementById('dashCat').value;
@@ -410,71 +322,55 @@
             
             let tF = [State.usuario.id];
             if(State.usuario.rol === 'AM' || State.usuario.rol === 'Admin') {
-                tF = Array.from(document.querySelectorAll('.chk-tienda:checked')).map(cb => cb.value);
+                const checks = document.querySelectorAll('.chk-tienda:checked');
+                if(checks.length > 0) tF = Array.from(checks).map(cb => cb.value);
             }
 
-            let prodValidos = new Set();
-            State.catalogo.forEach(p => {
-                let ok = true;
-                if(cF !== 'ALL' && p.categoria !== cF) ok = false;
-                if(sF !== 'ALL' && p.subcategoria !== sF) ok = false;
-                if(pF !== 'ALL' && p.id !== pF) ok = false;
-                if(ok) prodValidos.add(p.id);
-            });
+            let pV = new Set(State.catalogo.filter(p => (cF==='ALL'||p.categoria===cF) && (sF==='ALL'||p.subcategoria===sF) && (pF==='ALL'||p.id===pF)).map(p=>p.id));
 
-            let tP = 0, tM = 0;
-            let mermasMap = {};
-            let filasTabla = '';
+            let tP = 0, tM = 0, mermasMap = {}, filas = '';
 
             State.rawMovimientos.forEach(r => {
-                let dt = r.fecha.split('T')[0];
-                if(dt < iF || dt > fF) return;
+                // Protección contra fechas vacías o raras en Google Sheets
+                let dtStr = r.fecha ? r.fecha.toString() : '';
+                let dt = dtStr.includes('T') ? dtStr.split('T')[0] : dtStr; 
+                
+                if(dt && (dt < iF || dt > fF)) return;
                 if(!tF.includes(r.idTienda)) return;
-                if(!prodValidos.has(r.idProd)) return;
+                if(!pV.has(r.idProd)) return;
 
-                if(r.tipo === 'Producción') tP += r.cantidad;
-                else if(r.tipo === 'Merma') {
-                    tM += r.cantidad;
-                    mermasMap[r.idProd] = (mermasMap[r.idProd] || 0) + r.cantidad;
-                }
+                let c = Number(r.cantidad) || 0;
+                if(r.tipo === 'Producción') tP += c;
+                else if(r.tipo === 'Merma') { tM += c; mermasMap[r.idProd] = (mermasMap[r.idProd] || 0) + c; }
 
                 let nomT = State.entidades.find(e => e.id === r.idTienda)?.nombre || r.idTienda;
                 let nomP = State.catalogo.find(p => p.id === r.idProd)?.nombre || r.idProd;
-                filasTabla += `<tr><td class="py-1">${dt.substring(5)}</td><td class="py-1 truncate max-w-[80px]">${nomT}</td><td class="py-1 truncate max-w-[100px]">${nomP}</td><td class="py-1 ${r.tipo==='Merma'?'text-red-400':'text-brand-yellow'}">${r.tipo[0]}</td><td class="py-1 text-right">${r.cantidad}</td></tr>`;
+                filas += `<tr><td class="py-1">${dt.substring(5)}</td><td class="py-1 truncate max-w-[80px]">${nomT}</td><td class="py-1 truncate max-w-[100px]">${nomP}</td><td class="py-1 ${r.tipo==='Merma'?'text-red-400':'text-brand-yellow'}">${r.tipo[0]||''}</td><td class="py-1 text-right">${c}</td></tr>`;
             });
 
             document.getElementById('kpiProduccion').innerText = tP;
             document.getElementById('kpiMerma').innerText = tM;
             document.getElementById('kpiPorcentaje').innerText = tP > 0 ? ((tM/tP)*100).toFixed(1) : 0;
-            document.getElementById('tablaDetalle').innerHTML = filasTabla;
+            document.getElementById('tablaDetalle').innerHTML = filas;
 
             let top = Object.entries(mermasMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
             if(chartInstance) chartInstance.destroy();
             chartInstance = new Chart(document.getElementById('chartMerma').getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: top.map(x => State.catalogo.find(p=>p.id===x[0])?.nombre||x[0]),
-                    datasets: [{ data: top.map(x => x[1]), backgroundColor: '#ef4444', borderRadius: 4 }]
-                },
-                options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#9CA3AF' } }, y: { ticks: { color: '#9CA3AF' }, beginAtZero: true } } }
+                type: 'bar', data: { labels: top.map(x => State.catalogo.find(p=>p.id===x[0])?.nombre||x[0]), datasets: [{ data: top.map(x => x[1]), backgroundColor: '#ef4444' }] },
+                options: { plugins: { legend: { display: false } } }
             });
         }
 
         function mostrarLoader(t) { document.getElementById('loadingText').innerText=t; document.getElementById('loadingOverlay').classList.remove('hidden'); }
         function ocultarLoader() { document.getElementById('loadingOverlay').classList.add('hidden'); }
-        function alertCritico(e) { ocultarLoader(); alert("Error crítico: " + e.message); }
         function cerrarSesion() { location.reload(); }
-        
         function exportarCSV() {
             let csv = "Fecha,Tienda,Producto,Tipo,Cantidad\n";
             document.querySelectorAll('#tablaDetalle tr').forEach(tr => {
                 let tds = tr.querySelectorAll('td');
                 if(tds.length) csv += `${tds[0].innerText},"${tds[1].innerText}","${tds[2].innerText}",${tds[3].innerText},${tds[4].innerText}\n`;
             });
-            let link = document.createElement("a");
-            link.href = encodeURI("data:text/csv;charset=utf-8," + csv);
-            link.download = `LioExport_${new Date().getTime()}.csv`;
-            link.click();
+            let link = document.createElement("a"); link.href = encodeURI("data:text/csv;charset=utf-8," + csv); link.download = `Export_${new Date().getTime()}.csv`; link.click();
         }
     </script>
 </body>
