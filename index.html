@@ -4,240 +4,613 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>LIAO Gestión</title>
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <title>LIAO Gestión ERP</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
+        /* Estilos Globales y Corporativos */
         body { background-color: #F8FAFC; color: #1E293B; font-family: ui-sans-serif, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-        .btn-blue { background-color: #2563EB; color: #FFFFFF; font-weight: 700; border-radius: 12px; transition: 0.2s; cursor: pointer; }
+        .btn-blue { background-color: #2563EB; color: #FFFFFF; font-weight: 700; border-radius: 12px; transition: all 0.2s; cursor: pointer; }
         .btn-blue:active { transform: scale(0.98); background-color: #1D4ED8; }
-        .input-liao { background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; color: #1E293B; outline: none; }
-        .card-liao { background-color: #FFFFFF; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid #F1F5F9; }
-        .pill { background-color: #F1F5F9; color: #64748B; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #E2E8F0; white-space: nowrap; }
+        .btn-red { background-color: #DC2626; color: #FFFFFF; font-weight: 700; border-radius: 12px; transition: all 0.2s; cursor: pointer; }
+        
+        /* Formularios y Tarjetas */
+        .input-liao { background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; color: #1E293B; outline: none; transition: border-color 0.2s; }
+        .input-liao:focus { border-color: #2563EB; }
+        .card-liao { background-color: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid #F1F5F9; }
+        
+        /* Píldoras de Menú (Tienda y Admin) */
+        .pill { background-color: #F1F5F9; color: #64748B; padding: 10px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #E2E8F0; white-space: nowrap; text-align: center; }
         .pill.active { background-color: #2563EB; color: #FFFFFF; border-color: #2563EB; }
+        
+        /* Utilidades */
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .sidebar-item { transition: 0.2s; cursor: pointer; border-radius: 12px; padding: 12px; }
-        .sidebar-item.active { background-color: #EFF6FF; color: #2563EB; font-weight: bold; }
+        input[type="date"] { color-scheme: light; }
     </style>
 </head>
-<body onload="cargarUsuarios()">
+<body onload="inicializarApp()">
 
-    <div id="login-screen" class="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-        <div class="max-w-md w-full space-y-12 text-center">
-            <div><h1 class="text-4xl font-black text-[#0F172A] tracking-tighter">LIAO GESTIÓN</h1><p class="text-xs font-bold text-[#64748B] tracking-[0.3em] mt-2 uppercase">Producción y Merma</p></div>
-            <div class="card-liao p-10 space-y-6">
-                <select id="user-select" class="input-liao w-full p-4 text-lg appearance-none font-semibold"></select>
-                <input id="pin-input" type="password" pattern="[0-9]*" inputmode="numeric" placeholder="PIN de acceso" class="input-liao w-full p-4 text-center text-3xl tracking-[0.5em] font-bold">
-                <button onclick="intentarLogin()" id="btn-entrar" class="btn-blue w-full p-5 text-xl tracking-widest uppercase">Entrar</button>
-                <div id="login-msg" class="text-red-500 text-sm font-bold h-4"></div>
+    <div id="pantalla-login" class="min-h-screen flex items-center justify-center p-6 bg-slate-50">
+        <div class="max-w-md w-full space-y-10">
+            <div class="text-center">
+                <h1 class="text-4xl font-black text-[#0F172A] tracking-tighter">LIAO GESTIÓN</h1>
+                <p class="text-xs font-bold text-[#64748B] tracking-[0.3em] mt-2 uppercase">Producción y Merma</p>
+            </div>
+            <div class="card-liao p-8 space-y-6">
+                <select id="login-user" class="input-liao w-full p-4 text-lg appearance-none font-semibold">
+                    <option value="">Conectando con Servidor...</option>
+                </select>
+                <input id="login-pin" type="password" pattern="[0-9]*" inputmode="numeric" placeholder="Introduce tu PIN" class="input-liao w-full p-4 text-center text-3xl tracking-[0.5em] font-bold">
+                <button onclick="ejecutarLogin()" id="btn-login" class="btn-blue w-full p-5 text-xl tracking-widest uppercase shadow-lg shadow-blue-500/20">Acceder</button>
+                <div id="login-error" class="text-red-500 text-center text-sm font-bold h-4"></div>
             </div>
         </div>
     </div>
 
-    <div id="tienda-screen" class="hidden flex flex-col h-screen">
+    <div id="pantalla-tienda" class="hidden flex flex-col h-screen">
         <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-50">
-            <div><h2 id="store-name" class="font-bold text-slate-900 text-xl"></h2><p id="store-zone" class="text-[10px] text-slate-400 uppercase font-black"></p></div>
-            <button onclick="location.reload()" class="text-[10px] bg-slate-100 px-4 py-2 rounded-full font-black text-slate-500">SALIR</button>
-        </div>
-        <div class="p-5 bg-white border-b border-slate-100 space-y-4">
-            <div class="flex gap-3"><input type="date" id="input-fecha" class="input-liao flex-1 p-3 text-sm font-bold"><select id="select-tipo" onchange="toggleTurnos()" class="input-liao flex-1 p-3 text-sm font-bold"><option value="PRODUCCIÓN">PRODUCCIÓN</option><option value="MERMA">MERMA</option></select></div>
-            <div id="container-turnos" class="flex gap-3">
-                <button onclick="setTurno('Obrador')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-black border border-slate-200">OBRADOR</button>
-                <button onclick="setTurno('Mediodía')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-black border border-slate-200">MEDIODÍA</button>
-                <button onclick="setTurno('Tarde')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-black border border-slate-200">TARDE</button>
+            <div>
+                <h2 id="tienda-nombre" class="font-bold text-slate-900 text-xl leading-none"></h2>
+                <p id="tienda-zona" class="text-[10px] text-slate-400 uppercase tracking-widest mt-1 font-bold"></p>
             </div>
-        </div>
-        <div class="p-5 space-y-4 bg-white"><input type="text" id="busqueda" oninput="renderProductos()" placeholder="Buscar producto..." class="input-liao w-full p-4 text-sm font-medium"><div id="lista-categorias" class="flex gap-2 overflow-x-auto no-scrollbar"></div><div id="lista-subcategorias" class="flex gap-2 overflow-x-auto no-scrollbar h-8"></div></div>
-        <div id="lista-productos" class="flex-grow overflow-y-auto p-5 space-y-3 pb-32"></div>
-        <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-slate-50 to-transparent"><button onclick="enviarDatos()" id="btn-enviar" class="btn-blue w-full py-5 text-lg uppercase tracking-widest shadow-xl shadow-blue-500/20">Guardar Registros</button></div>
-    </div>
-
-    <div id="dashboard-screen" class="hidden flex flex-col h-screen bg-slate-50">
-        <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-white">
-            <div><h2 class="font-bold text-slate-900 text-xl" id="dash-title">Panel Control</h2><p id="dash-info" class="text-[10px] text-slate-400 font-bold uppercase"></p></div>
-            <button onclick="location.reload()" class="text-[10px] bg-slate-100 px-4 py-2 rounded-full font-black text-slate-500">SALIR</button>
+            <button onclick="location.reload()" class="text-[10px] bg-slate-100 text-slate-500 px-4 py-2 rounded-full font-black uppercase">Cerrar Sesión</button>
         </div>
         
-        <div id="admin-nav" class="hidden flex p-2 bg-white border-b gap-2 overflow-x-auto no-scrollbar">
-            <button onclick="changeView('report')" class="pill active flex-1">Reportes</button>
-            <button onclick="changeView('manage')" class="pill flex-1">Gestión</button>
-            <button onclick="exportCSV()" class="pill flex-1">Exportar CSV</button>
-        </div>
-
-        <div id="view-report" class="flex-grow overflow-y-auto p-5 space-y-6">
-            <div id="global-charts" class="hidden grid grid-cols-1 gap-4"><div class="card-liao p-6"><canvas id="mainChart"></canvas></div></div>
-            <div id="lista-auditoria" class="space-y-4"></div>
-        </div>
-
-        <div id="view-manage" class="hidden flex-grow overflow-y-auto p-5 space-y-6">
-            <div class="card-liao p-6 space-y-4">
-                <h3 class="font-bold text-lg">Añadir Tienda/Usuario</h3>
-                <input id="new-u-name" placeholder="Nombre Tienda" class="input-liao w-full p-3 text-sm">
-                <div class="flex gap-2"><input id="new-u-pin" placeholder="PIN" class="input-liao flex-1 p-3 text-sm"><select id="new-u-rol" class="input-liao flex-1 p-3 text-sm"><option value="TIENDA">TIENDA</option><option value="AM">AREA MANAGER</option><option value="ADMIN">ADMIN</option></select></div>
-                <input id="new-u-zona" placeholder="Zona (Norte, Sur...)" class="input-liao w-full p-3 text-sm">
-                <button onclick="adminManage('user', 'add')" class="btn-blue w-full p-3 text-sm">AÑADIR USUARIO</button>
+        <div class="p-5 bg-white border-b border-slate-100 space-y-4 shadow-sm">
+            <div class="flex gap-3">
+                <input type="date" id="tienda-fecha" class="input-liao flex-1 p-3 text-sm font-bold">
+                <select id="tienda-tipo" onchange="actualizarInterfazTurnos()" class="input-liao flex-1 p-3 text-sm font-bold">
+                    <option value="PRODUCCIÓN">PRODUCCIÓN</option>
+                    <option value="MERMA">MERMA</option>
+                </select>
             </div>
-            <div class="card-liao p-6 space-y-4">
-                <h3 class="font-bold text-lg">Añadir Producto</h3>
-                <input id="new-p-name" placeholder="Nombre Producto" class="input-liao w-full p-3 text-sm">
-                <div class="flex gap-2"><input id="new-p-cat" placeholder="Categoría" class="input-liao flex-1 p-3 text-sm"><input id="new-p-sub" placeholder="Subcategoría" class="input-liao flex-1 p-3 text-sm"></div>
-                <button onclick="adminManage('product', 'add')" class="btn-blue w-full p-3 text-sm">AÑADIR PRODUCTO</button>
+            <div id="tienda-turnos" class="flex gap-3">
+                <button onclick="seleccionarTurno('Obrador')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-black border border-slate-200 uppercase">Obrador</button>
+                <button onclick="seleccionarTurno('Mediodía')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-black border border-slate-200 uppercase">Mediodía</button>
+                <button onclick="seleccionarTurno('Tarde')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-black border border-slate-200 uppercase">Tarde</button>
             </div>
         </div>
+        
+        <div class="p-5 space-y-4">
+            <input type="text" id="tienda-buscador" oninput="renderizarListaProductos()" placeholder="Buscar producto..." class="input-liao w-full p-4 text-sm font-medium">
+            <div id="tienda-categorias" class="flex gap-2 overflow-x-auto no-scrollbar"></div>
+            <div id="tienda-subcategorias" class="flex gap-2 overflow-x-auto no-scrollbar h-9"></div>
+        </div>
+        
+        <div id="tienda-lista-productos" class="flex-grow overflow-y-auto p-5 space-y-3 pb-32"></div>
+        
+        <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#F8FAFC] to-transparent">
+            <button onclick="enviarReporteTienda()" id="btn-guardar-tienda" class="btn-blue w-full py-5 text-lg uppercase tracking-widest shadow-xl shadow-blue-500/20">Guardar Registros</button>
+        </div>
+    </div>
 
-        <div id="modal-detalle" class="hidden fixed inset-0 bg-white/98 z-[100] p-6 flex flex-col">
-            <div class="flex justify-between items-center mb-8 border-b pb-5"><div><h3 id="det-title" class="text-3xl font-black text-slate-900"></h3><p class="text-[10px] text-blue-600 font-black uppercase tracking-widest">Análisis Top 5 Mermas</p></div><button onclick="closeModal()" class="text-4xl text-slate-300">&times;</button></div>
-            <div id="det-cont" class="space-y-4 flex-grow overflow-y-auto"></div>
-            <button onclick="closeModal()" class="btn-blue w-full py-5 font-bold uppercase tracking-widest">Cerrar</button>
+    <div id="pantalla-admin" class="hidden flex flex-col h-screen bg-[#F8FAFC]">
+        <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-50">
+            <div>
+                <h2 id="admin-titulo" class="font-bold text-slate-900 text-xl">Panel Director</h2>
+                <p id="admin-info" class="text-[10px] text-slate-400 font-bold uppercase"></p>
+            </div>
+            <button onclick="location.reload()" class="text-[10px] bg-slate-100 text-slate-500 px-4 py-2 rounded-full font-black uppercase">Salir</button>
+        </div>
+        
+        <div id="nav-administrador" class="hidden flex p-3 bg-white border-b border-slate-100 gap-2 overflow-x-auto no-scrollbar shadow-sm">
+            <button onclick="cambiarVistaAdmin('dashboard')" class="pill active flex-1">Dashboard</button>
+            <button onclick="cambiarVistaAdmin('usuarios')" class="pill flex-1">Usuarios</button>
+            <button onclick="cambiarVistaAdmin('productos')" class="pill flex-1">Productos</button>
+            <button onclick="exportarBaseDatos()" class="pill flex-1">↓ Exportar CSV</button>
+        </div>
+
+        <div id="vista-dashboard" class="flex-grow overflow-y-auto p-5 space-y-6">
+            <div id="contenedor-grafica" class="hidden card-liao p-6">
+                <h3 class="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wider">Mermas por Zona (%)</h3>
+                <canvas id="graficaZonas"></canvas>
+            </div>
+            <div id="admin-lista-tiendas" class="space-y-4"></div>
+        </div>
+
+        <div id="vista-usuarios" class="hidden flex-grow overflow-y-auto p-5 space-y-6">
+            <div class="card-liao p-6 space-y-4">
+                <h3 class="font-black text-lg text-slate-800">Dar de Alta Tienda/Usuario</h3>
+                <input id="nuevo-usr-nombre" placeholder="Nombre de la Tienda o Manager" class="input-liao w-full p-4 text-sm font-medium">
+                <div class="flex gap-2">
+                    <input id="nuevo-usr-pin" type="number" placeholder="PIN Numérico" class="input-liao w-1/2 p-4 text-sm font-medium">
+                    <select id="nuevo-usr-rol" class="input-liao w-1/2 p-4 text-sm font-medium">
+                        <option value="TIENDA">Pto. Venta (TIENDA)</option>
+                        <option value="AM">Area Manager (AM)</option>
+                        <option value="ADMIN">Administrador Superior</option>
+                    </select>
+                </div>
+                <input id="nuevo-usr-zona" placeholder="Zona Asignada (Ej: Madrid Norte)" class="input-liao w-full p-4 text-sm font-medium">
+                <button onclick="crearNuevoUsuario()" class="btn-blue w-full p-4 text-sm tracking-widest uppercase">Guardar Usuario</button>
+            </div>
+            <div id="lista-gest-usuarios" class="space-y-2"></div>
+        </div>
+
+        <div id="vista-productos" class="hidden flex-grow overflow-y-auto p-5 space-y-6">
+            <div class="card-liao p-6 space-y-4">
+                <h3 class="font-black text-lg text-slate-800">Nuevo Producto</h3>
+                <input id="nuevo-prod-nombre" placeholder="Nombre del Producto" class="input-liao w-full p-4 text-sm font-medium">
+                <div class="flex gap-2">
+                    <input id="nuevo-prod-cat" placeholder="Categoría (Ej: DULCE)" class="input-liao flex-1 p-4 text-sm font-medium uppercase">
+                    <input id="nuevo-prod-sub" placeholder="Subcategoría (Ej: TARTAS)" class="input-liao flex-1 p-4 text-sm font-medium uppercase">
+                </div>
+                <button onclick="crearNuevoProducto()" class="btn-blue w-full p-4 text-sm tracking-widest uppercase">Añadir al Catálogo</button>
+            </div>
+            <h3 class="font-bold text-slate-700 uppercase tracking-wider mt-4">Catálogo Existente</h3>
+            <div id="lista-gest-productos" class="space-y-3"></div>
+        </div>
+
+        <div id="modal-detalle-tienda" class="hidden fixed inset-0 bg-white/95 z-[100] p-6 flex flex-col backdrop-blur-sm">
+            <div class="flex justify-between items-center mb-8 border-b border-slate-200 pb-5 mt-4">
+                <div>
+                    <h3 id="modal-titulo" class="text-3xl font-black text-slate-900 tracking-tight"></h3>
+                    <p class="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-1">Análisis Crítico (15 días)</p>
+                </div>
+                <button onclick="cerrarModal()" class="text-4xl font-light text-slate-400">&times;</button>
+            </div>
+            <div id="modal-contenido" class="space-y-4 flex-grow overflow-y-auto"></div>
+            <button onclick="cerrarModal()" class="btn-blue w-full py-5 text-lg uppercase tracking-widest shadow-lg">Cerrar Análisis</button>
         </div>
     </div>
 
     <script>
+        // ¡OBLIGATORIO! Pega aquí la URL terminada en /exec de tu Google Apps Script
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyHTg2_WBm4n5Dyy0lpwDnGxW33kpvSTaH4l363A-XpTfgymuxaq7TctXt7HsDbbPaJIg/exec"; 
+
+        // Variables Globales de Estado
+        let USUARIO_ACTUAL = null;
+        let DATOS_CATALOGO = { productos: [], filtros: [] };
+        let REGISTROS_TEMPORALES = {}; // Almacena lo que la tienda va sumando
+        let ESTADO_TIENDA = { categoria: "TODOS", subcategoria: "TODOS", turno: "Obrador" };
+        let GRAFICO_ADMIN = null;
+
         /**
-         * LÓGICA DE CLIENTE LIAO GESTIÓN V4.0
+         * Controlador Principal de Comunicaciones (API)
+         * Añade un sello de tiempo para saltarse el caché de los navegadores móviles.
          */
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyHTg2_WBm4n5Dyy0lpwDnGxW33kpvSTaH4l363A-XpTfgymuxaq7TctXt7HsDbbPaJIg/exec"; // <--- ACTUALIZA ESTO
-
-        let PRODUCTOS = [], FILTROS = [], VALORES = {}, USUARIO = null, CAT_ACTIVA = "TODOS", SUB_ACTIVA = "TODOS", TURNO_ACTIVO = "Obrador", MY_CHART = null;
-
-        async function api(action, extra = {}) {
+        async function llamarServidor(accion, datos = {}) {
             try {
-                const u = WEB_APP_URL + "?cb=" + Date.now();
-                const r = await fetch(u, { method: 'POST', body: JSON.stringify({ action, ...extra }) });
-                return await r.json();
-            } catch (e) { return { success: false, msg: "Fallo de servidor" }; }
-        }
-
-        // --- CARGA INICIAL ---
-        function cargarUsuarios() {
-            api('get_users').then(res => {
-                const s = document.getElementById('user-select');
-                s.innerHTML = '<option value="">-- Selecciona Usuario --</option>';
-                if(res.success) res.usuarios.forEach(u => s.innerHTML += `<option value="${u.id}">${u.nombre}</option>`);
-            });
-        }
-
-        function intentarLogin() {
-            const id = document.getElementById('user-select').value, pin = document.getElementById('pin-input').value;
-            if(!id || !pin) return;
-            document.getElementById('btn-entrar').innerText = "AUTENTICANDO...";
-            api('verificar_pin', { userId: id, pin }).then(res => {
-                if(res.success) {
-                    USUARIO = res.usuario; document.getElementById('login-screen').classList.add('hidden');
-                    if (USUARIO.rol === 'TIENDA') initTienda(); else initDashboard();
-                } else { document.getElementById('login-msg').innerText = res.msg; document.getElementById('btn-entrar').innerText = "Entrar"; }
-            });
-        }
-
-        // --- MÓDULO TIENDA ---
-        function initTienda() {
-            document.getElementById('tienda-screen').classList.remove('hidden');
-            document.getElementById('store-name').innerText = USUARIO.nombre;
-            document.getElementById('store-zone').innerText = USUARIO.zona;
-            document.getElementById('input-fecha').valueAsDate = new Date();
-            setTurno('Obrador');
-            api('get_catalog').then(res => { if(res.success) { PRODUCTOS = res.productos; FILTROS = res.filtros; renderCategorias(); renderProductos(); } });
-        }
-
-        // --- MÓDULO DASHBOARD (AM / ADMIN) ---
-        function initDashboard() {
-            document.getElementById('dashboard-screen').classList.remove('hidden');
-            document.getElementById('dash-info').innerText = `${USUARIO.nombre} | ${USUARIO.rol}`;
-            if(USUARIO.rol === 'ADMIN') document.getElementById('admin-nav').classList.remove('hidden');
-            loadReportData();
-        }
-
-        function loadReportData() {
-            const cont = document.getElementById('lista-auditoria');
-            cont.innerHTML = '<p class="text-center text-slate-400 mt-20 animate-pulse font-bold uppercase tracking-widest">Auditando red...</p>';
-            
-            const action = (USUARIO.rol === 'ADMIN') ? 'get_admin_report' : 'get_am_report';
-            api(action, { rol: USUARIO.rol, zona: USUARIO.zona }).then(res => {
-                if(res.success) {
-                    cont.innerHTML = "";
-                    if(USUARIO.rol === 'ADMIN') {
-                        document.getElementById('global-charts').classList.remove('hidden');
-                        renderAdminChart(res.zonas);
-                    }
-                    const listData = (USUARIO.rol === 'ADMIN') ? res.tiendas : res.reporte;
-                    listData.forEach(t => {
-                        const crit = t.pendientes > 0;
-                        cont.innerHTML += `
-                            <div onclick="verDetalle('${t.id}', '${t.nombre}')" class="card-liao p-6 active:scale-95 transition-all">
-                                <div class="flex justify-between items-start mb-4"><h3 class="font-bold text-xl text-slate-900">${t.nombre}</h3><span class="text-[10px] font-black px-3 py-1 rounded-full ${crit ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600'}">${crit ? 'PENDIENTE' : 'AL DÍA'}</span></div>
-                                <p class="text-xs text-slate-500 font-medium">${crit ? 'Faltan <b>'+t.pendientes+'</b> tareas registradas' : 'Operativa impecable'}</p>
-                                ${crit ? '<p class="text-[9px] text-red-400 mt-2 italic font-bold">'+t.faltas.join(', ')+'</p>' : ''}
-                                <div class="grid grid-cols-2 gap-4 mt-6 pt-5 border-t border-slate-50">
-                                    <div class="bg-blue-50/50 p-4 rounded-2xl"><p class="text-[9px] text-blue-400 font-black uppercase">Ratio Merma</p><p class="text-2xl font-black text-blue-600">${t.ratio}%</p></div>
-                                    <div class="bg-slate-50 p-4 rounded-2xl text-right"><p class="text-[9px] text-slate-400 font-black uppercase">Ranking</p><p class="text-2xl font-black text-slate-700">#${t.puesto}<small class="text-xs text-slate-300 ml-1">/ ${t.totalTiendas}</small></p></div>
-                                </div>
-                            </div>`;
-                    });
-                }
-            });
-        }
-
-        async function verDetalle(id, nombre) {
-            document.getElementById('modal-detalle').classList.remove('hidden');
-            document.getElementById('det-title').innerText = nombre;
-            const c = document.getElementById('det-cont'); c.innerHTML = '<p class="text-center text-slate-400 mt-16 font-bold animate-pulse">Analizando...</p>';
-            const res = await api('get_store_detail', { tiendaId: id });
-            if(res.success) {
-                c.innerHTML = res.ranking.length ? "" : '<p class="text-center text-slate-400 mt-16 font-bold">Sin mermas registradas.</p>';
-                res.ranking.forEach(p => c.innerHTML += `<div class="flex justify-between items-center p-5 bg-slate-50 rounded-2xl border border-slate-100"><span class="font-bold text-slate-800">${p.nombre}</span><span class="text-blue-600 font-black text-xl">${p.total} uds</span></div>`);
+                const urlSegura = WEB_APP_URL + "?anticache=" + new Date().getTime();
+                const configuracion = {
+                    method: 'POST',
+                    body: JSON.stringify({ action: accion, ...datos })
+                };
+                const respuesta = await fetch(urlSegura, configuracion);
+                return await respuesta.json();
+            } catch (error) {
+                console.error("Error de Red:", error);
+                return { success: false, msg: "Fallo de conexión. Comprueba internet o la URL." };
             }
         }
 
-        // --- MÓDULO ADMIN (CRUD & CSV) ---
-        function changeView(v) {
-            document.getElementById('view-report').classList.toggle('hidden', v !== 'report');
-            document.getElementById('view-manage').classList.toggle('hidden', v !== 'manage');
-            document.querySelectorAll('#admin-nav .pill').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase().includes(v === 'report' ? 'rep' : 'gest')));
-        }
-
-        function adminManage(type, op) {
-            const payload = (type === 'user') ? 
-                { id: Date.now(), nombre: document.getElementById('new-u-name').value, pin: document.getElementById('new-u-pin').value, rol: document.getElementById('new-u-rol').value, zona: document.getElementById('new-u-zona').value } :
-                { id: Date.now(), nombre: document.getElementById('new-p-name').value, cat: document.getElementById('new-p-cat').value, sub: document.getElementById('new-p-sub').value, est: 'ACTIVO' };
-            
-            api('manage_data', { type, payload, operation: op }).then(res => { if(res.success) { alert("¡Guardado correctamente!"); location.reload(); } });
-        }
-
-        function exportCSV() {
-            api('export_data').then(res => {
-                if(res.success) {
-                    let csv = res.csvData.map(r => r.join(",")).join("\n");
-                    const blob = new Blob([csv], { type: 'text/csv' });
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.setAttribute('hidden', ''); a.setAttribute('href', url); a.setAttribute('download', 'LIAO_Reporte.csv');
-                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        // ==========================================
+        // MÓDULO: ARRANQUE Y LOGIN
+        // ==========================================
+        function inicializarApp() {
+            llamarServidor('get_users').then(respuesta => {
+                const selector = document.getElementById('login-user');
+                if (respuesta && respuesta.success) {
+                    selector.innerHTML = '<option value="">-- Selecciona tu Usuario --</option>';
+                    respuesta.usuarios.forEach(u => {
+                        selector.innerHTML += `<option value="${u.id}">${u.nombre}</option>`;
+                    });
+                } else {
+                    selector.innerHTML = '<option value="">Error al contactar con Base de Datos</option>';
                 }
             });
         }
 
-        function renderAdminChart(data) {
-            if(MY_CHART) MY_CHART.destroy();
-            const ctx = document.getElementById('mainChart').getContext('2d');
-            MY_CHART = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: data.map(d => d.zona), datasets: [{ label: '% Merma por Zona', data: data.map(d => d.ratio), backgroundColor: '#2563EB', borderRadius: 8 }] },
-                options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        function ejecutarLogin() {
+            const idUsuario = document.getElementById('login-user').value;
+            const pinUsuario = document.getElementById('login-pin').value;
+            
+            if (!idUsuario || !pinUsuario) return;
+            
+            const btn = document.getElementById('btn-login');
+            btn.innerText = "VERIFICANDO...";
+            btn.disabled = true;
+
+            llamarServidor('verificar_pin', { userId: idUsuario, pin: pinUsuario }).then(respuesta => {
+                if (respuesta.success) {
+                    USUARIO_ACTUAL = respuesta.usuario;
+                    document.getElementById('pantalla-login').classList.add('hidden');
+                    
+                    // Enrutamiento según el nivel de permisos
+                    if (USUARIO_ACTUAL.rol === 'TIENDA') {
+                        arrancarModuloTienda();
+                    } else {
+                        arrancarModuloAdmin();
+                    }
+                } else {
+                    document.getElementById('login-error').innerText = respuesta.msg;
+                    btn.innerText = "ACCEDER";
+                    btn.disabled = false;
+                }
             });
         }
 
-        // --- FUNCIONES COMUNES TIENDA ---
-        function closeModal() { document.getElementById('modal-detalle').classList.add('hidden'); }
-        function setTurno(t) { TURNO_ACTIVO = t; document.querySelectorAll('.turno-btn').forEach(b => { const a = b.innerText === t.toUpperCase(); b.style.backgroundColor = a ? "#2563EB" : "#FFFFFF"; b.style.color = a ? "#FFFFFF" : "#94A3B8"; b.style.borderColor = a ? "#2563EB" : "#E2E8F0"; }); }
-        function toggleTurnos() { const t = document.getElementById('select-tipo').value; document.getElementById('container-turnos').style.display = (t === "MERMA") ? 'none' : 'flex'; TURNO_ACTIVO = (t === "MERMA") ? "Noche" : "Obrador"; if(t === "PRODUCCIÓN") setTurno('Obrador'); }
-        function renderCategorias() { const c = document.getElementById('lista-categorias'); c.innerHTML = `<div onclick="setCat('TODOS')" class="pill ${CAT_ACTIVA === 'TODOS' ? 'active' : ''}">TODOS</div>`; FILTROS.forEach(f => { c.innerHTML += `<div onclick="setCat('${f.nombre}')" class="pill ${CAT_ACTIVA === f.nombre ? 'active' : ''}">${f.nombre}</div>`; }); renderSubcategorias(); }
-        function renderSubcategorias() { const c = document.getElementById('lista-subcategorias'); c.innerHTML = ""; if (CAT_ACTIVA === "TODOS") return; const catD = FILTROS.find(f => f.nombre === CAT_ACTIVA); if (catD) { c.innerHTML = `<div onclick="setSub('TODOS')" class="sub-pill ${SUB_ACTIVA === 'TODOS' ? 'active' : ''}">TODAS</div>`; catD.subcategorias.forEach(s => { c.innerHTML += `<div onclick="setSub('${s}')" class="sub-pill ${SUB_ACTIVA === s ? 'active' : ''}">${s}</div>`; }); } }
-        function renderProductos() { const c = document.getElementById('lista-productos'); const b = document.getElementById('busqueda').value.toLowerCase(); c.innerHTML = ""; PRODUCTOS.filter(p => (CAT_ACTIVA === "TODOS" || p.categoria === CAT_ACTIVA) && (SUB_ACTIVA === "TODOS" || p.subcategoria === SUB_ACTIVA) && p.nombre.toLowerCase().includes(b)).forEach(p => { const cant = VALORES[p.id] || 0; c.innerHTML += `<div class="card-liao p-4 flex items-center justify-between"><div class="flex-1 pr-4"><h3 class="font-bold text-sm text-slate-800">${p.nombre}</h3><p class="text-[10px] text-blue-500 font-bold mt-1 uppercase tracking-wider">${p.subcategoria}</p></div><div class="flex items-center bg-slate-50 rounded-full p-1 border border-slate-100"><button onclick="updateCant('${p.id}', -1)" class="w-11 h-11 rounded-full bg-white text-2xl font-black text-slate-400 active:bg-slate-100">-</button><input type="number" value="${cant}" onchange="setCant('${p.id}', this.value)" class="w-11 bg-transparent text-center text-lg font-bold text-blue-600 outline-none"><button onclick="updateCant('${p.id}', 1)" class="w-11 h-11 rounded-full btn-blue text-2xl font-black">+</button></div></div>`; }); }
-        function updateCant(id, d) { VALORES[id] = Math.max(0, (VALORES[id] || 0) + d); renderProductos(); }
-        function setCant(id, v) { VALORES[id] = Math.max(0, parseInt(v) || 0); }
-        function setCat(c) { CAT_ACTIVA = c; SUB_ACTIVA = "TODOS"; renderCategorias(); renderProductos(); }
-        function setSub(s) { SUB_ACTIVA = s; renderSubcategorias(); renderProductos(); }
-        function enviarDatos() { const b = document.getElementById('btn-enviar'); const its = Object.keys(VALORES).map(id => ({ id, cantidad: VALORES[id] })).filter(i => i.cantidad > 0); if(!its.length) return alert("Introduce datos"); b.disabled = true; b.innerText = "GUARDANDO..."; api('save_records', { payload: { tiendaId: USUARIO.id, fecha: document.getElementById('input-fecha').value, tipo: document.getElementById('select-tipo').value, turno: TURNO_ACTIVO, items: its } }).then(res => { if(res.success) { alert("¡Guardado correctamente!"); VALORES = {}; renderProductos(); } b.disabled = false; b.innerText = "GUARDAR REGISTROS"; }); }
+        // ==========================================
+        // MÓDULO: TIENDA (UI DE ENTRADA DE DATOS)
+        // ==========================================
+        function arrancarModuloTienda() {
+            document.getElementById('pantalla-tienda').classList.remove('hidden');
+            document.getElementById('tienda-nombre').innerText = USUARIO_ACTUAL.nombre;
+            document.getElementById('tienda-zona').innerText = USUARIO_ACTUAL.zona;
+            document.getElementById('tienda-fecha').valueAsDate = new Date(); // Establece la fecha de hoy
+            
+            seleccionarTurno('Obrador');
+            
+            llamarServidor('get_catalog').then(respuesta => {
+                if (respuesta.success) {
+                    DATOS_CATALOGO.productos = respuesta.productos;
+                    DATOS_CATALOGO.filtros = respuesta.filtros;
+                    renderizarPildorasCategorias();
+                    renderizarListaProductos();
+                }
+            });
+        }
+
+        function actualizarInterfazTurnos() {
+            const tipoSeleccionado = document.getElementById('tienda-tipo').value;
+            const contenedorTurnos = document.getElementById('tienda-turnos');
+            
+            if (tipoSeleccionado === "MERMA") {
+                contenedorTurnos.style.display = 'none'; // La merma no tiene turno específico
+                ESTADO_TIENDA.turno = "Cierre";
+            } else {
+                contenedorTurnos.style.display = 'flex';
+                seleccionarTurno('Obrador'); // Vuelve al valor por defecto
+            }
+        }
+
+        function seleccionarTurno(nombreTurno) {
+            ESTADO_TIENDA.turno = nombreTurno;
+            document.querySelectorAll('.turno-btn').forEach(boton => {
+                const esActivo = (boton.innerText.toUpperCase() === nombreTurno.toUpperCase());
+                boton.style.backgroundColor = esActivo ? "#2563EB" : "#FFFFFF";
+                boton.style.color = esActivo ? "#FFFFFF" : "#94A3B8";
+                boton.style.borderColor = esActivo ? "#2563EB" : "#E2E8F0";
+            });
+        }
+
+        function renderizarPildorasCategorias() {
+            const cont = document.getElementById('tienda-categorias');
+            cont.innerHTML = `<button onclick="filtrarCategoria('TODOS')" class="pill ${ESTADO_TIENDA.categoria === 'TODOS' ? 'active' : ''}">TODOS</button>`;
+            
+            DATOS_CATALOGO.filtros.forEach(f => {
+                const activo = ESTADO_TIENDA.categoria === f.nombre ? 'active' : '';
+                cont.innerHTML += `<button onclick="filtrarCategoria('${f.nombre}')" class="pill ${activo}">${f.nombre}</button>`;
+            });
+            renderizarPildorasSubcategorias();
+        }
+
+        function renderizarPildorasSubcategorias() {
+            const cont = document.getElementById('tienda-subcategorias');
+            cont.innerHTML = "";
+            
+            if (ESTADO_TIENDA.categoria === "TODOS") return; // Si están todos, no hay subcategorías que mostrar
+            
+            const categoriaActual = DATOS_CATALOGO.filtros.find(f => f.nombre === ESTADO_TIENDA.categoria);
+            if (categoriaActual) {
+                cont.innerHTML = `<button onclick="filtrarSubcategoria('TODOS')" class="pill ${ESTADO_TIENDA.subcategoria === 'TODOS' ? 'active' : ''} text-[10px] py-1">TODAS</button>`;
+                categoriaActual.subcategorias.forEach(sub => {
+                    const activo = ESTADO_TIENDA.subcategoria === sub ? 'active' : '';
+                    cont.innerHTML += `<button onclick="filtrarSubcategoria('${sub}')" class="pill ${activo} text-[10px] py-1">${sub}</button>`;
+                });
+            }
+        }
+
+        function filtrarCategoria(cat) { ESTADO_TIENDA.categoria = cat; ESTADO_TIENDA.subcategoria = "TODOS"; renderizarPildorasCategorias(); renderizarListaProductos(); }
+        function filtrarSubcategoria(sub) { ESTADO_TIENDA.subcategoria = sub; renderizarPildorasSubcategorias(); renderizarListaProductos(); }
+
+        function renderizarListaProductos() {
+            const contenedor = document.getElementById('tienda-lista-productos');
+            const textoBusqueda = document.getElementById('tienda-buscador').value.toLowerCase();
+            contenedor.innerHTML = "";
+            
+            // Filtro maestro (Categoría + Subcategoría + Buscador)
+            const productosFiltrados = DATOS_CATALOGO.productos.filter(p => {
+                const matchCat = (ESTADO_TIENDA.categoria === "TODOS" || p.categoria === ESTADO_TIENDA.categoria);
+                const matchSub = (ESTADO_TIENDA.subcategoria === "TODOS" || p.subcategoria === ESTADO_TIENDA.subcategoria);
+                const matchTxt = p.nombre.toLowerCase().includes(textoBusqueda);
+                return matchCat && matchSub && matchTxt;
+            });
+            
+            productosFiltrados.forEach(p => {
+                const cantidadActual = REGISTROS_TEMPORALES[p.id] || 0;
+                contenedor.innerHTML += `
+                    <div class="card-liao p-4 flex items-center justify-between shadow-sm">
+                        <div class="flex-1 pr-2">
+                            <h3 class="font-bold text-sm text-slate-800 leading-tight">${p.nombre}</h3>
+                            <p class="text-[9px] text-blue-500 font-bold mt-1 uppercase tracking-wider">${p.subcategoria}</p>
+                        </div>
+                        <div class="flex items-center bg-slate-50 rounded-full p-1 border border-slate-100">
+                            <button onclick="cambiarCantidad('${p.id}', -1)" class="w-10 h-10 rounded-full bg-white text-xl font-black text-slate-400 active:bg-slate-200">-</button>
+                            <input type="number" value="${cantidadActual}" onchange="asignarCantidad('${p.id}', this.value)" class="w-10 bg-transparent text-center text-lg font-bold text-blue-600 outline-none">
+                            <button onclick="cambiarCantidad('${p.id}', 1)" class="w-10 h-10 rounded-full btn-blue text-xl font-black">+</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function cambiarCantidad(idProd, delta) {
+            REGISTROS_TEMPORALES[idProd] = Math.max(0, (REGISTROS_TEMPORALES[idProd] || 0) + delta);
+            renderizarListaProductos();
+        }
+        function asignarCantidad(idProd, valor) {
+            REGISTROS_TEMPORALES[idProd] = Math.max(0, parseInt(valor) || 0);
+        }
+
+        function enviarReporteTienda() {
+            const boton = document.getElementById('btn-guardar-tienda');
+            
+            // Transformamos el objeto temporal en el array que espera el backend
+            const itemsProcesados = [];
+            for (let id in REGISTROS_TEMPORALES) {
+                if (REGISTROS_TEMPORALES[id] > 0) {
+                    itemsProcesados.push({ id: id, cantidad: REGISTROS_TEMPORALES[id] });
+                }
+            }
+            
+            if (itemsProcesados.length === 0) {
+                alert("No has introducido ninguna cantidad.");
+                return;
+            }
+            
+            boton.disabled = true;
+            boton.innerText = "ENVIANDO DATOS...";
+            
+            const paqueteDatos = {
+                tiendaId: USUARIO_ACTUAL.id,
+                fecha: document.getElementById('tienda-fecha').value,
+                tipo: document.getElementById('tienda-tipo').value,
+                turno: ESTADO_TIENDA.turno,
+                items: itemsProcesados
+            };
+            
+            llamarServidor('save_records', { payload: paqueteDatos }).then(respuesta => {
+                if (respuesta.success) {
+                    alert("¡Registros guardados correctamente!");
+                    REGISTROS_TEMPORALES = {}; // Limpiamos la memoria
+                    renderizarListaProductos();
+                } else {
+                    alert("Fallo al guardar: " + respuesta.msg);
+                }
+                boton.disabled = false;
+                boton.innerText = "GUARDAR REGISTROS";
+            });
+        }
+
+        // ==========================================
+        // MÓDULO: ADMINISTRACIÓN Y AREA MANAGER
+        // ==========================================
+        function arrancarModuloAdmin() {
+            document.getElementById('pantalla-admin').classList.remove('hidden');
+            document.getElementById('admin-info').innerText = `${USUARIO_ACTUAL.nombre} | ${USUARIO_ACTUAL.zona}`;
+            
+            if (USUARIO_ACTUAL.rol === 'ADMIN') {
+                document.getElementById('nav-administrador').classList.remove('hidden');
+            }
+            
+            cargarDatosDashboard();
+        }
+
+        function cambiarVistaAdmin(vistaRequerida) {
+            document.getElementById('vista-dashboard').classList.toggle('hidden', vistaRequerida !== 'dashboard');
+            document.getElementById('vista-usuarios').classList.toggle('hidden', vistaRequerida !== 'usuarios');
+            document.getElementById('vista-productos').classList.toggle('hidden', vistaRequerida !== 'productos');
+            
+            // Efecto visual en los botones del navbar
+            document.querySelectorAll('#nav-administrador .pill').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.toLowerCase().includes(vistaRequerida.substring(0,4)));
+            });
+
+            // Si entra a gestión, pre-cargamos la lista de productos actuales
+            if(vistaRequerida === 'productos' || vistaRequerida === 'usuarios'){
+                cargarDatosGestion();
+            }
+        }
+
+        function cargarDatosDashboard() {
+            const contenedorLista = document.getElementById('admin-lista-tiendas');
+            contenedorLista.innerHTML = '<p class="text-center text-slate-400 mt-20 animate-pulse font-bold tracking-widest">Calculando Eficiencias...</p>';
+            
+            const accionBackend = (USUARIO_ACTUAL.rol === 'ADMIN') ? 'get_admin_report' : 'get_am_report';
+            
+            llamarServidor(accionBackend, { rol: USUARIO_ACTUAL.rol, zona: USUARIO_ACTUAL.zona }).then(respuesta => {
+                if (respuesta.success) {
+                    contenedorLista.innerHTML = "";
+                    
+                    // Si es Admin, renderizamos el gráfico global
+                    if (USUARIO_ACTUAL.rol === 'ADMIN' && respuesta.zonas) {
+                        document.getElementById('contenedor-grafica').classList.remove('hidden');
+                        renderizarGrafica(respuesta.zonas);
+                    }
+                    
+                    // Renderizamos las tarjetas de las tiendas auditadas
+                    const tiendasParaMostrar = (USUARIO_ACTUAL.rol === 'ADMIN') ? respuesta.tiendas : respuesta.reporte;
+                    
+                    tiendasParaMostrar.forEach(tienda => {
+                        const enRiesgo = tienda.pendientes > 0;
+                        contenedorLista.innerHTML += `
+                            <div onclick="abrirModalDetalle('${tienda.id}', '${tienda.nombre}')" class="card-liao p-6 cursor-pointer active:scale-95 transition-transform">
+                                <div class="flex justify-between items-start mb-4">
+                                    <h2 class="font-bold text-xl text-slate-900 leading-tight">${tienda.nombre} <br><span class="text-[10px] text-slate-400 uppercase">${tienda.zona}</span></h2>
+                                    <span class="text-[10px] font-black px-3 py-1.5 rounded-full ${enRiesgo ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}">
+                                        ${enRiesgo ? 'INCOMPLETO' : 'AL DÍA'}
+                                    </span>
+                                </div>
+                                <div class="text-xs text-slate-500 font-medium h-12">
+                                    ${enRiesgo ? 'Faltan <b>'+tienda.pendientes+'</b> turnos/días' : 'Registro de 15 días completado.'}
+                                    ${enRiesgo ? '<p class="text-[10px] text-red-500 mt-1 italic font-bold leading-tight">'+tienda.faltas.join(', ')+'</p>' : ''}
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 mt-4 pt-5 border-t border-slate-100">
+                                    <div class="bg-blue-50/60 p-4 rounded-2xl">
+                                        <p class="text-[9px] text-blue-500 uppercase font-black tracking-widest">Merma Histórica</p>
+                                        <p class="text-2xl font-black text-blue-700">${tienda.ratio}%</p>
+                                    </div>
+                                    <div class="bg-slate-50 p-4 rounded-2xl text-right">
+                                        <p class="text-[9px] text-slate-500 uppercase font-black tracking-widest">Ranking / Eficiencia</p>
+                                        <p class="text-2xl font-black text-slate-800">#${tienda.puesto}<small class="text-xs text-slate-400 ml-1">/ ${tienda.totalTiendas}</small></p>
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+                } else {
+                    contenedorLista.innerHTML = `<p class="text-center text-red-500 mt-10 font-bold">${respuesta.msg}</p>`;
+                }
+            });
+        }
+
+        // Inicializa Chart.js
+        function renderizarGrafica(datosZonas) {
+            if (GRAFICO_ADMIN) GRAFICO_ADMIN.destroy(); // Limpia la gráfica anterior si existe
+            
+            const etiquetas = datosZonas.map(d => d.zona || "General");
+            const valores = datosZonas.map(d => d.ratio);
+            
+            const ctx = document.getElementById('graficaZonas').getContext('2d');
+            GRAFICO_ADMIN = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: etiquetas,
+                    datasets: [{
+                        label: '% Merma',
+                        data: valores,
+                        backgroundColor: '#2563EB',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        async function abrirModalDetalle(idTienda, nombreTienda) {
+            document.getElementById('modal-detalle-tienda').classList.remove('hidden');
+            document.getElementById('modal-titulo').innerText = nombreTienda;
+            const contenedor = document.getElementById('modal-contenido');
+            
+            contenedor.innerHTML = '<p class="text-center text-slate-400 mt-16 font-bold animate-pulse tracking-widest uppercase">Consultando Base de Datos...</p>';
+            
+            const respuesta = await llamarServidor('get_store_detail', { tiendaId: idTienda });
+            if (respuesta.success) {
+                if(respuesta.ranking.length === 0){
+                    contenedor.innerHTML = '<p class="text-center text-slate-500 mt-16 font-medium">Esta tienda no ha reportado mermas en la última quincena.</p>';
+                    return;
+                }
+                
+                contenedor.innerHTML = "";
+                respuesta.ranking.forEach(prod => {
+                    contenedor.innerHTML += `
+                        <div class="flex justify-between items-center p-5 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
+                            <span class="font-bold text-slate-800">${prod.nombre}</span>
+                            <span class="text-blue-600 font-black text-2xl">${prod.total} <small class="text-xs text-blue-400">uds</small></span>
+                        </div>`;
+                });
+            }
+        }
+
+        function cerrarModal() {
+            document.getElementById('modal-detalle-tienda').classList.add('hidden');
+        }
+
+        // ==========================================
+        // MÓDULO: CRUD ADMIN (GESTIÓN EN VIVO)
+        // ==========================================
+        function cargarDatosGestion() {
+            llamarServidor('admin_get_data').then(res => {
+                if(res.success) {
+                    // Renderizamos Usuarios
+                    const contUsr = document.getElementById('lista-gest-usuarios');
+                    contUsr.innerHTML = res.usuarios.map(u => `<div class="p-3 text-xs border-b border-slate-100 flex justify-between"><span class="font-bold text-slate-700">${u.nombre}</span><span class="text-slate-400">${u.rol} | ${u.zona}</span></div>`).join('');
+                    
+                    // Renderizamos Productos (Con botón de Activar/Desactivar)
+                    const contProd = document.getElementById('lista-gest-productos');
+                    contProd.innerHTML = res.productos.map(p => {
+                        const esActivo = p.estado === 'ACTIVO';
+                        const colorBtn = esActivo ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600';
+                        const txtBtn = esActivo ? 'Desactivar' : 'Activar';
+                        const nuevoEstado = esActivo ? 'INACTIVO' : 'ACTIVO';
+                        
+                        return `
+                        <div class="p-4 card-liao flex justify-between items-center mb-2">
+                            <div><p class="font-bold text-slate-800 text-sm">${p.nombre}</p><p class="text-[9px] text-slate-400 uppercase">${p.cat}</p></div>
+                            <button onclick="alternarEstadoProducto('${p.id}', '${nuevoEstado}')" class="px-3 py-1.5 rounded-full text-[10px] font-black uppercase ${colorBtn}">${txtBtn}</button>
+                        </div>`;
+                    }).join('');
+                }
+            });
+        }
+
+        function crearNuevoUsuario() {
+            const payload = {
+                nombre: document.getElementById('nuevo-usr-nombre').value,
+                pin: document.getElementById('nuevo-usr-pin').value,
+                rol: document.getElementById('nuevo-usr-rol').value,
+                zona: document.getElementById('nuevo-usr-zona').value
+            };
+            if(!payload.nombre || !payload.pin) return alert("Rellena nombre y PIN");
+            
+            llamarServidor('admin_add_user', { payload: payload }).then(res => {
+                if(res.success) { alert("Usuario creado. Recargando..."); cargarDatosGestion(); }
+            });
+        }
+
+        function crearNuevoProducto() {
+            const payload = {
+                nombre: document.getElementById('nuevo-prod-nombre').value,
+                cat: document.getElementById('nuevo-prod-cat').value.toUpperCase(),
+                sub: document.getElementById('nuevo-prod-sub').value.toUpperCase()
+            };
+            if(!payload.nombre) return alert("Introduce el nombre del producto");
+            
+            llamarServidor('admin_add_product', { payload: payload }).then(res => {
+                if(res.success) { alert("Producto añadido."); cargarDatosGestion(); }
+            });
+        }
+
+        function alternarEstadoProducto(id, nuevoEstado) {
+            llamarServidor('admin_toggle_product', { productId: id, newStatus: nuevoEstado }).then(res => {
+                if(res.success) cargarDatosGestion(); // Refresca la lista
+            });
+        }
+
+        // ==========================================
+        // MÓDULO: EXPORTACIÓN DE DATOS (CSV)
+        // ==========================================
+        function exportarBaseDatos() {
+            alert("Preparando archivo de exportación. Esto puede tardar unos segundos...");
+            llamarServidor('export_csv').then(res => {
+                if (res.success) {
+                    // Generar estructura de texto separada por comas
+                    let contenidoCsv = res.csvData.map(fila => fila.join(",")).join("\n");
+                    
+                    // Crear un "Blob" (Archivo virtual en el navegador)
+                    const blob = new Blob([contenidoCsv], { type: 'text/csv;charset=utf-8;' });
+                    const linkDescarga = document.createElement("a");
+                    const url = URL.createObjectURL(blob);
+                    
+                    // Forzar la descarga
+                    linkDescarga.setAttribute("href", url);
+                    linkDescarga.setAttribute("download", "Liao_Exportacion_Total.csv");
+                    linkDescarga.style.visibility = 'hidden';
+                    document.body.appendChild(linkDescarga);
+                    linkDescarga.click();
+                    document.body.removeChild(linkDescarga);
+                } else {
+                    alert("Error al exportar: " + res.msg);
+                }
+            });
+        }
+
     </script>
 </body>
 </html>
