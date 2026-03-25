@@ -25,7 +25,7 @@
             <h1 class="text-4xl font-extrabold text-[#FFD700]">LIO-GESTIÓN</h1>
             <div class="space-y-4 text-left">
                 <select id="user-select" class="input-lio w-full p-4 rounded-xl text-lg outline-none appearance-none">
-                    <option value="">Cargando tiendas...</option>
+                    <option value="">Cargando usuarios...</option>
                 </select>
                 <input id="pin-input" type="password" pattern="[0-9]*" inputmode="numeric" placeholder="PIN" class="input-lio w-full p-4 text-center text-3xl tracking-widest rounded-xl outline-none">
                 <button onclick="intentarLogin()" id="btn-entrar" class="btn-lio w-full p-4 rounded-xl text-xl uppercase">Entrar</button>
@@ -60,34 +60,27 @@
 
     <div id="am-screen" class="hidden flex flex-col h-screen">
         <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-black">
-            <div><h2 class="font-bold text-[#FFD700]">Panel Control</h2><p id="am-info" class="text-[10px] text-gray-400 uppercase"></p></div>
+            <div><h2 class="font-bold text-[#FFD700]">Panel de Zona</h2><p id="am-info" class="text-[10px] text-gray-400 uppercase"></p></div>
             <button onclick="location.reload()" class="text-[10px] bg-gray-800 px-3 py-1 rounded-full border border-gray-700">Cerrar</button>
         </div>
-        <div class="p-4 bg-black border-b border-gray-900">
-            <label class="text-[10px] text-gray-500 ml-1">FECHA REPORTE:</label>
-            <input type="date" id="am-fecha" onchange="cargarReporteAM()" class="input-lio w-full p-3 rounded-xl mt-1">
-        </div>
+        
         <div id="am-lista-tiendas" class="flex-grow overflow-y-auto p-4 space-y-4">
-            </div>
+            <div class="text-center text-gray-500 mt-10 text-xs italic">Analizando los últimos 15 días...</div>
+        </div>
     </div>
 
     <script>
-        // --- CAMBIAR ESTO ---
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyHTg2_WBm4n5Dyy0lpwDnGxW33kpvSTaH4l363A-XpTfgymuxaq7TctXt7HsDbbPaJIg/exec";
+        const WEB_APP_URL = "TU_URL_AQUI"; // RECUERDA CAMBIAR ESTO
 
         let PRODUCTOS = []; let FILTROS = []; let VALORES = {}; let USUARIO = null;
         let CAT_ACTIVA = "TODOS"; let SUB_ACTIVA = "TODOS"; let TURNO_ACTIVO = "Obrador";
 
         async function fetchAPI(action, extra = {}) {
-            const res = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action, ...extra })
-            });
+            const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action, ...extra }) });
             return await res.json();
         }
 
         function cargarUsuarios() {
-            document.querySelectorAll('input[type="date"]').forEach(i => i.valueAsDate = new Date());
             fetchAPI('get_users').then(res => {
                 const select = document.getElementById('user-select');
                 if (res.success) {
@@ -101,16 +94,13 @@
             const id = document.getElementById('user-select').value;
             const pin = document.getElementById('pin-input').value;
             if(!id || !pin) return;
-            document.getElementById('btn-entrar').innerText = "Verificando...";
+            document.getElementById('btn-entrar').innerText = "Auditando...";
             fetchAPI('verificar_pin', { userId: id, pin: pin }).then(res => {
                 if(res.success) {
                     USUARIO = res.usuario;
                     document.getElementById('login-screen').classList.add('hidden');
-                    if (USUARIO.rol === 'AM' || USUARIO.rol === 'ADMIN') {
-                        mostrarPanelAM();
-                    } else {
-                        mostrarPanelTienda();
-                    }
+                    if (USUARIO.rol === 'AM' || USUARIO.rol === 'ADMIN') mostrarPanelAM();
+                    else mostrarPanelTienda();
                 } else {
                     document.getElementById('login-msg').innerText = res.msg;
                     document.getElementById('btn-entrar').innerText = "Entrar";
@@ -122,49 +112,45 @@
             document.getElementById('tienda-screen').classList.remove('hidden');
             document.getElementById('store-name').innerText = USUARIO.nombre;
             document.getElementById('store-zone').innerText = USUARIO.zona;
+            document.getElementById('input-fecha').valueAsDate = new Date();
             setTurno('Obrador');
-            fetchAPI('get_catalog').then(res => {
-                if(res.success) { PRODUCTOS = res.productos; FILTROS = res.filtros; renderCategorias(); renderProductos(); }
-            });
+            fetchAPI('get_catalog').then(res => { if(res.success) { PRODUCTOS = res.productos; FILTROS = res.filtros; renderCategorias(); renderProductos(); } });
         }
 
         function mostrarPanelAM() {
             document.getElementById('am-screen').classList.remove('hidden');
             document.getElementById('am-info').innerText = `${USUARIO.nombre} | Zona: ${USUARIO.zona}`;
-            cargarReporteAM();
-        }
-
-        function cargarReporteAM() {
             const cont = document.getElementById('am-lista-tiendas');
-            const fecha = document.getElementById('am-fecha').value;
-            cont.innerHTML = '<div class="text-center text-gray-500 mt-10">Cargando reporte de zona...</div>';
             
-            fetchAPI('get_am_report', { rol: USUARIO.rol, zona: USUARIO.zona, fecha: fecha }).then(res => {
+            fetchAPI('get_am_report', { rol: USUARIO.rol, zona: USUARIO.zona }).then(res => {
                 if(res.success) {
                     cont.innerHTML = "";
-                    const tiendas = Object.keys(res.reporte);
-                    if(tiendas.length === 0) {
-                        cont.innerHTML = '<div class="text-center text-gray-500 mt-10">No hay tiendas en tu zona</div>';
-                        return;
-                    }
-                    tiendas.forEach(nombre => {
-                        const r = res.reporte[nombre];
+                    res.reporte.forEach(t => {
+                        const esCritico = t.pendientes > 0;
                         cont.innerHTML += `
-                            <div class="card-prod p-4 border-l-4 ${r.produccion > 0 ? 'border-[#FFD700]' : 'border-red-900'}">
+                            <div class="card-prod p-4 border-l-4 ${esCritico ? 'border-red-600' : 'border-green-500'}">
                                 <div class="flex justify-between items-start mb-2">
-                                    <h3 class="font-bold text-lg">${nombre}</h3>
-                                    <span class="text-[10px] px-2 py-1 rounded bg-black border border-gray-800 uppercase text-gray-500">
-                                        ${r.produccion > 0 ? 'Enviado' : 'Pendiente'}
+                                    <h3 class="font-bold text-lg leading-none">${t.nombre}</h3>
+                                    <span class="text-[10px] font-bold ${esCritico ? 'text-red-500' : 'text-green-500'} uppercase">
+                                        ${esCritico ? 'Faltan Datos' : 'Al día'}
                                     </span>
                                 </div>
-                                <div class="grid grid-cols-2 gap-2 mt-3">
-                                    <div class="bg-black/50 p-2 rounded-lg text-center">
-                                        <p class="text-[9px] text-gray-500 uppercase">Producción</p>
-                                        <p class="text-xl font-bold text-[#FFD700]">${r.produccion}</p>
+                                
+                                <div class="mt-2 space-y-1">
+                                    <p class="text-[11px] text-gray-400">
+                                        ${esCritico ? '<b>Tareas:</b> ' + t.pendientes + ' pendientes' : 'Todos los registros completos'}
+                                    </p>
+                                    ${esCritico ? '<p class="text-[9px] text-red-400/80 italic">' + t.faltas.join(', ') + '...</p>' : ''}
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4 mt-4 pt-3 border-t border-gray-800">
+                                    <div>
+                                        <p class="text-[9px] text-gray-500 uppercase">Ratio Merma Hist.</p>
+                                        <p class="text-xl font-bold text-[#FFD700]">${t.ratio}%</p>
                                     </div>
-                                    <div class="bg-black/50 p-2 rounded-lg text-center">
-                                        <p class="text-[9px] text-gray-500 uppercase">Mermas</p>
-                                        <p class="text-xl font-bold text-red-500">${r.merma}</p>
+                                    <div class="text-right">
+                                        <p class="text-[9px] text-gray-500 uppercase">Puesto Eficiencia</p>
+                                        <p class="text-xl font-bold text-white">#${t.puesto} <span class="text-[10px] text-gray-500">/ ${t.totalTiendas}</span></p>
                                     </div>
                                 </div>
                             </div>`;
@@ -173,7 +159,7 @@
             });
         }
 
-        // --- FUNCIONES INTERFAZ TIENDA (SIN CAMBIOS) ---
+        // --- FUNCIONES INTERFAZ TIENDA ---
         function setTurno(t) { TURNO_ACTIVO = t; document.querySelectorAll('.turno-btn').forEach(b => { const a = b.innerText === t.toUpperCase(); b.style.backgroundColor = a ? "#FFD700" : "#111"; b.style.color = a ? "#000" : "#fff"; }); }
         function toggleTurnos() { const t = document.getElementById('select-tipo').value; document.getElementById('container-turnos').style.display = (t === "MERMA") ? 'none' : 'flex'; TURNO_ACTIVO = (t === "MERMA") ? "Noche" : "Obrador"; if(t === "PRODUCCIÓN") setTurno('Obrador'); }
         function renderCategorias() { const cont = document.getElementById('lista-categorias'); cont.innerHTML = `<div onclick="setCat('TODOS')" class="pill ${CAT_ACTIVA === 'TODOS' ? 'active' : ''}">TODOS</div>`; FILTROS.forEach(f => { cont.innerHTML += `<div onclick="setCat('${f.nombre}')" class="pill ${CAT_ACTIVA === f.nombre ? 'active' : ''}">${f.nombre}</div>`; }); renderSubcategorias(); }
