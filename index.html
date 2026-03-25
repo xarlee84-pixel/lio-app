@@ -4,38 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    
     <title>LIAO Gestión</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Estilos base: Fondo gris claro y textos oscuros */
         body { background-color: #F8FAFC; color: #1E293B; font-family: ui-sans-serif, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-        .btn-blue { background-color: #2563EB; color: #FFFFFF; font-weight: 700; border-radius: 12px; transition: all 0.2s; }
-        .btn-blue:active { background-color: #1D4ED8; transform: scale(0.98); }
+        .btn-blue { background-color: #2563EB; color: #FFFFFF; font-weight: 700; border-radius: 12px; transition: 0.2s; cursor: pointer; }
+        .btn-blue:active { transform: scale(0.98); background-color: #1D4ED8; }
         .input-liao { background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; color: #1E293B; outline: none; }
-        .card-white { background-color: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid #F1F5F9; }
-        .pill { background-color: #F1F5F9; color: #64748B; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #E2E8F0; }
+        .card-liao { background-color: #FFFFFF; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid #F1F5F9; }
+        .pill { background-color: #F1F5F9; color: #64748B; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #E2E8F0; white-space: nowrap; }
         .pill.active { background-color: #2563EB; color: #FFFFFF; border-color: #2563EB; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        input[type="date"] { color-scheme: light; }
+        .sidebar-item { transition: 0.2s; cursor: pointer; border-radius: 12px; padding: 12px; }
+        .sidebar-item.active { background-color: #EFF6FF; color: #2563EB; font-weight: bold; }
     </style>
 </head>
 <body onload="cargarUsuarios()">
 
-    <div id="login-screen" class="min-h-screen flex items-center justify-center p-6 text-center">
-        <div class="max-w-md w-full space-y-10">
-            <div>
-                <h1 class="text-4xl font-black text-[#0F172A] tracking-tight">LIAO GESTIÓN</h1>
-                <p class="text-sm font-bold text-[#64748B] tracking-[0.2em] mt-2 uppercase">PRODUCCIÓN Y MERMA</p>
-            </div>
-            <div class="bg-white p-8 rounded-[32px] shadow-2xl shadow-blue-900/5 border border-slate-100 space-y-6">
-                <select id="user-select" class="input-liao w-full p-4 text-lg appearance-none font-semibold">
-                    <option value="">Conectando con servidor...</option>
-                </select>
-                <input id="pin-input" type="password" pattern="[0-9]*" inputmode="numeric" placeholder="Introduce tu PIN" class="input-liao w-full p-4 text-center text-3xl tracking-[0.5em] font-bold">
-                <button onclick="intentarLogin()" id="btn-entrar" class="btn-blue w-full p-5 text-xl tracking-widest font-bold">ENTRAR</button>
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-6 bg-slate-50">
+        <div class="max-w-md w-full space-y-12 text-center">
+            <div><h1 class="text-4xl font-black text-[#0F172A] tracking-tighter">LIAO GESTIÓN</h1><p class="text-xs font-bold text-[#64748B] tracking-[0.3em] mt-2 uppercase">Producción y Merma</p></div>
+            <div class="card-liao p-10 space-y-6">
+                <select id="user-select" class="input-liao w-full p-4 text-lg appearance-none font-semibold"></select>
+                <input id="pin-input" type="password" pattern="[0-9]*" inputmode="numeric" placeholder="PIN de acceso" class="input-liao w-full p-4 text-center text-3xl tracking-[0.5em] font-bold">
+                <button onclick="intentarLogin()" id="btn-entrar" class="btn-blue w-full p-5 text-xl tracking-widest uppercase">Entrar</button>
                 <div id="login-msg" class="text-red-500 text-sm font-bold h-4"></div>
             </div>
         </div>
@@ -43,131 +36,140 @@
 
     <div id="tienda-screen" class="hidden flex flex-col h-screen">
         <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-50">
-            <div><h2 id="store-name" class="font-bold text-slate-900 text-xl leading-none"></h2><p id="store-zone" class="text-[10px] text-slate-400 uppercase tracking-widest mt-1 font-bold"></p></div>
-            <button onclick="location.reload()" class="text-[10px] bg-slate-100 text-slate-500 px-4 py-2 rounded-full font-black uppercase tracking-wider">Salir</button>
+            <div><h2 id="store-name" class="font-bold text-slate-900 text-xl"></h2><p id="store-zone" class="text-[10px] text-slate-400 uppercase font-black"></p></div>
+            <button onclick="location.reload()" class="text-[10px] bg-slate-100 px-4 py-2 rounded-full font-black text-slate-500">SALIR</button>
         </div>
         <div class="p-5 bg-white border-b border-slate-100 space-y-4">
             <div class="flex gap-3"><input type="date" id="input-fecha" class="input-liao flex-1 p-3 text-sm font-bold"><select id="select-tipo" onchange="toggleTurnos()" class="input-liao flex-1 p-3 text-sm font-bold"><option value="PRODUCCIÓN">PRODUCCIÓN</option><option value="MERMA">MERMA</option></select></div>
             <div id="container-turnos" class="flex gap-3">
-                <button onclick="setTurno('Obrador')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-black border border-slate-200 uppercase">Obrador</button>
-                <button onclick="setTurno('Mediodía')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-black border border-slate-200 uppercase">Mediodía</button>
-                <button onclick="setTurno('Tarde')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-black border border-slate-200 uppercase">Tarde</button>
+                <button onclick="setTurno('Obrador')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-black border border-slate-200">OBRADOR</button>
+                <button onclick="setTurno('Mediodía')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-black border border-slate-200">MEDIODÍA</button>
+                <button onclick="setTurno('Tarde')" class="turno-btn flex-1 p-3 rounded-xl text-[10px] font-black border border-slate-200">TARDE</button>
             </div>
         </div>
-        <div class="p-5 space-y-4 bg-white shadow-sm">
-            <input type="text" id="busqueda" oninput="renderProductos()" placeholder="Buscar producto..." class="input-liao w-full p-4 text-sm font-medium">
-            <div id="lista-categorias" class="flex gap-2 overflow-x-auto no-scrollbar"></div>
-            <div id="lista-subcategorias" class="flex gap-2 overflow-x-auto no-scrollbar h-8"></div>
-        </div>
+        <div class="p-5 space-y-4 bg-white"><input type="text" id="busqueda" oninput="renderProductos()" placeholder="Buscar producto..." class="input-liao w-full p-4 text-sm font-medium"><div id="lista-categorias" class="flex gap-2 overflow-x-auto no-scrollbar"></div><div id="lista-subcategorias" class="flex gap-2 overflow-x-auto no-scrollbar h-8"></div></div>
         <div id="lista-productos" class="flex-grow overflow-y-auto p-5 space-y-3 pb-32"></div>
-        <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-slate-50 to-transparent">
-            <button onclick="enviarDatos()" id="btn-enviar" class="btn-blue w-full py-5 text-lg shadow-xl shadow-blue-600/20 uppercase tracking-widest">Guardar Registros</button>
-        </div>
+        <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-slate-50 to-transparent"><button onclick="enviarDatos()" id="btn-enviar" class="btn-blue w-full py-5 text-lg uppercase tracking-widest shadow-xl shadow-blue-500/20">Guardar Registros</button></div>
     </div>
 
-    <div id="am-screen" class="hidden flex flex-col h-screen bg-[#F8FAFC]">
-        <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-white sticky top-0 z-50 shadow-sm">
-            <div><h2 class="font-bold text-slate-900 text-xl">Panel de Zona</h2><p id="am-info" class="text-[10px] text-slate-400 font-bold uppercase"></p></div>
-            <button onclick="location.reload()" class="text-[10px] bg-slate-100 text-slate-500 px-4 py-2 rounded-full font-black uppercase">Cerrar</button>
+    <div id="dashboard-screen" class="hidden flex flex-col h-screen bg-slate-50">
+        <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-white">
+            <div><h2 class="font-bold text-slate-900 text-xl" id="dash-title">Panel Control</h2><p id="dash-info" class="text-[10px] text-slate-400 font-bold uppercase"></p></div>
+            <button onclick="location.reload()" class="text-[10px] bg-slate-100 px-4 py-2 rounded-full font-black text-slate-500">SALIR</button>
         </div>
-        <div id="am-lista-tiendas" class="flex-grow overflow-y-auto p-5 space-y-4"></div>
+        
+        <div id="admin-nav" class="hidden flex p-2 bg-white border-b gap-2 overflow-x-auto no-scrollbar">
+            <button onclick="changeView('report')" class="pill active flex-1">Reportes</button>
+            <button onclick="changeView('manage')" class="pill flex-1">Gestión</button>
+            <button onclick="exportCSV()" class="pill flex-1">Exportar CSV</button>
+        </div>
+
+        <div id="view-report" class="flex-grow overflow-y-auto p-5 space-y-6">
+            <div id="global-charts" class="hidden grid grid-cols-1 gap-4"><div class="card-liao p-6"><canvas id="mainChart"></canvas></div></div>
+            <div id="lista-auditoria" class="space-y-4"></div>
+        </div>
+
+        <div id="view-manage" class="hidden flex-grow overflow-y-auto p-5 space-y-6">
+            <div class="card-liao p-6 space-y-4">
+                <h3 class="font-bold text-lg">Añadir Tienda/Usuario</h3>
+                <input id="new-u-name" placeholder="Nombre Tienda" class="input-liao w-full p-3 text-sm">
+                <div class="flex gap-2"><input id="new-u-pin" placeholder="PIN" class="input-liao flex-1 p-3 text-sm"><select id="new-u-rol" class="input-liao flex-1 p-3 text-sm"><option value="TIENDA">TIENDA</option><option value="AM">AREA MANAGER</option><option value="ADMIN">ADMIN</option></select></div>
+                <input id="new-u-zona" placeholder="Zona (Norte, Sur...)" class="input-liao w-full p-3 text-sm">
+                <button onclick="adminManage('user', 'add')" class="btn-blue w-full p-3 text-sm">AÑADIR USUARIO</button>
+            </div>
+            <div class="card-liao p-6 space-y-4">
+                <h3 class="font-bold text-lg">Añadir Producto</h3>
+                <input id="new-p-name" placeholder="Nombre Producto" class="input-liao w-full p-3 text-sm">
+                <div class="flex gap-2"><input id="new-p-cat" placeholder="Categoría" class="input-liao flex-1 p-3 text-sm"><input id="new-p-sub" placeholder="Subcategoría" class="input-liao flex-1 p-3 text-sm"></div>
+                <button onclick="adminManage('product', 'add')" class="btn-blue w-full p-3 text-sm">AÑADIR PRODUCTO</button>
+            </div>
+        </div>
 
         <div id="modal-detalle" class="hidden fixed inset-0 bg-white/98 z-[100] p-6 flex flex-col">
-            <div class="flex justify-between items-center mb-8 border-b border-slate-100 pb-5">
-                <div><h3 id="detalle-titulo" class="text-3xl font-black text-slate-900"></h3><p class="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-1">Top 5 Mermas (15 días)</p></div>
-                <button onclick="cerrarDetalle()" class="text-4xl font-light text-slate-300 transition hover:text-red-500">&times;</button>
-            </div>
-            <div id="detalle-contenido" class="space-y-4 flex-grow overflow-y-auto"></div>
-            <button onclick="cerrarDetalle()" class="btn-blue w-full py-5 uppercase font-bold tracking-widest">Cerrar Detalle</button>
+            <div class="flex justify-between items-center mb-8 border-b pb-5"><div><h3 id="det-title" class="text-3xl font-black text-slate-900"></h3><p class="text-[10px] text-blue-600 font-black uppercase tracking-widest">Análisis Top 5 Mermas</p></div><button onclick="closeModal()" class="text-4xl text-slate-300">&times;</button></div>
+            <div id="det-cont" class="space-y-4 flex-grow overflow-y-auto"></div>
+            <button onclick="closeModal()" class="btn-blue w-full py-5 font-bold uppercase tracking-widest">Cerrar</button>
         </div>
     </div>
 
     <script>
-        /** --- LÓGICA DE CLIENTE (JAVASCRIPT) --- **/
-
-        // URL del Cerebro (Apps Script)
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyHTg2_WBm4n5Dyy0lpwDnGxW33kpvSTaH4l363A-XpTfgymuxaq7TctXt7HsDbbPaJIg/exec";
-
-        let PRODUCTOS = []; let FILTROS = []; let VALORES = {}; let USUARIO = null;
-        let CAT_ACTIVA = "TODOS"; let SUB_ACTIVA = "TODOS"; let TURNO_ACTIVO = "Obrador";
-
-        /** * fetchAPI: Puente de comunicación con Google. 
-         * Usa un timestamp dinámico (?cb=) para burlar el caché del navegador.
+        /**
+         * LÓGICA DE CLIENTE LIAO GESTIÓN V4.0
          */
-        async function fetchAPI(action, extra = {}) {
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyHTg2_WBm4n5Dyy0lpwDnGxW33kpvSTaH4l363A-XpTfgymuxaq7TctXt7HsDbbPaJIg/exec"; // <--- ACTUALIZA ESTO
+
+        let PRODUCTOS = [], FILTROS = [], VALORES = {}, USUARIO = null, CAT_ACTIVA = "TODOS", SUB_ACTIVA = "TODOS", TURNO_ACTIVO = "Obrador", MY_CHART = null;
+
+        async function api(action, extra = {}) {
             try {
-                const antiCacheUrl = WEB_APP_URL + "?cb=" + new Date().getTime();
-                const res = await fetch(antiCacheUrl, { method: 'POST', body: JSON.stringify({ action, ...extra }) });
-                return await res.json();
-            } catch (e) { return { success: false, msg: "Fallo de conexión" }; }
+                const u = WEB_APP_URL + "?cb=" + Date.now();
+                const r = await fetch(u, { method: 'POST', body: JSON.stringify({ action, ...extra }) });
+                return await r.json();
+            } catch (e) { return { success: false, msg: "Fallo de servidor" }; }
         }
 
-        // Carga inicial de usuarios al abrir la web
+        // --- CARGA INICIAL ---
         function cargarUsuarios() {
-            fetchAPI('get_users').then(res => {
+            api('get_users').then(res => {
                 const s = document.getElementById('user-select');
-                if (res && res.success) {
-                    s.innerHTML = '<option value="">-- Selecciona Usuario --</option>';
-                    res.usuarios.forEach(u => { s.innerHTML += `<option value="${u.id}">${u.nombre}</option>`; });
-                } else { s.innerHTML = '<option value="">Fallo de conexión</option>'; }
+                s.innerHTML = '<option value="">-- Selecciona Usuario --</option>';
+                if(res.success) res.usuarios.forEach(u => s.innerHTML += `<option value="${u.id}">${u.nombre}</option>`);
             });
         }
 
-        // Proceso de Login y redirección según ROL
         function intentarLogin() {
-            const id = document.getElementById('user-select').value; const pin = document.getElementById('pin-input').value;
+            const id = document.getElementById('user-select').value, pin = document.getElementById('pin-input').value;
             if(!id || !pin) return;
-            document.getElementById('btn-entrar').innerText = "CONECTANDO...";
-            fetchAPI('verificar_pin', { userId: id, pin: pin }).then(res => {
+            document.getElementById('btn-entrar').innerText = "AUTENTICANDO...";
+            api('verificar_pin', { userId: id, pin }).then(res => {
                 if(res.success) {
                     USUARIO = res.usuario; document.getElementById('login-screen').classList.add('hidden');
-                    if (USUARIO.rol === 'AM' || USUARIO.rol === 'ADMIN') mostrarPanelAM(); else mostrarPanelTienda();
-                } else { document.getElementById('login-msg').innerText = res.msg; document.getElementById('btn-entrar').innerText = "ENTRAR"; }
+                    if (USUARIO.rol === 'TIENDA') initTienda(); else initDashboard();
+                } else { document.getElementById('login-msg').innerText = res.msg; document.getElementById('btn-entrar').innerText = "Entrar"; }
             });
         }
 
-        // Renderiza el panel de gestión para Tiendas
-        function mostrarPanelTienda() {
+        // --- MÓDULO TIENDA ---
+        function initTienda() {
             document.getElementById('tienda-screen').classList.remove('hidden');
             document.getElementById('store-name').innerText = USUARIO.nombre;
             document.getElementById('store-zone').innerText = USUARIO.zona;
             document.getElementById('input-fecha').valueAsDate = new Date();
             setTurno('Obrador');
-            fetchAPI('get_catalog').then(res => { if(res.success) { PRODUCTOS = res.productos; FILTROS = res.filtros; renderCategorias(); renderProductos(); } });
+            api('get_catalog').then(res => { if(res.success) { PRODUCTOS = res.productos; FILTROS = res.filtros; renderCategorias(); renderProductos(); } });
         }
 
-        // Renderiza el panel de auditoría para Area Managers
-        function mostrarPanelAM() {
-            document.getElementById('am-screen').classList.remove('hidden');
-            document.getElementById('am-info').innerText = `${USUARIO.nombre} | ${USUARIO.zona}`;
-            const cont = document.getElementById('am-lista-tiendas');
-            cont.innerHTML = '<p class="text-center text-slate-400 mt-20 animate-pulse font-bold tracking-widest">Auditando zona...</p>';
-            fetchAPI('get_am_report', { rol: USUARIO.rol, zona: USUARIO.zona }).then(res => {
+        // --- MÓDULO DASHBOARD (AM / ADMIN) ---
+        function initDashboard() {
+            document.getElementById('dashboard-screen').classList.remove('hidden');
+            document.getElementById('dash-info').innerText = `${USUARIO.nombre} | ${USUARIO.rol}`;
+            if(USUARIO.rol === 'ADMIN') document.getElementById('admin-nav').classList.remove('hidden');
+            loadReportData();
+        }
+
+        function loadReportData() {
+            const cont = document.getElementById('lista-auditoria');
+            cont.innerHTML = '<p class="text-center text-slate-400 mt-20 animate-pulse font-bold uppercase tracking-widest">Auditando red...</p>';
+            
+            const action = (USUARIO.rol === 'ADMIN') ? 'get_admin_report' : 'get_am_report';
+            api(action, { rol: USUARIO.rol, zona: USUARIO.zona }).then(res => {
                 if(res.success) {
                     cont.innerHTML = "";
-                    res.reporte.forEach(t => {
+                    if(USUARIO.rol === 'ADMIN') {
+                        document.getElementById('global-charts').classList.remove('hidden');
+                        renderAdminChart(res.zonas);
+                    }
+                    const listData = (USUARIO.rol === 'ADMIN') ? res.tiendas : res.reporte;
+                    listData.forEach(t => {
                         const crit = t.pendientes > 0;
                         cont.innerHTML += `
-                            <div onclick="verDetalle('${t.id}', '${t.nombre}')" class="card-white p-6 active:scale-98 transition-transform">
-                                <div class="flex justify-between items-start mb-4">
-                                    <h2 class="font-bold text-xl text-slate-900 leading-tight">${t.nombre}</h2>
-                                    <span class="text-[10px] font-black px-4 py-1.5 rounded-full ${crit ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600'}">
-                                        ${crit ? 'PENDIENTE' : 'AL DÍA'}
-                                    </span>
-                                </div>
-                                <p class="text-xs text-slate-500 font-medium">
-                                    ${crit ? 'Faltan <b>'+t.pendientes+'</b> tareas registradas' : 'Operativa impecable'}
-                                    ${crit ? '<p class="text-[10px] text-red-400 mt-2 italic font-bold">'+t.faltas.join(', ')+'</p>' : ''}
-                                </p>
+                            <div onclick="verDetalle('${t.id}', '${t.nombre}')" class="card-liao p-6 active:scale-95 transition-all">
+                                <div class="flex justify-between items-start mb-4"><h3 class="font-bold text-xl text-slate-900">${t.nombre}</h3><span class="text-[10px] font-black px-3 py-1 rounded-full ${crit ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600'}">${crit ? 'PENDIENTE' : 'AL DÍA'}</span></div>
+                                <p class="text-xs text-slate-500 font-medium">${crit ? 'Faltan <b>'+t.pendientes+'</b> tareas registradas' : 'Operativa impecable'}</p>
+                                ${crit ? '<p class="text-[9px] text-red-400 mt-2 italic font-bold">'+t.faltas.join(', ')+'</p>' : ''}
                                 <div class="grid grid-cols-2 gap-4 mt-6 pt-5 border-t border-slate-50">
-                                    <div class="bg-blue-50/50 p-4 rounded-2xl">
-                                        <p class="text-[9px] text-blue-400 uppercase font-black tracking-widest">Ratio Merma</p>
-                                        <p class="text-2xl font-black text-blue-600">${t.ratio}%</p>
-                                    </div>
-                                    <div class="bg-slate-50 p-4 rounded-2xl text-right">
-                                        <p class="text-[9px] text-slate-400 uppercase font-black tracking-widest">Ranking</p>
-                                        <p class="text-2xl font-black text-slate-700">#${t.puesto}<small class="text-xs text-slate-300 ml-1">/ ${t.totalTiendas}</small></p>
-                                    </div>
+                                    <div class="bg-blue-50/50 p-4 rounded-2xl"><p class="text-[9px] text-blue-400 font-black uppercase">Ratio Merma</p><p class="text-2xl font-black text-blue-600">${t.ratio}%</p></div>
+                                    <div class="bg-slate-50 p-4 rounded-2xl text-right"><p class="text-[9px] text-slate-400 font-black uppercase">Ranking</p><p class="text-2xl font-black text-slate-700">#${t.puesto}<small class="text-xs text-slate-300 ml-1">/ ${t.totalTiendas}</small></p></div>
                                 </div>
                             </div>`;
                     });
@@ -175,45 +177,67 @@
             });
         }
 
-        // Abre el desglose de productos al pulsar sobre una tienda (Solo AM)
         async function verDetalle(id, nombre) {
             document.getElementById('modal-detalle').classList.remove('hidden');
-            document.getElementById('detalle-titulo').innerText = nombre;
-            const c = document.getElementById('detalle-contenido'); c.innerHTML = '<p class="text-center text-slate-400 mt-16 font-bold animate-pulse">Auditando...</p>';
-            const res = await fetchAPI('get_store_detail', { tiendaId: id });
+            document.getElementById('det-title').innerText = nombre;
+            const c = document.getElementById('det-cont'); c.innerHTML = '<p class="text-center text-slate-400 mt-16 font-bold animate-pulse">Analizando...</p>';
+            const res = await api('get_store_detail', { tiendaId: id });
             if(res.success) {
                 c.innerHTML = res.ranking.length ? "" : '<p class="text-center text-slate-400 mt-16 font-bold">Sin mermas registradas.</p>';
-                res.ranking.forEach(p => { 
-                    c.innerHTML += `<div class="flex justify-between items-center p-5 bg-slate-50 rounded-2xl border border-slate-100"><span class="font-bold text-slate-800">${p.nombre}</span><span class="text-blue-600 font-black text-xl">${p.total} uds</span></div>`; 
-                });
+                res.ranking.forEach(p => c.innerHTML += `<div class="flex justify-between items-center p-5 bg-slate-50 rounded-2xl border border-slate-100"><span class="font-bold text-slate-800">${p.nombre}</span><span class="text-blue-600 font-black text-xl">${p.total} uds</span></div>`);
             }
         }
 
-        function cerrarDetalle() { document.getElementById('modal-detalle').classList.add('hidden'); }
-        
-        // --- FUNCIONES DE INTERFAZ Y RENDERIZADO (TIENDA) ---
+        // --- MÓDULO ADMIN (CRUD & CSV) ---
+        function changeView(v) {
+            document.getElementById('view-report').classList.toggle('hidden', v !== 'report');
+            document.getElementById('view-manage').classList.toggle('hidden', v !== 'manage');
+            document.querySelectorAll('#admin-nav .pill').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase().includes(v === 'report' ? 'rep' : 'gest')));
+        }
+
+        function adminManage(type, op) {
+            const payload = (type === 'user') ? 
+                { id: Date.now(), nombre: document.getElementById('new-u-name').value, pin: document.getElementById('new-u-pin').value, rol: document.getElementById('new-u-rol').value, zona: document.getElementById('new-u-zona').value } :
+                { id: Date.now(), nombre: document.getElementById('new-p-name').value, cat: document.getElementById('new-p-cat').value, sub: document.getElementById('new-p-sub').value, est: 'ACTIVO' };
+            
+            api('manage_data', { type, payload, operation: op }).then(res => { if(res.success) { alert("¡Guardado correctamente!"); location.reload(); } });
+        }
+
+        function exportCSV() {
+            api('export_data').then(res => {
+                if(res.success) {
+                    let csv = res.csvData.map(r => r.join(",")).join("\n");
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.setAttribute('hidden', ''); a.setAttribute('href', url); a.setAttribute('download', 'LIAO_Reporte.csv');
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                }
+            });
+        }
+
+        function renderAdminChart(data) {
+            if(MY_CHART) MY_CHART.destroy();
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            MY_CHART = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: data.map(d => d.zona), datasets: [{ label: '% Merma por Zona', data: data.map(d => d.ratio), backgroundColor: '#2563EB', borderRadius: 8 }] },
+                options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        // --- FUNCIONES COMUNES TIENDA ---
+        function closeModal() { document.getElementById('modal-detalle').classList.add('hidden'); }
         function setTurno(t) { TURNO_ACTIVO = t; document.querySelectorAll('.turno-btn').forEach(b => { const a = b.innerText === t.toUpperCase(); b.style.backgroundColor = a ? "#2563EB" : "#FFFFFF"; b.style.color = a ? "#FFFFFF" : "#94A3B8"; b.style.borderColor = a ? "#2563EB" : "#E2E8F0"; }); }
         function toggleTurnos() { const t = document.getElementById('select-tipo').value; document.getElementById('container-turnos').style.display = (t === "MERMA") ? 'none' : 'flex'; TURNO_ACTIVO = (t === "MERMA") ? "Noche" : "Obrador"; if(t === "PRODUCCIÓN") setTurno('Obrador'); }
         function renderCategorias() { const c = document.getElementById('lista-categorias'); c.innerHTML = `<div onclick="setCat('TODOS')" class="pill ${CAT_ACTIVA === 'TODOS' ? 'active' : ''}">TODOS</div>`; FILTROS.forEach(f => { c.innerHTML += `<div onclick="setCat('${f.nombre}')" class="pill ${CAT_ACTIVA === f.nombre ? 'active' : ''}">${f.nombre}</div>`; }); renderSubcategorias(); }
         function renderSubcategorias() { const c = document.getElementById('lista-subcategorias'); c.innerHTML = ""; if (CAT_ACTIVA === "TODOS") return; const catD = FILTROS.find(f => f.nombre === CAT_ACTIVA); if (catD) { c.innerHTML = `<div onclick="setSub('TODOS')" class="sub-pill ${SUB_ACTIVA === 'TODOS' ? 'active' : ''}">TODAS</div>`; catD.subcategorias.forEach(s => { c.innerHTML += `<div onclick="setSub('${s}')" class="sub-pill ${SUB_ACTIVA === s ? 'active' : ''}">${s}</div>`; }); } }
-        function renderProductos() { const c = document.getElementById('lista-productos'); const b = document.getElementById('busqueda').value.toLowerCase(); c.innerHTML = ""; PRODUCTOS.filter(p => (CAT_ACTIVA === "TODOS" || p.categoria === CAT_ACTIVA) && (SUB_ACTIVA === "TODOS" || p.subcategoria === SUB_ACTIVA) && p.nombre.toLowerCase().includes(b)).forEach(p => { const cant = VALORES[p.id] || 0; c.innerHTML += `<div class="card-white p-4 flex items-center justify-between shadow-sm"><div class="flex-1 pr-4"><h3 class="font-bold text-sm text-slate-800">${p.nombre}</h3><p class="text-[10px] text-blue-500 font-bold mt-1 uppercase tracking-wider">${p.subcategoria}</p></div><div class="flex items-center bg-slate-50 rounded-full p-1 border border-slate-100"><button onclick="updateCant('${p.id}', -1)" class="w-11 h-11 rounded-full bg-white text-2xl font-black text-slate-400 active:bg-slate-100">-</button><input type="number" value="${cant}" onchange="setCant('${p.id}', this.value)" class="w-11 bg-transparent text-center text-lg font-bold text-blue-600 outline-none"><button onclick="updateCant('${p.id}', 1)" class="w-11 h-11 rounded-full btn-blue text-2xl font-black">+</button></div></div>`; }); }
-        
+        function renderProductos() { const c = document.getElementById('lista-productos'); const b = document.getElementById('busqueda').value.toLowerCase(); c.innerHTML = ""; PRODUCTOS.filter(p => (CAT_ACTIVA === "TODOS" || p.categoria === CAT_ACTIVA) && (SUB_ACTIVA === "TODOS" || p.subcategoria === SUB_ACTIVA) && p.nombre.toLowerCase().includes(b)).forEach(p => { const cant = VALORES[p.id] || 0; c.innerHTML += `<div class="card-liao p-4 flex items-center justify-between"><div class="flex-1 pr-4"><h3 class="font-bold text-sm text-slate-800">${p.nombre}</h3><p class="text-[10px] text-blue-500 font-bold mt-1 uppercase tracking-wider">${p.subcategoria}</p></div><div class="flex items-center bg-slate-50 rounded-full p-1 border border-slate-100"><button onclick="updateCant('${p.id}', -1)" class="w-11 h-11 rounded-full bg-white text-2xl font-black text-slate-400 active:bg-slate-100">-</button><input type="number" value="${cant}" onchange="setCant('${p.id}', this.value)" class="w-11 bg-transparent text-center text-lg font-bold text-blue-600 outline-none"><button onclick="updateCant('${p.id}', 1)" class="w-11 h-11 rounded-full btn-blue text-2xl font-black">+</button></div></div>`; }); }
         function updateCant(id, d) { VALORES[id] = Math.max(0, (VALORES[id] || 0) + d); renderProductos(); }
         function setCant(id, v) { VALORES[id] = Math.max(0, parseInt(v) || 0); }
         function setCat(c) { CAT_ACTIVA = c; SUB_ACTIVA = "TODOS"; renderCategorias(); renderProductos(); }
         function setSub(s) { SUB_ACTIVA = s; renderSubcategorias(); renderProductos(); }
-        
-        // Envío final de los datos al servidor
-        function enviarDatos() { 
-            const b = document.getElementById('btn-enviar'); 
-            const its = Object.keys(VALORES).map(id => ({ id, cantidad: VALORES[id] })).filter(i => i.cantidad > 0); 
-            if(!its.length) return alert("Introduce datos"); 
-            b.disabled = true; b.innerText = "GUARDANDO..."; 
-            fetchAPI('save_records', { payload: { tiendaId: USUARIO.id, fecha: document.getElementById('input-fecha').value, tipo: document.getElementById('select-tipo').value, turno: TURNO_ACTIVO, items: its } }).then(res => { 
-                if(res.success) { alert("¡Guardado correctamente!"); VALORES = {}; renderProductos(); } 
-                b.disabled = false; b.innerText = "GUARDAR REGISTROS"; 
-            }); 
-        }
+        function enviarDatos() { const b = document.getElementById('btn-enviar'); const its = Object.keys(VALORES).map(id => ({ id, cantidad: VALORES[id] })).filter(i => i.cantidad > 0); if(!its.length) return alert("Introduce datos"); b.disabled = true; b.innerText = "GUARDANDO..."; api('save_records', { payload: { tiendaId: USUARIO.id, fecha: document.getElementById('input-fecha').value, tipo: document.getElementById('select-tipo').value, turno: TURNO_ACTIVO, items: its } }).then(res => { if(res.success) { alert("¡Guardado correctamente!"); VALORES = {}; renderProductos(); } b.disabled = false; b.innerText = "GUARDAR REGISTROS"; }); }
     </script>
 </body>
 </html>
