@@ -9,8 +9,8 @@
         body { background-color: #F8FAFC; color: #1E293B; font-family: ui-sans-serif, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
         .btn-blue { background-color: #2563EB; color: #FFFFFF; font-weight: 700; border-radius: 12px; transition: all 0.2s; }
         .btn-blue:active { background-color: #1D4ED8; transform: scale(0.98); }
-        .input-liao { background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; color: #1E293B; outline: none; transition: border-color 0.2s; }
-        .input-liao:focus { border-color: #2563EB; border-width: 2px; }
+        .input-liao { background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; color: #1E293B; outline: none; }
+        .input-liao:focus { border-color: #2563EB; }
         .card-white { background-color: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid #F1F5F9; }
         .pill { background-color: #F1F5F9; color: #64748B; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #E2E8F0; }
         .pill.active { background-color: #2563EB; color: #FFFFFF; border-color: #2563EB; }
@@ -20,18 +20,18 @@
 </head>
 <body onload="cargarUsuarios()">
 
-    <div id="login-screen" class="min-h-screen flex items-center justify-center p-6">
-        <div class="max-w-md w-full space-y-10 text-center">
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-6 text-center">
+        <div class="max-w-md w-full space-y-10">
             <div>
                 <h1 class="text-4xl font-black text-[#0F172A] tracking-tight">LIAO GESTIÓN</h1>
-                <p class="text-sm font-bold text-[#64748B] tracking-[0.2em] mt-2 uppercase">Producción y Merma</p>
+                <p class="text-sm font-bold text-[#64748B] tracking-[0.2em] mt-2 uppercase">PRODUCCIÓN Y MERMA</p>
             </div>
             <div class="bg-white p-8 rounded-[32px] shadow-2xl shadow-blue-900/5 border border-slate-100 space-y-6">
                 <select id="user-select" class="input-liao w-full p-4 text-lg appearance-none font-semibold">
                     <option value="">Conectando con servidor...</option>
                 </select>
-                <input id="pin-input" type="password" pattern="[0-9]*" inputmode="numeric" placeholder="Introduce tu PIN" class="input-liao w-full p-4 text-center text-3xl tracking-[0.5em] font-bold">
-                <button onclick="intentarLogin()" id="btn-entrar" class="btn-blue w-full p-5 text-xl tracking-widest">ENTRAR</button>
+                <input id="pin-input" type="password" pattern="[0-9]*" inputmode="numeric" placeholder="PIN" class="input-liao w-full p-4 text-center text-3xl tracking-[0.5em] font-bold">
+                <button onclick="intentarLogin()" id="btn-entrar" class="btn-blue w-full p-5 text-xl tracking-widest uppercase">ENTRAR</button>
                 <div id="login-msg" class="text-red-500 text-sm font-bold h-4"></div>
             </div>
         </div>
@@ -57,11 +57,11 @@
         </div>
         <div id="lista-productos" class="flex-grow overflow-y-auto p-5 space-y-3 pb-32"></div>
         <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-slate-50 to-transparent">
-            <button onclick="enviarDatos()" id="btn-enviar" class="btn-blue w-full py-5 text-lg shadow-xl shadow-blue-600/20">GUARDAR DATOS</button>
+            <button onclick="enviarDatos()" id="btn-enviar" class="btn-blue w-full py-5 text-lg shadow-xl shadow-blue-600/20 uppercase tracking-widest">Guardar Registros</button>
         </div>
     </div>
 
-    <div id="am-screen" class="hidden flex flex-col h-screen">
+    <div id="am-screen" class="hidden flex flex-col h-screen bg-[#F8FAFC]">
         <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-white">
             <div><h2 class="font-bold text-slate-900 text-xl">Panel de Zona</h2><p id="am-info" class="text-[10px] text-slate-400 font-bold uppercase"></p></div>
             <button onclick="location.reload()" class="text-[10px] bg-slate-100 text-slate-500 px-4 py-2 rounded-full font-black uppercase">Cerrar</button>
@@ -72,11 +72,11 @@
 
         <div id="modal-detalle" class="hidden fixed inset-0 bg-white/98 z-[100] p-6 flex flex-col">
             <div class="flex justify-between items-center mb-8 border-b border-slate-100 pb-5">
-                <div><h3 id="detalle-titulo" class="text-3xl font-black text-slate-900"></h3><p class="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-1">Top 5 Mermas (15 días)</p></div>
+                <div><h3 id="detalle-titulo" class="text-3xl font-black text-slate-900"></h3><p class="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-1">Análisis Top 5 Mermas</p></div>
                 <button onclick="cerrarDetalle()" class="text-4xl font-light text-slate-300">&times;</button>
             </div>
-            <div id="detalle-contenido" class="space-y-4 flex-grow"></div>
-            <button onclick="cerrarDetalle()" class="btn-blue w-full py-5">VOLVER</button>
+            <div id="detalle-contenido" class="space-y-4 flex-grow overflow-y-auto"></div>
+            <button onclick="cerrarDetalle()" class="btn-blue w-full py-5 mt-4 uppercase tracking-widest">Cerrar Detalle</button>
         </div>
     </div>
 
@@ -90,7 +90,7 @@
             try {
                 const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action, ...extra }) });
                 return await res.json();
-            } catch (e) { return { success: false, msg: "Fallo conexión" }; }
+            } catch (e) { console.error(e); return { success: false, msg: "Fallo conexión" }; }
         }
 
         function cargarUsuarios() {
@@ -99,14 +99,14 @@
                 if (res && res.success) {
                     s.innerHTML = '<option value="">-- Selecciona Usuario --</option>';
                     res.usuarios.forEach(u => { s.innerHTML += `<option value="${u.id}">${u.nombre}</option>`; });
-                } else { s.innerHTML = '<option value="">Fallo de conexión</option>'; }
+                } else { s.innerHTML = '<option value="">Error de servidor</option>'; }
             });
         }
 
         function intentarLogin() {
             const id = document.getElementById('user-select').value; const pin = document.getElementById('pin-input').value;
             if(!id || !pin) return;
-            document.getElementById('btn-entrar').innerText = "AUTENTICANDO...";
+            document.getElementById('btn-entrar').innerText = "CONECTANDO...";
             fetchAPI('verificar_pin', { userId: id, pin: pin }).then(res => {
                 if(res.success) {
                     USUARIO = res.usuario; document.getElementById('login-screen').classList.add('hidden');
@@ -137,13 +137,13 @@
                             <div onclick="verDetalle('${t.id}', '${t.nombre}')" class="card-white p-6 active:scale-98 transition-transform">
                                 <div class="flex justify-between items-start mb-4">
                                     <h3 class="font-bold text-xl text-slate-900">${t.nombre}</h3>
-                                    <span class="text-[10px] font-black px-3 py-1 rounded-full ${crit ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600'}">
+                                    <span class="text-[10px] font-black px-4 py-1.5 rounded-full ${crit ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600'}">
                                         ${crit ? 'PENDIENTE' : 'AL DÍA'}
                                     </span>
                                 </div>
                                 <div class="text-xs text-slate-500 font-medium">
-                                    ${crit ? 'Faltan <b>'+t.pendientes+'</b> registros' : 'Operativa completada'}
-                                    ${crit ? '<p class="text-[10px] text-red-400 mt-2 italic font-bold">'+t.faltas.join(', ')+'...</p>' : ''}
+                                    ${crit ? 'Faltan <b>'+t.pendientes+'</b> tareas en quincena' : 'Operativa impecable'}
+                                    ${crit ? '<p class="text-[10px] text-red-500 mt-2 italic font-bold">'+t.faltas.join(', ')+'...</p>' : ''}
                                 </div>
                                 <div class="grid grid-cols-2 gap-4 mt-6 pt-5 border-t border-slate-50">
                                     <div class="bg-blue-50/50 p-4 rounded-2xl">
@@ -169,11 +169,7 @@
             if(res.success) {
                 c.innerHTML = res.ranking.length ? "" : '<p class="text-center text-slate-400 mt-16 font-bold">Sin mermas registradas.</p>';
                 res.ranking.forEach(p => { 
-                    c.innerHTML += `
-                        <div class="flex justify-between items-center p-5 bg-slate-50 rounded-2xl border border-slate-100">
-                            <span class="font-bold text-slate-800">${p.nombre}</span>
-                            <span class="text-blue-600 font-black text-xl">${p.total} <small class="text-xs">uds</small></span>
-                        </div>`; 
+                    c.innerHTML += `<div class="flex justify-between items-center p-5 bg-slate-50 rounded-2xl border border-slate-100"><span class="font-bold text-slate-800">${p.nombre}</span><span class="text-blue-600 font-black text-xl">${p.total} uds</span></div>`; 
                 });
             }
         }
@@ -187,7 +183,7 @@
         function setCant(id, v) { VALORES[id] = Math.max(0, parseInt(v) || 0); }
         function setCat(c) { CAT_ACTIVA = c; SUB_ACTIVA = "TODOS"; renderCategorias(); renderProductos(); }
         function setSub(s) { SUB_ACTIVA = s; renderSubcategorias(); renderProductos(); }
-        function enviarDatos() { const b = document.getElementById('btn-enviar'); const its = Object.keys(VALORES).map(id => ({ id, cantidad: VALORES[id] })).filter(i => i.cantidad > 0); if(!its.length) return; b.disabled = true; b.innerText = "GUARDANDO REGISTROS..."; fetchAPI('save_records', { payload: { tiendaId: USUARIO.id, fecha: document.getElementById('input-fecha').value, tipo: document.getElementById('select-tipo').value, turno: TURNO_ACTIVO, items: its } }).then(res => { if(res.success) { alert("¡Guardado correctamente!"); VALORES = {}; renderProductos(); } b.disabled = false; b.innerText = "GUARDAR REGISTROS"; }); }
+        function enviarDatos() { const b = document.getElementById('btn-enviar'); const its = Object.keys(VALORES).map(id => ({ id, cantidad: VALORES[id] })).filter(i => i.cantidad > 0); if(!its.length) return alert("Introduce datos"); b.disabled = true; b.innerText = "GUARDANDO..."; fetchAPI('save_records', { payload: { tiendaId: USUARIO.id, fecha: document.getElementById('input-fecha').value, tipo: document.getElementById('select-tipo').value, turno: TURNO_ACTIVO, items: its } }).then(res => { if(res.success) { alert("¡Guardado correctamente!"); VALORES = {}; renderProductos(); } b.disabled = false; b.innerText = "GUARDAR REGISTROS"; }); }
     </script>
 </body>
 </html>
