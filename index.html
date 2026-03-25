@@ -49,9 +49,9 @@
     </nav>
 
     <div id="tabsTienda" class="hidden bg-brand-black flex border-b border-gray-800 shrink-0 px-4 pt-4 gap-4">
-        <button onclick="cambiarVista('produccion')" id="btn-produccion" class="tab-btn flex-1 active">PRODUCCIÓN</button>
+        <button onclick="cambiarVista('produccion')" id="btn-produccion" class="tab-btn flex-1">PRODUCCIÓN</button>
         <button onclick="cambiarVista('merma')" id="btn-merma" class="tab-btn flex-1">MERMA</button>
-        <button onclick="cambiarVista('dashTienda')" id="btn-dashTienda" class="tab-btn flex-1">DASHBOARD</button>
+        <button onclick="cambiarVista('dashTienda')" id="btn-dashTienda" class="tab-btn flex-1 active">DASHBOARD</button>
     </div>
 
     <div id="tabsAM" class="hidden bg-brand-black flex border-b border-gray-800 shrink-0 px-4 pt-4 gap-4">
@@ -216,7 +216,7 @@
                 
                 if(State.usuario.rol === 'Tienda') {
                     document.getElementById('tabsTienda').classList.remove('hidden');
-                    cambiarVista('produccion');
+                    cambiarVista('dashTienda'); // <-- Ahora arranca aquí por defecto
                 } else {
                     document.getElementById('tabsAM').classList.remove('hidden');
                     const checks = State.entidades.filter(e => e.rol === 'Tienda').map(e => `
@@ -336,8 +336,8 @@
             mostrarLoader('Obteniendo datos...');
             try {
                 const data = await apiCall('getDashboard', { idEntidad: State.usuario.id });
-                State.rawMovimientos = data.movimientos;
-                State.tareasAM = data.tareasPendientes;
+                State.rawMovimientos = data.movimientos || [];
+                State.tareasAM = data.tareasPendientes || {};
                 
                 if (State.vistaActual === 'amResumen') renderizarResumenAM(data.tiendasAsignadas);
                 else aplicarFiltrosDashboard();
@@ -400,8 +400,8 @@
         }
 
         function aplicarFiltrosDashboard() {
-            if(!State.rawMovimientos.length) return;
-
+            // ELIMINADA LA REGLA DE RETORNO QUE CAUSABA EL ERROR. AHORA DIBUJA CERO.
+            
             const iF = document.getElementById('dashInicio').value;
             const fF = document.getElementById('dashFin').value;
             const cF = document.getElementById('dashCat').value;
@@ -456,7 +456,7 @@
                     labels: top.map(x => State.catalogo.find(p=>p.id===x[0])?.nombre||x[0]),
                     datasets: [{ data: top.map(x => x[1]), backgroundColor: '#ef4444', borderRadius: 4 }]
                 },
-                options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#9CA3AF' } }, y: { ticks: { color: '#9CA3AF' } } } }
+                options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#9CA3AF' } }, y: { ticks: { color: '#9CA3AF' }, beginAtZero: true } } }
             });
         }
 
