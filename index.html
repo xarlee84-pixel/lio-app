@@ -3,135 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión de Producción y Merma</title>
+    <title>LIO APP - Gestión de Producción</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .pwa-btn {
-            display: none;
-        }
-        @media (display-mode: browser) {
-            .pwa-btn {
-                display: block;
-            }
-        }
+        .pill-active { @apply bg-blue-600 text-white; }
+        .pill-inactive { @apply bg-gray-200 text-gray-700 hover:bg-gray-300; }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+<body class="bg-gray-50 font-sans">
 
-    <div id="login-screen" class="min-h-screen flex items-center justify-center">
-        <div class="bg-white p-8 rounded shadow-md w-full max-w-md">
-            <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Acceso al Sistema</h2>
-            <div id="login-form">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="user-type">Tipo de Usuario</label>
-                    <select id="user-type" class="w-full p-2 border rounded" onchange="toggleLoginFields()">
-                        <option value="store">Tienda</option>
-                        <option value="admin">Administración / Manager</option>
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-black text-blue-900">LIO APP</h1>
+                <p class="text-gray-500 text-sm">Control de Producción y Merma</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Tipo de Acceso</label>
+                    <select id="user-type" class="w-full p-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" onchange="toggleLoginFields()">
+                        <option value="store">TIENDA (PIN)</option>
+                        <option value="admin">MANAGEMENT (USER)</option>
                     </select>
                 </div>
                 
-                <div id="store-fields" class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Seleccionar Tienda</label>
-                    <select id="store-select" class="w-full p-2 border rounded">
-                        </select>
-                    <label class="block text-gray-700 text-sm font-bold mb-2 mt-4">PIN de Acceso</label>
-                    <input type="password" id="store-pin" class="w-full p-2 border rounded" placeholder="****">
+                <div id="store-fields">
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Seleccionar Tienda</label>
+                    <select id="store-select" class="w-full p-3 bg-gray-50 border rounded-xl mb-4"></select>
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">PIN</label>
+                    <input type="password" id="store-pin" inputmode="numeric" class="w-full p-3 bg-gray-50 border rounded-xl text-center text-2xl tracking-widest" placeholder="****">
                 </div>
 
-                <div id="admin-fields" class="mb-4 hidden">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Usuario</label>
-                    <input type="text" id="admin-user" class="w-full p-2 border rounded">
-                    <label class="block text-gray-700 text-sm font-bold mb-2 mt-4">Contraseña</label>
-                    <input type="password" id="admin-pass" class="w-full p-2 border rounded">
+                <div id="admin-fields" class="hidden">
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Usuario</label>
+                    <input type="text" id="admin-user" class="w-full p-3 bg-gray-50 border rounded-xl mb-4">
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Contraseña</label>
+                    <input type="password" id="admin-pass" class="w-full p-3 bg-gray-50 border rounded-xl">
                 </div>
 
-                <button onclick="attemptLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                    Entrar
+                <button onclick="attemptLogin()" id="btn-login" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-700 transform active:scale-95 transition">
+                    ENTRAR AL SISTEMA
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="main-app" class="hidden">
-        <nav class="bg-blue-800 p-4 text-white flex justify-between items-center shadow-lg">
-            <div class="flex items-center">
-                <span id="display-user-name" class="font-bold text-lg">Usuario</span>
+    <div id="main-app" class="hidden min-h-screen flex flex-col">
+        <header class="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-50">
+            <div>
+                <span class="text-xs font-bold text-blue-600 block" id="role-tag">ROLE</span>
+                <h2 class="font-black text-gray-800 uppercase" id="display-user-name">NAME</h2>
             </div>
-            <button onclick="logout()" class="text-sm bg-red-500 hover:bg-red-600 px-3 py-1 rounded transition">Cerrar Sesión</button>
+            <button onclick="logout()" class="p-2 bg-gray-100 rounded-lg text-gray-500 hover:text-red-600 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+            </button>
+        </header>
+
+        <nav id="nav-bar" class="bg-white border-b flex overflow-x-auto">
+            <button onclick="showSection('dashboard')" class="nav-item flex-1 p-4 text-center border-b-2 border-blue-600 text-blue-600 font-bold">DASHBOARD</button>
+            <button onclick="showSection('input')" id="nav-input" class="nav-item flex-1 p-4 text-center border-b-2 border-transparent text-gray-500 font-bold">REGISTRO</button>
+            <button onclick="showSection('audit')" id="nav-audit" class="nav-item flex-1 p-4 text-center border-b-2 border-transparent text-gray-500 font-bold hidden">AUDITORÍA</button>
+            <button onclick="showSection('admin')" id="nav-admin" class="nav-item flex-1 p-4 text-center border-b-2 border-transparent text-gray-500 font-bold hidden">ADMIN</button>
         </nav>
 
-        <div class="p-4 max-w-6xl mx-auto">
-            <div class="flex mb-4 space-x-2 overflow-x-auto pb-2">
-                <button onclick="showTab('tab-input')" class="tab-btn bg-white px-4 py-2 rounded shadow font-bold text-blue-800">Registro Diario</button>
-                <button id="nav-audit" onclick="showTab('tab-audit')" class="tab-btn bg-gray-200 px-4 py-2 rounded shadow font-bold text-gray-700">Auditoría</button>
-                <button id="nav-admin" onclick="showTab('tab-admin')" class="tab-btn bg-gray-200 px-4 py-2 rounded shadow font-bold text-gray-700 hidden">Administración</button>
-            </div>
+        <main class="flex-1 p-4 pb-24">
+            
+            <div id="sec-dashboard" class="section-content space-y-4">
+                <div id="store-summary" class="grid grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-xs font-bold text-gray-400">MEDIA MERMA</p>
+                        <p class="text-2xl font-black text-gray-800" id="stat-avg-merma">0%</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-xs font-bold text-gray-400">PENDIENTES</p>
+                        <p class="text-2xl font-black text-orange-500" id="stat-pending">--</p>
+                    </div>
+                </div>
 
-            <div id="tab-input" class="tab-content">
-                <div class="bg-white p-4 rounded shadow mb-4">
-                    <h3 class="text-xl font-bold mb-4 border-b pb-2">Introducción de Datos</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-bold mb-1">Fecha</label>
-                            <input type="date" id="input-date" class="w-full p-2 border rounded">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold mb-1">Operación</label>
-                            <select id="input-type" class="w-full p-2 border rounded" onchange="updateUIForType()">
-                                <option value="prod">Producción</option>
-                                <option value="merma">Merma</option>
-                            </select>
-                        </div>
-                        <div id="div-turno">
-                            <label class="block text-sm font-bold mb-1">Turno</label>
-                            <select id="input-turno" class="w-full p-2 border rounded">
-                                <option value="Shift 1">Turno Mañana</option>
-                                <option value="Shift 2">Turno Mediodía</option>
-                                <option value="Shift 3">Turno Tarde</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div id="product-list" class="space-y-2">
-                        <div class="p-4 text-center text-gray-500">Cargando productos...</div>
-                    </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-gray-800 mb-4 uppercase text-sm">Top 5 Merma (Mes)</h3>
+                    <canvas id="topMermaChart" height="200"></canvas>
+                </div>
 
-                    <div class="mt-6 flex space-x-2">
-                        <button onclick="submitData()" class="flex-1 bg-green-600 text-white font-bold py-3 rounded shadow hover:bg-green-700">Guardar Registro</button>
-                        <button id="btn-zero-merma" onclick="setZeroMerma()" class="hidden bg-gray-500 text-white px-4 py-2 rounded">Día 0 Merma</button>
-                    </div>
+                <div id="manager-view" class="hidden space-y-4">
+                    <h3 class="font-bold text-gray-800 uppercase text-sm">Estado de Zona</h3>
+                    <div id="zone-status-list" class="space-y-2"></div>
                 </div>
             </div>
 
-            <div id="tab-audit" class="tab-content hidden">
-                <div class="bg-white p-4 rounded shadow">
-                    <h3 class="text-xl font-bold mb-4">Panel de Análisis</h3>
-                    <canvas id="auditChart" class="mb-4"></canvas>
-                    <div id="audit-table-container" class="overflow-x-auto">
-                        </div>
+            <div id="sec-input" class="section-content hidden space-y-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+                    <div class="flex gap-2">
+                        <input type="date" id="input-date" class="flex-1 p-3 bg-gray-50 rounded-xl border-none font-bold text-gray-700">
+                        <select id="input-type" class="flex-1 p-3 bg-gray-50 rounded-xl border-none font-bold text-gray-700" onchange="updateInputUI()">
+                            <option value="prod">PRODUCCIÓN</option>
+                            <option value="merma">MERMA</option>
+                        </select>
+                    </div>
+                    <select id="input-turno" class="w-full p-3 bg-blue-50 text-blue-700 rounded-xl border-none font-bold">
+                        <option value="Obrador">TURNO OBRADOR (Mañana)</option>
+                        <option value="Mediodía">TURNO MEDIODÍA</option>
+                        <option value="Tarde">TURNO TARDE</option>
+                    </select>
+                </div>
+
+                <div class="space-y-2 overflow-hidden">
+                    <div id="cat-filters" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar"></div>
+                    <div id="subcat-filters" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar"></div>
+                </div>
+
+                <div id="product-list" class="space-y-2"></div>
+
+                <div class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t flex gap-2">
+                    <button onclick="submitData()" class="flex-1 bg-green-600 text-white font-black py-4 rounded-xl shadow-lg">GUARDAR DATOS</button>
+                    <button id="btn-zero-merma" onclick="setZeroMerma()" class="hidden bg-gray-800 text-white px-6 rounded-xl font-bold">TODO 0</button>
                 </div>
             </div>
 
-            <div id="tab-admin" class="tab-content hidden">
-                <div class="bg-white p-4 rounded shadow">
-                    <h3 class="text-xl font-bold mb-4">Gestión del Sistema</h3>
-                    <p class="text-sm text-gray-600 mb-4">Módulos para añadir productos, editar tiendas y gestionar usuarios.</p>
-                    </div>
+            <div id="sec-audit" class="section-content hidden">
+                <div class="bg-white p-4 rounded-2xl shadow-sm text-center py-20 text-gray-400 font-bold uppercase">Módulo de Auditoría Avanzada</div>
             </div>
-        </div>
+            <div id="sec-admin" class="section-content hidden">
+                <div class="bg-white p-4 rounded-2xl shadow-sm text-center py-20 text-gray-400 font-bold uppercase">Módulo de Administración de Sistema</div>
+            </div>
+
+        </main>
     </div>
 
-    <button onclick="addToHome()" class="pwa-btn fixed bottom-4 right-4 bg-yellow-500 text-white p-3 rounded-full shadow-lg font-bold">Añadir a Pantalla</button>
-
     <script>
-        // Configuración de la API
         const API_URL = "https://script.google.com/macros/s/AKfycby86Uyfci6i_hyunbHhVlM2XsTwpo6AtxYedAOZX8gJ6xIIn392pUUR6hxzH4hbJ3nrCA/exec";
         
         let currentUser = null;
         let masterData = { productos: [], tiendas: [], zonas: [] };
+        let activeCat = "TODOS";
+        let activeSubCat = "TODOS";
 
-        // Inicialización
         window.onload = async () => {
             document.getElementById('input-date').valueAsDate = new Date();
             await fetchInitialData();
@@ -139,40 +151,110 @@
 
         async function fetchInitialData() {
             try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'getInitialData' })
-                });
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getInitialData' }) });
                 const json = await res.json();
                 if(json.status === 'success') {
-                    masterData = json.data;
+                    // Limpieza de datos (Quitar cabeceras del Sheet)
+                    masterData.productos = json.data.productos.slice(1);
+                    masterData.tiendas = json.data.tiendas.slice(1);
+                    masterData.zonas = json.data.zonas.slice(1);
                     populateSelectors();
-                    renderProductInputList();
                 }
-            } catch (e) {
-                console.error("Error al cargar datos", e);
-            }
+            } catch (e) { alert("Error de conexión con el servidor"); }
         }
 
         function populateSelectors() {
             const storeSelect = document.getElementById('store-select');
-            storeSelect.innerHTML = masterData.tiendas.map(t => 
-                `<option value="${t[0]}">${t[1]} (${t[0]})</option>`
-            ).join('');
+            storeSelect.innerHTML = masterData.tiendas.map(t => `<option value="${t[0]}">${t[1]} (${t[0]})</option>`).join('');
+            renderFilters();
         }
 
-        function renderProductInputList() {
-            const list = document.getElementById('product-list');
-            list.innerHTML = masterData.productos.filter(p => p[4] === true || p[4] === "TRUE").map(p => `
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded border">
+        // --- SISTEMA DE LOGIN Y ROLES ---
+        async function attemptLogin() {
+            const btn = document.getElementById('btn-login');
+            btn.innerText = "VERIFICANDO...";
+            btn.disabled = true;
+
+            const type = document.getElementById('user-type').value;
+            let params = { type };
+            if (type === 'store') {
+                params.id = document.getElementById('store-select').value;
+                params.pin = document.getElementById('store-pin').value;
+            } else {
+                params.user = document.getElementById('admin-user').value;
+                params.pass = document.getElementById('admin-pass').value;
+            }
+
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', params }) });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    currentUser = json.data;
+                    setupUIByRole();
+                } else {
+                    alert("PIN o Usuario incorrecto");
+                }
+            } catch (e) { alert("Error en el servidor"); }
+            btn.innerText = "ENTRAR AL SISTEMA"; btn.disabled = false;
+        }
+
+        function setupUIByRole() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('display-user-name').innerText = currentUser.nombre || currentUser.id;
+            document.getElementById('role-tag').innerText = currentUser.rol;
+
+            if(currentUser.rol === 'STORE') {
+                document.getElementById('nav-audit').classList.add('hidden');
+                document.getElementById('nav-input').classList.remove('hidden');
+            } else {
+                document.getElementById('nav-audit').classList.remove('hidden');
+                document.getElementById('manager-view').classList.remove('hidden');
+                if(currentUser.rol === 'ADMIN') document.getElementById('nav-admin').classList.remove('hidden');
+            }
+            showSection('dashboard');
+            renderProductList();
+        }
+
+        // --- SISTEMA DE FILTROS ---
+        function renderFilters() {
+            const cats = ["TODOS", ...new Set(masterData.productos.map(p => p[2]))];
+            const catContainer = document.getElementById('cat-filters');
+            catContainer.innerHTML = cats.map(c => `
+                <button onclick="setCat('${c}')" class="px-4 py-2 rounded-full whitespace-nowrap font-bold text-sm ${activeCat === c ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}">${c}</button>
+            `).join('');
+
+            const filteredProds = activeCat === "TODOS" ? masterData.productos : masterData.productos.filter(p => p[2] === activeCat);
+            const subcats = ["TODOS", ...new Set(filteredProds.map(p => p[3]))];
+            const subContainer = document.getElementById('subcat-filters');
+            subContainer.innerHTML = subcats.map(s => `
+                <button onclick="setSubCat('${s}')" class="px-4 py-1 rounded-full whitespace-nowrap font-bold text-xs ${activeSubCat === s ? 'bg-blue-400 text-white' : 'bg-gray-100 text-gray-500'}">${s}</button>
+            `).join('');
+        }
+
+        function setCat(c) { activeCat = c; activeSubCat = "TODOS"; renderFilters(); renderProductList(); }
+        function setSubCat(s) { activeSubCat = s; renderFilters(); renderProductList(); }
+
+        // --- LISTA DE PRODUCTOS ---
+        function renderProductList() {
+            const container = document.getElementById('product-list');
+            const filtered = masterData.productos.filter(p => {
+                const matchCat = activeCat === "TODOS" || p[2] === activeCat;
+                const matchSub = activeSubCat === "TODOS" || p[3] === activeSubCat;
+                const isActive = p[4] === true || p[4] === "TRUE";
+                return matchCat && matchSub && isActive;
+            });
+
+            container.innerHTML = filtered.map(p => `
+                <div class="flex items-center justify-between p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
                     <div class="flex-1">
-                        <span class="block font-bold text-gray-800">${p[1]}</span>
-                        <span class="text-xs text-gray-500">${p[2]} / ${p[3]}</span>
+                        <p class="font-black text-gray-800 leading-none mb-1">${p[1]}</p>
+                        <p class="text-[10px] text-gray-400 uppercase font-bold">${p[3]}</p>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <button onclick="adjValue('${p[0]}', -1)" class="w-10 h-10 bg-gray-200 rounded font-bold">-</button>
-                        <input type="number" id="val-${p[0]}" value="0" min="0" class="w-16 p-2 text-center border rounded font-bold">
-                        <button onclick="adjValue('${p[0]}', 1)" class="w-10 h-10 bg-gray-200 rounded font-bold">+</button>
+                    <div class="flex items-center gap-3">
+                        <button onclick="adjValue('${p[0]}', -1)" class="w-10 h-10 bg-gray-100 rounded-xl font-black text-xl text-gray-500">-</button>
+                        <input type="number" id="val-${p[0]}" value="0" class="w-12 text-center font-black text-xl text-blue-600 bg-transparent border-none">
+                        <button onclick="adjValue('${p[0]}', 1)" class="w-10 h-10 bg-gray-100 rounded-xl font-black text-xl text-gray-500">+</button>
                     </div>
                 </div>
             `).join('');
@@ -183,92 +265,67 @@
             input.value = Math.max(0, parseInt(input.value) + delta);
         }
 
-        function toggleLoginFields() {
-            const type = document.getElementById('user-type').value;
-            document.getElementById('store-fields').classList.toggle('hidden', type !== 'store');
-            document.getElementById('admin-fields').classList.toggle('hidden', type === 'store');
-        }
-
-        async function attemptLogin() {
-            const type = document.getElementById('user-type').value;
-            let params = { type };
-            
-            if (type === 'store') {
-                params.id = document.getElementById('store-select').value;
-                params.pin = document.getElementById('store-pin').value;
-            } else {
-                params.user = document.getElementById('admin-user').value;
-                params.pass = document.getElementById('admin-pass').value;
-            }
-
-            const res = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'login', params })
-            });
-            const json = await res.json();
-            
-            if (json.status === 'success') {
-                currentUser = json.data;
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
-                document.getElementById('display-user-name').innerText = currentUser.nombre || currentUser.id;
-                if (currentUser.rol === 'ADMIN') document.getElementById('nav-admin').classList.remove('hidden');
-            } else {
-                alert("Credenciales incorrectas");
-            }
-        }
-
-        async function submitData() {
-            const date = document.getElementById('input-date').value;
+        function updateInputUI() {
             const type = document.getElementById('input-type').value;
-            const turno = document.getElementById('input-turno').value;
+            const turnoDiv = document.getElementById('input-turno');
+            const btnZero = document.getElementById('btn-zero-merma');
             
-            const items = masterData.productos.map(p => ({
-                prodId: p[0],
-                val: parseInt(document.getElementById(`val-${p[0]}`).value) || 0
-            })).filter(i => i.val > 0);
+            if(type === 'merma') {
+                turnoDiv.classList.add('hidden');
+                btnZero.classList.remove('hidden');
+            } else {
+                turnoDiv.classList.remove('hidden');
+                btnZero.classList.add('hidden');
+            }
+        }
 
-            if(items.length === 0) return alert("Introduce algún valor");
+        // --- ACCIONES DE DATOS ---
+        async function submitData() {
+            const items = masterData.productos.map(p => {
+                const val = parseInt(document.getElementById(`val-${p[0]}`)?.value || 0);
+                return { prodId: p[0], val };
+            }).filter(i => i.val > 0);
 
-            const res = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ 
-                    action: 'saveDaily', 
-                    params: { 
-                        fecha: date, 
-                        type, 
-                        turno, 
-                        tiendaId: currentUser.id,
-                        items 
-                    } 
-                })
-            });
-            
+            if(items.length === 0) return alert("No hay datos que guardar");
+
+            const payload = {
+                action: 'saveDaily',
+                params: {
+                    fecha: document.getElementById('input-date').value,
+                    type: document.getElementById('input-type').value,
+                    turno: document.getElementById('input-turno').value,
+                    tiendaId: currentUser.id,
+                    items
+                }
+            };
+
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
             const json = await res.json();
             if(json.status === 'success') {
-                alert("Datos guardados correctamente");
-                renderProductInputList();
+                alert("DATOS GUARDADOS");
+                location.reload();
             }
         }
 
-        function updateUIForType() {
-            const isMerma = document.getElementById('input-type').value === 'merma';
-            document.getElementById('div-turno').style.display = isMerma ? 'none' : 'block';
-            document.getElementById('btn-zero-merma').classList.toggle('hidden', !isMerma);
+        function setZeroMerma() {
+            if(confirm("¿Seguro que quieres marcar 0 merma en TODO?")) {
+                // Implementar lógica de envío rápido masivo si fuese necesario
+                alert("Simulación: Guardando día con 0 mermas...");
+            }
         }
 
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
+        function showSection(id) {
+            document.querySelectorAll('.section-content').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`sec-${id}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-item').forEach(n => {
+                n.classList.remove('border-blue-600', 'text-blue-600');
+                n.classList.add('border-transparent', 'text-gray-500');
+            });
+            event.currentTarget.classList.add('border-blue-600', 'text-blue-600');
         }
 
-        function logout() {
-            location.reload();
-        }
-
-        function addToHome() {
-            alert("Para añadir a pantalla de inicio:\n1. Pulsa Compartir (iOS) o Menú (Android)\n2. Selecciona 'Añadir a pantalla de inicio'");
-        }
+        function logout() { location.reload(); }
     </script>
 </body>
 </html>
