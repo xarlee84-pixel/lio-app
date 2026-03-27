@@ -20,9 +20,9 @@
 </head>
 <body class="bg-gray-50 text-slate-900 font-sans antialiased">
 
-    <div id="loading" class="hidden fixed inset-0 bg-white/80 z-[100] flex flex-col items-center justify-center">
-        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="font-black text-blue-900 uppercase tracking-widest text-xs">Procesando...</p>
+    <div id="loading" class="hidden fixed inset-0 bg-white/90 z-[100] flex flex-col items-center justify-center backdrop-blur-sm transition-all">
+        <div class="w-16 h-16 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4 shadow-lg"></div>
+        <p class="font-black text-blue-900 uppercase tracking-widest text-sm drop-shadow-sm" id="loading-text">Conectando...</p>
     </div>
 
     <div id="login-screen" class="min-h-screen flex items-center justify-center p-6 bg-slate-900">
@@ -44,11 +44,11 @@
                 </div>
 
                 <div id="group-admin" class="hidden space-y-4">
-                    <input type="text" id="admin-user" placeholder="USUARIO" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none">
-                    <input type="password" id="admin-pass" placeholder="CONTRASEÑA" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none">
+                    <input type="text" id="admin-user" placeholder="USUARIO" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none text-center">
+                    <input type="password" id="admin-pass" placeholder="CONTRASEÑA" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none text-center tracking-widest">
                 </div>
 
-                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-blue-700 active:scale-95 transition-all text-sm uppercase tracking-widest">Entrar al Sistema</button>
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-blue-700 active:scale-95 transition-all text-sm uppercase tracking-widest mt-4">Entrar al Sistema</button>
             </div>
         </div>
     </div>
@@ -64,17 +64,17 @@
             </button>
         </header>
 
-        <nav id="app-nav" class="bg-white border-b flex justify-around font-black text-[10px] uppercase tracking-wider sticky top-[73px] z-40"></nav>
+        <nav id="app-nav" class="bg-white border-b flex justify-around font-black text-[10px] uppercase tracking-wider sticky top-[73px] z-40 shadow-sm"></nav>
 
-        <main class="flex-1 p-4 overflow-y-auto max-w-4xl mx-auto w-full">
+        <main class="flex-1 p-4 overflow-y-auto max-w-4xl mx-auto w-full pb-32">
             <div id="content-area">
                 
                 <section id="sec-dash" class="app-section space-y-6">
                     <div id="dash-widgets" class="grid grid-cols-2 gap-4"></div>
-                    <div id="dash-main-content" class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100"></div>
+                    <div id="dash-main-content" class="space-y-6"></div>
                 </section>
 
-                <section id="sec-input" class="app-section hidden space-y-6 pb-32">
+                <section id="sec-input" class="app-section hidden space-y-6">
                     <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex gap-2">
                         <input type="date" id="input-date" class="flex-1 font-bold text-slate-700 outline-none bg-transparent">
                         <select id="input-type" onchange="updateInputView()" class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-black text-xs border-none outline-none">
@@ -100,7 +100,7 @@
                     <div id="prod-grid" class="space-y-3"></div>
 
                     <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent z-50 pointer-events-none">
-                        <button onclick="processSave()" class="w-full max-w-4xl mx-auto block bg-slate-900 text-white font-black py-5 rounded-3xl shadow-2xl active:scale-95 transition-all text-sm uppercase tracking-widest pointer-events-auto">Confirmar Envío de Datos</button>
+                        <button onclick="processSave()" class="w-full max-w-4xl mx-auto block bg-slate-900 text-white font-black py-5 rounded-3xl shadow-2xl active:scale-95 transition-all text-sm uppercase tracking-widest pointer-events-auto">Confirmar Envío</button>
                     </div>
                 </section>
 
@@ -120,10 +120,10 @@
                     <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
                         <h3 class="font-black text-slate-800 uppercase text-sm mb-4">Panel de Administración</h3>
                         <div class="space-y-2">
-                            <button class="w-full text-left p-4 bg-gray-50 rounded-xl font-bold text-sm text-gray-700 hover:bg-gray-100">Gestión de Tiendas y PINs</button>
-                            <button class="w-full text-left p-4 bg-gray-50 rounded-xl font-bold text-sm text-gray-700 hover:bg-gray-100">Catálogo de Productos</button>
-                            <button class="w-full text-left p-4 bg-gray-50 rounded-xl font-bold text-sm text-gray-700 hover:bg-gray-100">Usuarios y Zonas</button>
-                            <button class="w-full text-left p-4 bg-red-50 rounded-xl font-bold text-sm text-red-600 hover:bg-red-100 mt-4" onclick="alert('Requiere clave de SuperAdmin')">Archivado Anual del Sistema</button>
+                            <button class="w-full text-left p-4 bg-gray-50 rounded-xl font-bold text-sm text-gray-700 hover:bg-gray-100 transition-colors">Gestión de Tiendas y PINs</button>
+                            <button class="w-full text-left p-4 bg-gray-50 rounded-xl font-bold text-sm text-gray-700 hover:bg-gray-100 transition-colors">Catálogo de Productos</button>
+                            <button class="w-full text-left p-4 bg-gray-50 rounded-xl font-bold text-sm text-gray-700 hover:bg-gray-100 transition-colors">Usuarios y Zonas</button>
+                            <button class="w-full text-left p-4 bg-red-50 rounded-xl font-bold text-sm text-red-600 hover:bg-red-100 mt-4 transition-colors" onclick="alert('Requiere clave de SuperAdmin')">Archivado Anual del Sistema</button>
                         </div>
                     </div>
                 </section>
@@ -136,9 +136,19 @@
         const API_URL = "https://script.google.com/macros/s/AKfycby86Uyfci6i_hyunbHhVlM2XsTwpo6AtxYedAOZX8gJ6xIIn392pUUR6hxzH4hbJ3nrCA/exec";
         let master = null;
         let user = null;
-        let dashData = null; // Almacena los datos del dashboard
+        let dashData = null; 
         let cache = { cat: 'TODOS', sub: 'TODOS' };
         let inputState = {};
+
+        // FORMATEADOR DE FECHAS (Requisito 3)
+        function parseFechaAmigable(dateStr) {
+            if(!dateStr) return "";
+            const parts = dateStr.split("-");
+            const d = new Date(parts[0], parts[1]-1, parts[2]);
+            const dias = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+            const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+            return `${dias[d.getDay()]} ${d.getDate()} de ${meses[d.getMonth()]}`;
+        }
 
         window.onload = async () => {
             document.getElementById('input-date').valueAsDate = new Date();
@@ -166,7 +176,7 @@
                     const sel = document.getElementById('store-select');
                     sel.innerHTML = master.tiendas.map(t => `<option value="${t.id}">${t.nom} (${t.id})</option>`).join('');
                 }
-            } catch (e) { alert("Error de conexión crítica con la base de datos."); }
+            } catch (e) { alert("Error de conexión crítica."); }
         }
 
         function toggleLoginUI() {
@@ -176,7 +186,11 @@
         }
 
         async function handleLogin() {
-            document.getElementById('loading').classList.remove('hidden');
+            // Requisito 1: Carga visual inmediata
+            const loader = document.getElementById('loading');
+            document.getElementById('loading-text').innerText = "Autenticando...";
+            loader.classList.remove('hidden');
+
             const type = document.getElementById('user-type').value;
             let p = { type };
             if (type === 'store') {
@@ -193,7 +207,8 @@
                 
                 if(d.status === 'success') {
                     user = d.data;
-                    await fetchDashboard(); // Cargar datos del dashboard antes de mostrar la UI
+                    document.getElementById('loading-text').innerText = "Cargando métricas...";
+                    await fetchDashboard(); 
                     initAppStructure();
                 } else { 
                     alert("Credenciales Incorrectas"); 
@@ -201,10 +216,9 @@
             } catch (e) {
                 alert("Fallo de comunicación con el servidor.");
             }
-            document.getElementById('loading').classList.add('hidden');
+            loader.classList.add('hidden');
         }
 
-        // Llama a la API para obtener analíticas
         async function fetchDashboard() {
             const r = await fetch(API_URL, { 
                 method: 'POST', 
@@ -221,80 +235,169 @@
             document.getElementById('role-display').innerText = user.rol;
 
             const nav = document.getElementById('app-nav');
-            let tabs = `<button onclick="showSec('dash')" id="tab-dash" class="tab-item flex-1 p-4 border-b-4 tab-active">Inicio</button>`;
+            let tabs = `<button onclick="showSec('dash')" id="tab-dash" class="tab-item flex-1 p-4 border-b-4 tab-active transition-colors">Inicio</button>`;
             
             if(user.rol === 'STORE') {
-                tabs += `<button onclick="showSec('input')" id="tab-input" class="tab-item flex-1 p-4 border-b-4 tab-inactive">Registro</button>`;
+                tabs += `<button onclick="showSec('input')" id="tab-input" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Registro</button>`;
             } else {
-                tabs += `<button onclick="showSec('audit')" id="tab-audit" class="tab-item flex-1 p-4 border-b-4 tab-inactive">Auditoría</button>`;
+                tabs += `<button onclick="showSec('audit')" id="tab-audit" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Auditoría</button>`;
                 if(user.rol === 'ADMIN') {
-                    tabs += `<button onclick="showSec('admin')" id="tab-admin" class="tab-item flex-1 p-4 border-b-4 tab-inactive">Sistema</button>`;
+                    tabs += `<button onclick="showSec('admin')" id="tab-admin" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Ajustes</button>`;
                 }
             }
             nav.innerHTML = tabs;
             renderDashboard();
         }
 
-        // Dibuja el Dashboard basándose en los datos descargados
+        // --- RENDERIZACIÓN DE DASHBOARDS SEPARADOS POR ROL ---
         function renderDashboard() {
             const widgets = document.getElementById('dash-widgets');
             const main = document.getElementById('dash-main-content');
 
+            // 1. DASHBOARD ADMIN (Limpio, Requisito 6)
+            if(user.rol === 'ADMIN') {
+                widgets.innerHTML = `
+                    <div class="bg-blue-600 p-5 rounded-3xl shadow-sm col-span-2 text-white flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase text-blue-200">Estado del Servidor</p>
+                            <p class="text-2xl font-black">ONLINE</p>
+                        </div>
+                        <div class="h-10 w-10 bg-white rounded-full flex items-center justify-center shadow-inner">
+                            <div class="h-4 w-4 bg-green-500 rounded-full animate-pulse"></div>
+                        </div>
+                    </div>
+                `;
+                main.innerHTML = `
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center py-12">
+                        <p class="text-gray-400 font-bold mb-2">Panel de Administración Activo</p>
+                        <p class="text-xs text-gray-500">Navega a las pestañas superiores para gestionar el sistema.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 2. DASHBOARD TIENDA (Requisito 5)
             if(user.rol === 'STORE') {
                 widgets.innerHTML = `
                     <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100"><p class="text-[10px] font-bold text-gray-400 uppercase">Eficiencia (Mes)</p><p class="text-3xl font-black text-slate-800">${dashData ? dashData.eficiencia : 0}%</p></div>
                     <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100"><p class="text-[10px] font-bold text-gray-400 uppercase">Días Faltantes</p><p class="text-3xl font-black ${dashData && dashData.pendientes > 0 ? 'text-red-500' : 'text-green-500'}">${dashData ? dashData.pendientes : 0}</p></div>
                 `;
                 
-                let tableHTML = '<p class="text-sm text-gray-500">No hay datos introducidos hoy aún.</p>';
+                let storeHTML = '';
+                
+                // Tareas pendientes Tienda
+                if(dashData && dashData.listaPendientes && dashData.listaPendientes.length > 0) {
+                    storeHTML += `
+                    <div class="bg-red-50 border border-red-100 rounded-[2rem] p-6 shadow-sm">
+                        <h4 class="font-black text-red-700 text-sm mb-3 flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> Días pendientes de registro</h4>
+                        <ul class="text-xs text-red-600 space-y-2 font-bold pl-2">
+                            ${dashData.listaPendientes.map(d => `<li class="flex items-center gap-2"><div class="w-1.5 h-1.5 bg-red-400 rounded-full"></div> ${parseFechaAmigable(d)}</li>`).join('')}
+                        </ul>
+                    </div>`;
+                } else {
+                    storeHTML += `<div class="bg-green-50 border border-green-100 rounded-2xl p-4 text-green-700 font-bold text-xs text-center mb-6">¡Todo al día! No tienes tareas pendientes.</div>`;
+                }
+
+                // Tabla resumen de hoy
+                storeHTML += `<div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 mt-6"><h3 class="font-black text-xs uppercase text-gray-400 mb-4">Resumen de Hoy</h3>`;
                 if(dashData && dashData.resumenHoy && dashData.resumenHoy.length > 0) {
-                    tableHTML = `
+                    storeHTML += `
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead><tr class="text-gray-400 border-b"><th class="pb-2">Producto</th><th class="pb-2 text-center">Prod</th><th class="pb-2 text-center">Merma</th><th class="pb-2 text-right">%</th></tr></thead>
                             <tbody class="divide-y divide-gray-50">
-                                ${dashData.resumenHoy.map(r => `<tr><td class="py-3 font-bold text-gray-800">${r.nom}</td><td class="py-3 text-center font-black">${r.prod}</td><td class="py-3 text-center font-black text-red-500">${r.merma}</td><td class="py-3 text-right font-black text-gray-400">${r.porc}%</td></tr>`).join('')}
+                                ${dashData.resumenHoy.map(r => `<tr><td class="py-3 font-bold text-gray-800">${r.nom}</td><td class="py-3 text-center font-black text-blue-600">${r.prod}</td><td class="py-3 text-center font-black text-red-500">${r.merma}</td><td class="py-3 text-right font-black text-gray-400">${r.porc}%</td></tr>`).join('')}
                             </tbody>
                         </table>
                     </div>`;
+                } else {
+                    storeHTML += '<p class="text-sm text-gray-500">No hay datos introducidos hoy aún.</p>';
                 }
-                main.innerHTML = `<h3 class="font-black text-xs uppercase text-gray-400 mb-4">Resumen de Hoy</h3>${tableHTML}`;
-            
-            } else {
+                storeHTML += '</div>';
+                
+                main.innerHTML = storeHTML;
+            } 
+            // 3. DASHBOARD AREA MANAGER (Requisitos 2, 3 y 4)
+            else {
                 widgets.innerHTML = `
                     <div class="bg-white p-5 rounded-3xl shadow-sm border-b-4 border-blue-600 col-span-2 flex justify-between items-center">
-                        <div><p class="text-[10px] font-bold text-gray-400 uppercase">Supervisión</p><p class="text-xl font-black text-slate-800">ZONA: ${user.zonas || 'TOTAL'}</p></div>
-                        <div class="text-right"><p class="text-[10px] font-bold text-gray-400 uppercase">Pendientes Totales</p><p class="text-3xl font-black text-red-500">${dashData ? dashData.pendientes : 0}</p></div>
+                        <div><p class="text-[10px] font-bold text-gray-400 uppercase">Supervisión</p><p class="text-xl font-black text-slate-800">${dashData ? dashData.zonaNombre : 'TOTAL'}</p></div>
+                        <div class="text-right"><p class="text-[10px] font-bold text-gray-400 uppercase">Alertas Totales</p><p class="text-3xl font-black ${dashData && dashData.pendientes > 0 ? 'text-red-500' : 'text-green-500'}">${dashData ? dashData.pendientes : 0}</p></div>
                     </div>
                 `;
                 
-                let pendingHTML = '<p class="text-sm text-green-600 font-bold">Todas las tiendas están al día.</p>';
-                if(dashData && dashData.listaPendientes && dashData.listaPendientes.length > 0) {
-                    pendingHTML = `<div class="space-y-3 mb-6">` + dashData.listaPendientes.map(t => `
-                        <div class="p-4 bg-red-50 rounded-xl border border-red-100">
-                            <p class="font-black text-sm text-red-900">${t.tienda}</p>
-                            <p class="text-xs text-red-600 font-bold mt-1">Faltan datos: ${t.dias.join(', ')}</p>
+                let amHTML = '';
+
+                // RANKING DE MERMA (Ordenado de menor a mayor merma)
+                if(dashData && dashData.ranking && dashData.ranking.length > 0) {
+                    amHTML += `
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 mb-6">
+                        <h3 class="font-black text-xs uppercase text-gray-400 mb-4 flex items-center gap-2"><svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg> Ranking de Eficiencia</h3>
+                        <div class="space-y-2">
+                            ${dashData.ranking.map((t, idx) => `
+                                <div class="flex justify-between items-center p-3 rounded-xl bg-gray-50 border border-gray-100">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-6 h-6 rounded-full ${idx === 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-500'} flex items-center justify-center font-black text-xs">${idx + 1}</div>
+                                        <span class="font-bold text-xs text-gray-800">${t.tienda}</span>
+                                    </div>
+                                    <div class="font-black text-sm ${t.eficiencia < 5 ? 'text-green-500' : (t.eficiencia < 15 ? 'text-orange-400' : 'text-red-500')}">${t.eficiencia}% <span class="text-[8px] text-gray-400 block -mt-1 text-right">MERMA</span></div>
+                                </div>
+                            `).join('')}
                         </div>
-                    `).join('') + `</div>
-                    <button onclick="copyToWhatsApp()" class="w-full bg-green-500 text-white font-black py-4 rounded-xl shadow-md hover:bg-green-600 text-xs uppercase tracking-widest flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.347-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-                        Copiar Informe
-                    </button>`;
+                    </div>`;
                 }
-                main.innerHTML = `<h3 class="font-black text-xs uppercase text-gray-400 mb-4">Auditoría de Cierre</h3>${pendingHTML}`;
+
+                // TAREAS PENDIENTES MANAGER (Desplegable y Botones individuales)
+                amHTML += `<div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100"><h3 class="font-black text-xs uppercase text-gray-400 mb-4">Auditoría de Cierre</h3>`;
+                
+                if(dashData && dashData.listaPendientes && dashData.listaPendientes.length > 0) {
+                    amHTML += `<div class="space-y-4 mb-6">` + dashData.listaPendientes.map(t => {
+                        let fDates = t.dias.map(d => parseFechaAmigable(d));
+                        let fDatesStr = JSON.stringify(fDates).replace(/"/g, '&quot;'); // Escape for HTML
+                        return `
+                        <div class="border border-red-100 rounded-2xl overflow-hidden">
+                            <div class="bg-red-50 p-4 flex justify-between items-center">
+                                <p class="font-black text-sm text-red-900">${t.tienda}</p>
+                                <button onclick="copySingleStore('${t.tienda}', ${fDatesStr})" class="text-[10px] bg-red-200 text-red-800 px-3 py-1.5 rounded-lg font-black uppercase tracking-wider hover:bg-red-300 transition-colors active:scale-95">Copiar Faltas</button>
+                            </div>
+                            <div class="p-4 bg-white">
+                                <ul class="text-xs text-red-600 font-bold space-y-2 pl-2">
+                                    ${fDates.map(df => `<li class="flex items-center gap-2"><div class="w-1.5 h-1.5 bg-red-400 rounded-full"></div> ${df}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>`;
+                    }).join('') + `</div>
+                    
+                    <button onclick="copyAllToWhatsApp()" class="w-full bg-green-500 text-white font-black py-4 rounded-2xl shadow-md hover:bg-green-600 text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.347-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                        Copiar Informe de Zona
+                    </button>`;
+                } else {
+                    amHTML += `<div class="bg-green-50 border border-green-100 rounded-2xl p-4 text-green-700 font-bold text-xs text-center">Todas las tiendas de la zona están al día.</div>`;
+                }
+                amHTML += `</div>`;
+                main.innerHTML = amHTML;
             }
         }
 
-        function copyToWhatsApp() {
-            let txt = "⚠️ *INFORME DE TAREAS PENDIENTES* ⚠️\n\n";
-            dashData.listaPendientes.forEach(t => {
-                txt += `🏪 *${t.tienda}*\nFaltan datos de: ${t.dias.join(', ')}\n\n`;
-            });
+        function copySingleStore(tienda, diasArray) {
+            let txt = `⚠️ *AVISO TIENDA: ${tienda}* ⚠️\nPor favor, actualizad los datos de producción y merma de los siguientes días:\n\n`;
+            diasArray.forEach(d => txt += `👉 ${d}\n`);
             navigator.clipboard.writeText(txt);
-            alert("Informe copiado al portapapeles. Listo para pegar en WhatsApp.");
+            alert(`Aviso de ${tienda} copiado al portapapeles.`);
         }
 
-        // --- SISTEMA DE REGISTRO ---
+        function copyAllToWhatsApp() {
+            let txt = `⚠️ *INFORME DE TAREAS PENDIENTES - ${dashData.zonaNombre}* ⚠️\n\n`;
+            dashData.listaPendientes.forEach(t => {
+                let dFormateados = t.dias.map(d => parseFechaAmigable(d));
+                txt += `🏪 *${t.tienda}*\nFaltan datos de:\n${dFormateados.map(d=>`  - ${d}`).join('\n')}\n\n`;
+            });
+            navigator.clipboard.writeText(txt);
+            alert("Informe global de zona copiado al portapapeles.");
+        }
+
+        // --- SISTEMA DE REGISTRO (Intacto y Seguro) ---
         function renderCats() {
             const activeProds = master.prods.filter(p => p.act === true);
             const rawCats = [...new Set(activeProds.map(p => p.cat))].sort();
@@ -354,7 +457,10 @@
             const items = master.prods.map(p => ({ id: p.id, v: inputState[p.uid] || 0 })).filter(x => x.v > 0);
             if(items.length === 0) return alert("No has introducido ninguna cantidad.");
             
-            document.getElementById('loading').classList.remove('hidden');
+            const loader = document.getElementById('loading');
+            document.getElementById('loading-text').innerText = "Guardando...";
+            loader.classList.remove('hidden');
+            
             const payload = {
                 action: 'saveDaily',
                 params: {
@@ -374,12 +480,13 @@
                     inputState = {}; 
                     document.getElementById('input-date').valueAsDate = new Date();
                     cache.cat = 'TODOS'; cache.sub = 'TODOS';
+                    document.getElementById('loading-text').innerText = "Actualizando métricas...";
                     await fetchDashboard(); 
                     renderDashboard();
                     showSec('dash');
                 }
             } catch (e) { alert("Error al guardar en la base de datos."); }
-            document.getElementById('loading').classList.add('hidden');
+            loader.classList.add('hidden');
         }
     </script>
 </body>
