@@ -121,24 +121,71 @@
                             <div class="col-span-2">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase">Tiendas (Múltiple Selección)</label>
                                 <select id="audit-stores" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none focus:ring-2 focus:ring-blue-600 h-24"></select>
-                                <p class="text-[9px] text-gray-400 mt-1">Usa Ctrl (Windows) o Cmd (Mac) para seleccionar varias.</p>
                             </div>
 
-                            <div class="col-span-2">
-                                <label class="text-[10px] font-bold text-gray-400 uppercase">Categorías (Múltiple Selección)</label>
+                            <div class="col-span-1">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase">Categorías</label>
                                 <select id="audit-cats" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none focus:ring-2 focus:ring-blue-600 h-24"></select>
                             </div>
+
+                            <div class="col-span-1">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase">Productos</label>
+                                <select id="audit-prods" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none focus:ring-2 focus:ring-blue-600 h-24"></select>
+                            </div>
+                            <p class="text-[9px] text-gray-400 col-span-2 -mt-2">Usa Ctrl (Windows) o Cmd (Mac) para seleccionar varias opciones en los recuadros.</p>
                         </div>
 
                         <button onclick="generateAuditReport()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl text-xs uppercase hover:bg-slate-800 active:scale-95 transition-all shadow-md">Generar Análisis Visual</button>
                     </div>
 
-                    <div id="audit-results-container" class="hidden bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
-                        <h3 class="font-black text-slate-800 uppercase text-xs mb-4">Resultados de Auditoría</h3>
-                        <canvas id="auditChart" class="w-full h-64 mb-6"></canvas>
+                    <div id="audit-results-container" class="hidden space-y-6">
                         
-                        <div class="border-t border-gray-100 pt-4 text-center">
-                            <button onclick="downloadAuditCSV()" class="text-[10px] font-bold text-blue-500 uppercase tracking-widest hover:text-blue-700 underline">Exportar Datos Crudos (.CSV)</button>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center">
+                                <p class="text-[9px] font-bold text-gray-400 uppercase">Producción</p>
+                                <p id="kpi-prod" class="text-xl font-black text-blue-600">0</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center">
+                                <p class="text-[9px] font-bold text-gray-400 uppercase">Merma Total</p>
+                                <p id="kpi-merma" class="text-xl font-black text-red-500">0</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center">
+                                <p class="text-[9px] font-bold text-gray-400 uppercase">% Merma</p>
+                                <p id="kpi-porc" class="text-xl font-black text-slate-800">0%</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+                            <h3 class="font-black text-slate-800 uppercase text-xs mb-4">Comparativa por Tienda</h3>
+                            <canvas id="auditChartStore" class="w-full h-64"></canvas>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+                            <h3 class="font-black text-slate-800 uppercase text-xs mb-4">Top Productos (Mayor Merma)</h3>
+                            <div class="h-64 relative w-full flex justify-center">
+                                <canvas id="auditChartProd"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+                            <h3 class="font-black text-slate-800 uppercase text-xs mb-4">Desglose Detallado</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead>
+                                        <tr class="text-gray-400 border-b">
+                                            <th class="pb-2">Producto</th>
+                                            <th class="pb-2 text-center">Prod</th>
+                                            <th class="pb-2 text-center">Merma</th>
+                                            <th class="pb-2 text-right">%</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="audit-table-body" class="divide-y divide-gray-50"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="text-center pb-8">
+                            <button onclick="downloadAuditCSV()" class="text-xs font-bold text-blue-500 uppercase tracking-widest hover:text-blue-700 underline bg-blue-50 px-6 py-3 rounded-xl transition-colors">Exportar Datos Crudos (.CSV)</button>
                         </div>
                     </div>
                 </section>
@@ -166,7 +213,10 @@
         let dashData = null; 
         let cache = { cat: 'TODOS', sub: 'TODOS' };
         let inputState = {};
-        let auditChartInstance = null; // Instancia global para destruir gráficos viejos
+        
+        // Controladores de Gráficos
+        let auditChartStoreInst = null;
+        let auditChartProdInst = null;
 
         function parseFechaAmigable(dateStr) {
             if(!dateStr) return "";
@@ -179,7 +229,6 @@
 
         window.onload = async () => {
             document.getElementById('input-date').valueAsDate = new Date();
-            // Por defecto, filtros de auditoría a últimos 7 días
             let today = new Date();
             let lastWeek = new Date();
             lastWeek.setDate(today.getDate() - 7);
@@ -280,26 +329,25 @@
             }
             nav.innerHTML = tabs;
             
-            // Auto-poblar los filtros de Auditoría si no es tienda
             if(user.rol !== 'STORE') populateAuditFilters();
-            
             renderDashboard();
         }
 
         function populateAuditFilters() {
             const storeSel = document.getElementById('audit-stores');
             const catSel = document.getElementById('audit-cats');
+            const prodSel = document.getElementById('audit-prods');
             
-            // Filtro de Tiendas: Mostrar todas si es ADMIN, o solo las de su zona si es AREA_MANAGER
             let allowedStores = master.tiendas;
-            if (user.rol === 'AREA_MANAGER') {
-                allowedStores = master.tiendas.filter(t => t.zona === user.zonas);
-            }
+            if (user.rol === 'AREA_MANAGER') allowedStores = master.tiendas.filter(t => t.zona === user.zonas);
             storeSel.innerHTML = allowedStores.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
             
-            // Filtro de Categorías
             const uniqueCats = [...new Set(master.prods.map(p => p.cat))].sort();
             catSel.innerHTML = uniqueCats.map(c => `<option value="${c}">${c}</option>`).join('');
+
+            // Productos
+            const activeProds = master.prods.filter(p => p.act).sort((a,b) => a.nom.localeCompare(b.nom));
+            prodSel.innerHTML = activeProds.map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
         }
 
         function renderDashboard() {
@@ -318,12 +366,7 @@
                         </div>
                     </div>
                 `;
-                main.innerHTML = `
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center py-12">
-                        <p class="text-gray-400 font-bold mb-2">Panel de Administración Activo</p>
-                        <p class="text-xs text-gray-500">Navega a las pestañas superiores para gestionar el sistema.</p>
-                    </div>
-                `;
+                main.innerHTML = `<div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center py-12"><p class="text-gray-400 font-bold mb-2">Panel de Administración Activo</p><p class="text-xs text-gray-500">Navega a las pestañas superiores para gestionar el sistema.</p></div>`;
                 return;
             }
 
@@ -334,18 +377,12 @@
                 `;
                 
                 let storeHTML = '';
-                
-                // RENDERING TAREAS PENDIENTES (NUEVO ALGORITMO)
                 if(dashData && dashData.listaPendientes && dashData.listaPendientes.length > 0) {
                     storeHTML += `
                     <div class="bg-red-50 border border-red-100 rounded-[2rem] p-6 shadow-sm">
                         <h4 class="font-black text-red-700 text-sm mb-3 flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> Registro Incompleto</h4>
                         <ul class="text-xs text-red-600 font-bold space-y-3">
-                            ${dashData.listaPendientes.map(d => `
-                                <li class="flex flex-col">
-                                    <div class="flex items-center gap-2 text-slate-800"><div class="w-1.5 h-1.5 bg-red-400 rounded-full"></div> <span>${parseFechaAmigable(d.f)}</span></div>
-                                    <span class="text-[9px] uppercase tracking-widest ml-3.5 text-red-500">${d.motivo}</span>
-                                </li>`).join('')}
+                            ${dashData.listaPendientes.map(d => `<li class="flex flex-col"><div class="flex items-center gap-2 text-slate-800"><div class="w-1.5 h-1.5 bg-red-400 rounded-full"></div> <span>${parseFechaAmigable(d.f)}</span></div><span class="text-[9px] uppercase tracking-widest ml-3.5 text-red-500">${d.motivo}</span></li>`).join('')}
                         </ul>
                     </div>`;
                 } else {
@@ -378,7 +415,6 @@
                 `;
                 
                 let amHTML = '';
-
                 if(dashData && dashData.ranking && dashData.ranking.length > 0) {
                     amHTML += `
                     <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 mb-6">
@@ -386,10 +422,7 @@
                         <div class="space-y-2">
                             ${dashData.ranking.map((t, idx) => `
                                 <div class="flex justify-between items-center p-3 rounded-xl bg-gray-50 border border-gray-100">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-6 h-6 rounded-full ${idx === 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-500'} flex items-center justify-center font-black text-xs">${idx + 1}</div>
-                                        <span class="font-bold text-xs text-gray-800">${t.tienda}</span>
-                                    </div>
+                                    <div class="flex items-center gap-3"><div class="w-6 h-6 rounded-full ${idx === 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-500'} flex items-center justify-center font-black text-xs">${idx + 1}</div><span class="font-bold text-xs text-gray-800">${t.tienda}</span></div>
                                     <div class="font-black text-sm ${t.eficiencia < 5 ? 'text-green-500' : (t.eficiencia < 15 ? 'text-orange-400' : 'text-red-500')}">${t.eficiencia}% <span class="text-[8px] text-gray-400 block -mt-1 text-right">MERMA</span></div>
                                 </div>
                             `).join('')}
@@ -398,32 +431,15 @@
                 }
 
                 amHTML += `<div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100"><h3 class="font-black text-xs uppercase text-gray-400 mb-4">Auditoría de Cierre</h3>`;
-                
                 if(dashData && dashData.listaPendientes && dashData.listaPendientes.length > 0) {
                     amHTML += `<div class="space-y-4 mb-6">` + dashData.listaPendientes.map(t => {
                         let fDatesStr = JSON.stringify(t.dias).replace(/"/g, '&quot;');
                         return `
                         <div class="border border-red-100 rounded-2xl overflow-hidden">
-                            <div class="bg-red-50 p-4 flex justify-between items-center">
-                                <p class="font-black text-sm text-red-900">${t.tienda}</p>
-                                <button onclick="copySingleStore('${t.tienda}', ${fDatesStr})" class="text-[10px] bg-red-200 text-red-800 px-3 py-1.5 rounded-lg font-black uppercase tracking-wider hover:bg-red-300 transition-colors active:scale-95">Copiar Faltas</button>
-                            </div>
-                            <div class="p-4 bg-white">
-                                <ul class="text-xs text-red-600 font-bold space-y-3 pl-2">
-                                    ${t.dias.map(df => `
-                                    <li class="flex flex-col">
-                                        <div class="flex items-center gap-2 text-slate-800"><div class="w-1.5 h-1.5 bg-red-400 rounded-full"></div> <span>${parseFechaAmigable(df.f)}</span></div>
-                                        <span class="text-[9px] uppercase tracking-widest ml-3.5 text-red-500">${df.motivo}</span>
-                                    </li>`).join('')}
-                                </ul>
-                            </div>
+                            <div class="bg-red-50 p-4 flex justify-between items-center"><p class="font-black text-sm text-red-900">${t.tienda}</p><button onclick="copySingleStore('${t.tienda}', ${fDatesStr})" class="text-[10px] bg-red-200 text-red-800 px-3 py-1.5 rounded-lg font-black uppercase tracking-wider hover:bg-red-300 transition-colors active:scale-95">Copiar Faltas</button></div>
+                            <div class="p-4 bg-white"><ul class="text-xs text-red-600 font-bold space-y-3 pl-2">${t.dias.map(df => `<li class="flex flex-col"><div class="flex items-center gap-2 text-slate-800"><div class="w-1.5 h-1.5 bg-red-400 rounded-full"></div> <span>${parseFechaAmigable(df.f)}</span></div><span class="text-[9px] uppercase tracking-widest ml-3.5 text-red-500">${df.motivo}</span></li>`).join('')}</ul></div>
                         </div>`;
-                    }).join('') + `</div>
-                    
-                    <button onclick="copyAllToWhatsApp()" class="w-full bg-green-500 text-white font-black py-4 rounded-2xl shadow-md hover:bg-green-600 text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.347-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-                        Copiar Informe de Zona
-                    </button>`;
+                    }).join('') + `</div><button onclick="copyAllToWhatsApp()" class="w-full bg-green-500 text-white font-black py-4 rounded-2xl shadow-md hover:bg-green-600 text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.347-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>Copiar Informe de Zona</button>`;
                 } else {
                     amHTML += `<div class="bg-green-50 border border-green-100 rounded-2xl p-4 text-green-700 font-bold text-xs text-center">Todas las tiendas de la zona están al día.</div>`;
                 }
@@ -448,6 +464,7 @@
             alert("Informe global de zona copiado al portapapeles.");
         }
 
+        // --- MÓDULO OPERATIVO (REGISTRO) ---
         function renderCats() {
             const activeProds = master.prods.filter(p => p.act === true);
             const rawCats = [...new Set(activeProds.map(p => p.cat))].sort();
@@ -502,8 +519,7 @@
             document.getElementById('tab-'+id).classList.replace('tab-inactive', 'tab-active');
             if(id === 'input') renderCats();
             
-            // Si el usuario entra en auditoría, limpiar gráficas viejas si las hay
-            if(id === 'audit' && auditChartInstance) {
+            if(id === 'audit') {
                 document.getElementById('audit-results-container').classList.add('hidden');
             }
         }
@@ -544,18 +560,15 @@
             loader.classList.add('hidden');
         }
 
-        // --- SISTEMA DE AUDITORÍA AVANZADA ---
+        // --- SISTEMA DE AUDITORÍA AVANZADA E INTEGRAL ---
         function getFilterParams() {
             const start = document.getElementById('audit-start').value;
             const end = document.getElementById('audit-end').value;
+            const tiendas = Array.from(document.getElementById('audit-stores').selectedOptions).map(opt => opt.value);
+            const categorias = Array.from(document.getElementById('audit-cats').selectedOptions).map(opt => opt.value);
+            const productos = Array.from(document.getElementById('audit-prods').selectedOptions).map(opt => opt.value);
             
-            const storeSel = document.getElementById('audit-stores');
-            const tiendas = Array.from(storeSel.selectedOptions).map(opt => opt.value);
-            
-            const catSel = document.getElementById('audit-cats');
-            const categorias = Array.from(catSel.selectedOptions).map(opt => opt.value);
-            
-            return { startDate: start, endDate: end, tiendas: tiendas, categorias: categorias, rol: user.rol, zonas: user.zonas };
+            return { startDate: start, endDate: end, tiendas: tiendas, categorias: categorias, productos: productos, rol: user.rol, zonas: user.zonas };
         }
 
         async function generateAuditReport() {
@@ -563,7 +576,7 @@
             if (!params.startDate || !params.endDate) return alert("Selecciona un rango de fechas.");
 
             const loader = document.getElementById('loading');
-            document.getElementById('loading-text').innerText = "Calculando análisis...";
+            document.getElementById('loading-text').innerText = "Procesando Analytics...";
             loader.classList.remove('hidden');
 
             try {
@@ -571,48 +584,90 @@
                 const d = await r.json();
 
                 if (d.status === 'success' && d.data.chartData.length > 0) {
-                    renderChart(d.data.chartData);
+                    renderAuditResults(d.data.chartData);
                     document.getElementById('audit-results-container').classList.remove('hidden');
                 } else {
-                    alert("No se han encontrado registros de Producción/Merma con los filtros seleccionados.");
+                    alert("No se han encontrado registros con los filtros seleccionados.");
                     document.getElementById('audit-results-container').classList.add('hidden');
                 }
             } catch (e) { alert("Error al generar el gráfico."); }
             loader.classList.add('hidden');
         }
 
-        function renderChart(data) {
-            // Agrupar datos por tienda para el gráfico comparativo
-            let grouped = {};
-            data.forEach(row => {
-                if(!grouped[row.TIENDA]) grouped[row.TIENDA] = { p: 0, m: 0 };
-                grouped[row.TIENDA].p += row.PROD_TOTAL;
-                grouped[row.TIENDA].m += row.MERMA;
+        function renderAuditResults(data) {
+            // 1. Cálculos de KPIs Globales
+            let sumProd = 0, sumMerma = 0;
+            let byStore = {};
+            let byProd = {};
+
+            data.forEach(r => {
+                sumProd += r.PROD_TOTAL;
+                sumMerma += r.MERMA;
+
+                // Agrupar por Tienda
+                if(!byStore[r.TIENDA]) byStore[r.TIENDA] = { p: 0, m: 0 };
+                byStore[r.TIENDA].p += r.PROD_TOTAL;
+                byStore[r.TIENDA].m += r.MERMA;
+
+                // Agrupar por Producto
+                if(!byProd[r.PRODUCTO]) byProd[r.PRODUCTO] = { p: 0, m: 0 };
+                byProd[r.PRODUCTO].p += r.PROD_TOTAL;
+                byProd[r.PRODUCTO].m += r.MERMA;
             });
 
-            const labels = Object.keys(grouped);
-            const dataProd = labels.map(l => grouped[l].p);
-            const dataMerma = labels.map(l => grouped[l].m);
+            document.getElementById('kpi-prod').innerText = sumProd.toLocaleString();
+            document.getElementById('kpi-merma').innerText = sumMerma.toLocaleString();
+            document.getElementById('kpi-porc').innerText = sumProd > 0 ? ((sumMerma / sumProd) * 100).toFixed(1) + '%' : '0%';
 
-            if (auditChartInstance) auditChartInstance.destroy();
+            // 2. Gráfico de Barras (Tiendas)
+            if (auditChartStoreInst) auditChartStoreInst.destroy();
+            const storeLabels = Object.keys(byStore);
+            const storeDataP = storeLabels.map(l => byStore[l].p);
+            const storeDataM = storeLabels.map(l => byStore[l].m);
 
-            const ctx = document.getElementById('auditChart').getContext('2d');
-            auditChartInstance = new Chart(ctx, {
+            auditChartStoreInst = new Chart(document.getElementById('auditChartStore').getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: storeLabels,
                     datasets: [
-                        { label: 'Producción Total', data: dataProd, backgroundColor: '#3b82f6', borderRadius: 4 },
-                        { label: 'Merma Total', data: dataMerma, backgroundColor: '#ef4444', borderRadius: 4 }
+                        { label: 'Producción', data: storeDataP, backgroundColor: '#3b82f6', borderRadius: 4 },
+                        { label: 'Merma', data: storeDataM, backgroundColor: '#ef4444', borderRadius: 4 }
                     ]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true } },
-                    plugins: { legend: { position: 'bottom' } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
             });
+
+            // 3. Gráfico Circular (Top Productos por Merma bruta)
+            if (auditChartProdInst) auditChartProdInst.destroy();
+            
+            // Ordenar productos por mayor merma absoluta
+            const sortedProds = Object.keys(byProd).map(k => ({ nom: k, m: byProd[k].m, p: byProd[k].p })).sort((a,b) => b.m - a.m);
+            const top5Prods = sortedProds.slice(0, 5); // Coger los 5 peores
+            
+            auditChartProdInst = new Chart(document.getElementById('auditChartProd').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: top5Prods.map(x => x.nom),
+                    datasets: [{
+                        data: top5Prods.map(x => x.m),
+                        backgroundColor: ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 10} } } } }
+            });
+
+            // 4. Tabla de Desglose
+            const tbody = document.getElementById('audit-table-body');
+            tbody.innerHTML = sortedProds.map(x => {
+                let porc = x.p > 0 ? ((x.m / x.p) * 100).toFixed(1) : 0;
+                return `<tr>
+                    <td class="py-3 font-bold text-gray-800 uppercase">${x.nom}</td>
+                    <td class="py-3 text-center font-black text-blue-600">${x.p}</td>
+                    <td class="py-3 text-center font-black text-red-500">${x.m}</td>
+                    <td class="py-3 text-right font-black text-gray-400">${porc}%</td>
+                </tr>`;
+            }).join('');
         }
 
         async function downloadAuditCSV() {
