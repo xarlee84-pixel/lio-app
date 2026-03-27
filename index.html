@@ -75,7 +75,7 @@
 
                 <section id="sec-input" class="app-section hidden space-y-6 pb-32">
                     <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex gap-2">
-                        <input type="date" id="input-date" class="flex-1 font-bold text-slate-700 outline-none">
+                        <input type="date" id="input-date" class="flex-1 font-bold text-slate-700 outline-none bg-transparent">
                         <select id="input-type" onchange="updateInputView()" class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-black text-xs border-none outline-none">
                             <option value="prod">PRODUCCIÓN</option>
                             <option value="merma">MERMA</option>
@@ -84,7 +84,7 @@
 
                     <div id="area-turno" class="bg-white p-4 rounded-3xl border border-blue-100">
                         <p class="text-[10px] font-black text-gray-400 uppercase mb-3 ml-2">Seleccionar Turno</p>
-                        <select id="input-turno" class="w-full font-bold text-slate-800 outline-none">
+                        <select id="input-turno" class="w-full font-bold text-slate-800 outline-none bg-transparent">
                             <option value="Obrador">OBRADOR (Obligatorio)</option>
                             <option value="Mediodía">REPOSICIÓN MEDIODÍA</option>
                             <option value="Tarde">REPOSICIÓN TARDE</option>
@@ -98,8 +98,8 @@
 
                     <div id="prod-grid" class="space-y-3"></div>
 
-                    <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent z-50">
-                        <button onclick="processSave()" class="w-full max-w-4xl mx-auto block bg-slate-900 text-white font-black py-5 rounded-3xl shadow-2xl active:scale-95 transition-all text-sm uppercase tracking-widest">Confirmar Envío de Datos</button>
+                    <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent z-50 pointer-events-none">
+                        <button onclick="processSave()" class="w-full max-w-4xl mx-auto block bg-slate-900 text-white font-black py-5 rounded-3xl shadow-2xl active:scale-95 transition-all text-sm uppercase tracking-widest pointer-events-auto">Confirmar Envío de Datos</button>
                     </div>
                 </section>
 
@@ -120,7 +120,7 @@
         let user = null;
         let cache = { cat: null, sub: null };
 
-        // --- INICIO Y CARGA ---
+        // --- INICIO Y CARGA CON SANITIZACIÓN CRÍTICA ---
         window.onload = async () => {
             document.getElementById('input-date').valueAsDate = new Date();
             await loadMasterData();
@@ -131,14 +131,40 @@
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getInitialData' }) });
                 const d = await r.json();
                 if(d.status === 'success') {
+                    
+                    // AUDITORÍA DE DATOS: Filtrado y limpieza absoluta de la información de Sheets
                     master = {
-                        prods: d.data.productos.slice(1).map(x => ({id: x[0], nom: x[1], cat: x[2], sub: x[3], act: x[4]})),
-                        tiendas: d.data.tiendas.slice(1).map(x => ({id: x[0], nom: x[1], zona: x[2], pin: x[3]}))
+                        prods: d.data.productos.slice(1)
+                            .filter(x => x[0] && String(x[1]).trim() !== '') // Elimina filas fantasma
+                            .map(x => {
+                                // Lógica de protección: si la columna activo está vacía, se asume TRUE. 
+                                // Solo se oculta si es explícitamente FALSE.
+                                let isActive = true;
+                                if(x[4] === false || String(x[4]).trim().toUpperCase() === 'FALSE') {
+                                    isActive = false;
+                                }
+                                return {
+                                    id: String(x[0]).trim(),
+                                    nom: String(x[1]).trim(),
+                                    cat: String(x[2] || 'SIN CATEGORÍA').trim(),
+                                    sub: String(x[3] || 'SIN SUBCATEGORÍA').trim(),
+                                    act: isActive
+                                };
+                            }),
+                        tiendas: d.data.tiendas.slice(1)
+                            .filter(x => x[0])
+                            .map(x => ({
+                                id: String(x[0]).trim(),
+                                nom: String(x[1]).trim(),
+                                zona: String(x[2] || '').trim(),
+                                pin: String(x[3] || '').trim()
+                            }))
                     };
+
                     const sel = document.getElementById('store-select');
                     sel.innerHTML = master.tiendas.map(t => `<option value="${t.id}">${t.nom} (${t.id})</option>`).join('');
                 }
-            } catch (e) { alert("Error de conexión crítica."); }
+            } catch (e) { alert("Error de conexión crítica con la base de datos."); }
         }
 
         function toggleLoginUI() {
@@ -160,14 +186,21 @@
                 p.pass = document.getElementById('admin-pass').value;
             }
 
-            const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', params: p }) });
-            const d = await r.json();
-            document.getElementById('loading').classList.add('hidden');
+            try {
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', params: p }) });
+                const d = await r.json();
+                document.getElementById('loading').classList.add('hidden');
 
-            if(d.status === 'success') {
-                user = d.data;
-                initAppStructure();
-            } else { alert("Credenciales Incorrectas"); }
+                if(d.status === 'success') {
+                    user = d.data;
+                    initAppStructure();
+                } else { 
+                    alert("Credenciales Incorrectas"); 
+                }
+            } catch (e) {
+                document.getElementById('loading').classList.add('hidden');
+                alert("Fallo de comunicación con el servidor.");
+            }
         }
 
         function initAppStructure() {
@@ -176,7 +209,6 @@
             document.getElementById('user-display').innerText = user.nombre || user.id;
             document.getElementById('role-display').innerText = user.rol;
 
-            // Construir Nav según Rol (IDTF)
             const nav = document.getElementById('app-nav');
             let tabs = `<button onclick="showSec('dash')" id="tab-dash" class="tab-item flex-1 p-4 border-b-4 tab-active">Inicio</button>`;
             
@@ -192,7 +224,7 @@
             renderDashboard();
         }
 
-        // --- DASHBOARD (LÓGICA POR ROL) ---
+        // --- DASHBOARD ---
         function renderDashboard() {
             const widgets = document.getElementById('dash-widgets');
             const main = document.getElementById('dash-main-content');
@@ -214,16 +246,25 @@
             }
         }
 
-        // --- SISTEMA DE REGISTRO (IDTF: CATEGORÍA -> SUBCAT -> PRODUCTO) ---
+        // --- LÓGICA DE REGISTRO FILTRADO ---
         function renderCats() {
-            const cats = [...new Set(master.prods.map(p => p.cat))];
+            const activeProds = master.prods.filter(p => p.act === true);
+            const cats = [...new Set(activeProds.map(p => p.cat))].sort();
+            
             const div = document.getElementById('pill-cats');
             div.innerHTML = cats.map(c => `<button onclick="selCat('${c}')" class="px-6 py-3 rounded-2xl font-black text-[10px] uppercase whitespace-nowrap ${cache.cat === c ? 'pill-selected' : 'pill-default'}">${c}</button>`).join('');
-            if(cache.cat) renderSubs();
+            
+            if(cache.cat && cats.includes(cache.cat)) {
+                renderSubs();
+            } else {
+                document.getElementById('pill-subs').classList.add('hidden');
+                document.getElementById('prod-grid').innerHTML = '';
+            }
         }
 
         function selCat(c) {
-            cache.cat = c; cache.sub = null;
+            cache.cat = c; 
+            cache.sub = null;
             renderCats();
             document.getElementById('pill-subs').classList.remove('hidden');
             document.getElementById('prod-grid').innerHTML = '';
@@ -231,10 +272,13 @@
         }
 
         function renderSubs() {
-            const subs = [...new Set(master.prods.filter(p => p.cat === cache.cat).map(p => p.sub))];
+            const activeProds = master.prods.filter(p => p.act === true && p.cat === cache.cat);
+            const subs = [...new Set(activeProds.map(p => p.sub))].sort();
+            
             const div = document.getElementById('pill-subs');
             div.innerHTML = subs.map(s => `<button onclick="selSub('${s}')" class="px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap ${cache.sub === s ? 'pill-selected' : 'pill-default'}">${s}</button>`).join('');
-            if(cache.sub) renderProds();
+            
+            if(cache.sub && subs.includes(cache.sub)) renderProds();
         }
 
         function selSub(s) {
@@ -244,8 +288,14 @@
         }
 
         function renderProds() {
-            const list = master.prods.filter(p => p.cat === cache.cat && p.sub === cache.sub && (p.act === true || p.act === "TRUE"));
+            const list = master.prods.filter(p => p.cat === cache.cat && p.sub === cache.sub && p.act === true);
             const div = document.getElementById('prod-grid');
+            
+            if(list.length === 0) {
+                div.innerHTML = '<p class="text-center text-gray-400 font-bold py-8">No hay productos activos en esta subcategoría.</p>';
+                return;
+            }
+
             div.innerHTML = list.map(p => `
                 <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-100 flex justify-between items-center transition-all hover:border-blue-200">
                     <div class="flex-1">
@@ -274,12 +324,14 @@
         function showSec(id) {
             document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
             document.getElementById('sec-'+id).classList.remove('hidden');
+            
             document.querySelectorAll('.tab-item').forEach(t => {
                 t.classList.replace('tab-active', 'tab-inactive');
                 t.classList.remove('border-blue-600', 'text-blue-600');
             });
             const active = document.getElementById('tab-'+id);
             active.classList.replace('tab-inactive', 'tab-active');
+            
             if(id === 'input') renderCats();
         }
 
@@ -310,7 +362,9 @@
                     alert("¡DATOS GUARDADOS CORRECTAMENTE!");
                     location.reload();
                 }
-            } catch (e) { alert("Error al guardar."); }
+            } catch (e) { 
+                alert("Error al guardar en la base de datos."); 
+            }
             document.getElementById('loading').classList.add('hidden');
         }
     </script>
