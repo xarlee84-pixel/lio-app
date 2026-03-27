@@ -3,179 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIO APP - Gestión de Producción</title>
+    <title>LIO APP v2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .pill-active { @apply bg-blue-600 text-white; }
-        .pill-inactive { @apply bg-gray-200 text-gray-700 hover:bg-gray-300; }
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .btn-step { @apply transition-all duration-200 transform active:scale-95; }
+        .selected-pill { @apply bg-blue-700 text-white shadow-md; }
+        .unselected-pill { @apply bg-gray-100 text-gray-500 hover:bg-gray-200; }
     </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-gray-50 font-sans text-gray-900">
 
-    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-black text-blue-900">LIO APP</h1>
-                <p class="text-gray-500 text-sm">Control de Producción y Merma</p>
-            </div>
+    <div id="loading-overlay" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-center justify-center text-white font-bold">CARGANDO...</div>
+
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-900 to-black">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md">
+            <h1 class="text-4xl font-black text-center mb-2 text-blue-900 italic">LIO</h1>
+            <p class="text-center text-gray-400 text-xs font-bold uppercase tracking-widest mb-8">Management System</p>
             
-            <div class="space-y-4">
+            <div class="space-y-5">
                 <div>
-                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Tipo de Acceso</label>
-                    <select id="user-type" class="w-full p-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" onchange="toggleLoginFields()">
+                    <label class="text-[10px] font-black text-gray-400 uppercase ml-2">Tipo de Perfil</label>
+                    <select id="user-type" onchange="toggleLoginUI()" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-600 outline-none font-bold">
                         <option value="store">TIENDA (PIN)</option>
-                        <option value="admin">MANAGEMENT (USER)</option>
+                        <option value="admin">MANAGEMENT (ZONA/ADMIN)</option>
                     </select>
                 </div>
-                
-                <div id="store-fields">
-                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Seleccionar Tienda</label>
-                    <select id="store-select" class="w-full p-3 bg-gray-50 border rounded-xl mb-4"></select>
-                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">PIN</label>
-                    <input type="password" id="store-pin" inputmode="numeric" class="w-full p-3 bg-gray-50 border rounded-xl text-center text-2xl tracking-widest" placeholder="****">
+
+                <div id="group-store">
+                    <label class="text-[10px] font-black text-gray-400 uppercase ml-2">Seleccionar Punto de Venta</label>
+                    <select id="store-select" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-600 outline-none font-bold"></select>
+                    <label class="text-[10px] font-black text-gray-400 uppercase ml-2 mt-4 block">PIN de Acceso</label>
+                    <input type="password" id="store-pin" inputmode="numeric" placeholder="****" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-600 outline-none text-center text-3xl tracking-[1em]">
                 </div>
 
-                <div id="admin-fields" class="hidden">
-                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Usuario</label>
-                    <input type="text" id="admin-user" class="w-full p-3 bg-gray-50 border rounded-xl mb-4">
-                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Contraseña</label>
-                    <input type="password" id="admin-pass" class="w-full p-3 bg-gray-50 border rounded-xl">
+                <div id="group-admin" class="hidden">
+                    <label class="text-[10px] font-black text-gray-400 uppercase ml-2">Usuario</label>
+                    <input type="text" id="admin-user" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-1 ring-gray-200 mb-4">
+                    <label class="text-[10px] font-black text-gray-400 uppercase ml-2">Contraseña</label>
+                    <input type="password" id="admin-pass" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-1 ring-gray-200">
                 </div>
 
-                <button onclick="attemptLogin()" id="btn-login" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-700 transform active:scale-95 transition">
-                    ENTRAR AL SISTEMA
-                </button>
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-blue-700 transition-all btn-step">ENTRAR</button>
             </div>
         </div>
     </div>
 
     <div id="main-app" class="hidden min-h-screen flex flex-col">
-        <header class="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-50">
+        <header class="bg-white p-4 border-b flex justify-between items-center shadow-sm sticky top-0 z-40">
             <div>
-                <span class="text-xs font-bold text-blue-600 block" id="role-tag">ROLE</span>
-                <h2 class="font-black text-gray-800 uppercase" id="display-user-name">NAME</h2>
+                <p id="role-display" class="text-[10px] font-black text-blue-600 uppercase leading-none"></p>
+                <h2 id="user-display" class="font-black text-xl text-gray-800 uppercase italic"></h2>
             </div>
-            <button onclick="logout()" class="p-2 bg-gray-100 rounded-lg text-gray-500 hover:text-red-600 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-            </button>
+            <button onclick="location.reload()" class="bg-gray-100 p-3 rounded-2xl text-gray-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg></button>
         </header>
 
-        <nav id="nav-bar" class="bg-white border-b flex overflow-x-auto">
-            <button onclick="showSection('dashboard')" class="nav-item flex-1 p-4 text-center border-b-2 border-blue-600 text-blue-600 font-bold">DASHBOARD</button>
-            <button onclick="showSection('input')" id="nav-input" class="nav-item flex-1 p-4 text-center border-b-2 border-transparent text-gray-500 font-bold">REGISTRO</button>
-            <button onclick="showSection('audit')" id="nav-audit" class="nav-item flex-1 p-4 text-center border-b-2 border-transparent text-gray-500 font-bold hidden">AUDITORÍA</button>
-            <button onclick="showSection('admin')" id="nav-admin" class="nav-item flex-1 p-4 text-center border-b-2 border-transparent text-gray-500 font-bold hidden">ADMIN</button>
+        <nav class="bg-white border-b flex text-center font-black text-[10px] uppercase tracking-tighter">
+            <button onclick="changeTab('dash')" id="btn-tab-dash" class="flex-1 p-4 border-b-4 border-blue-600 text-blue-600">Dashboard</button>
+            <button onclick="changeTab('input')" id="btn-tab-input" class="flex-1 p-4 border-b-4 border-transparent text-gray-400">Registro</button>
+            <button onclick="changeTab('audit')" id="btn-tab-audit" class="flex-1 p-4 border-b-4 border-transparent text-gray-400 hidden">Auditoría</button>
         </nav>
 
-        <main class="flex-1 p-4 pb-24">
+        <main class="flex-1 p-4 overflow-y-auto">
             
-            <div id="sec-dashboard" class="section-content space-y-4">
-                <div id="store-summary" class="grid grid-cols-2 gap-4">
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-xs font-bold text-gray-400">MEDIA MERMA</p>
-                        <p class="text-2xl font-black text-gray-800" id="stat-avg-merma">0%</p>
+            <section id="sec-dash" class="space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase">Estado Merma</p>
+                        <p class="text-3xl font-black text-green-500">8.2%</p>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-xs font-bold text-gray-400">PENDIENTES</p>
-                        <p class="text-2xl font-black text-orange-500" id="stat-pending">--</p>
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase">Pendientes</p>
+                        <p class="text-3xl font-black text-orange-500">0</p>
                     </div>
                 </div>
 
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                    <h3 class="font-bold text-gray-800 mb-4 uppercase text-sm">Top 5 Merma (Mes)</h3>
-                    <canvas id="topMermaChart" height="200"></canvas>
-                </div>
-
-                <div id="manager-view" class="hidden space-y-4">
-                    <h3 class="font-bold text-gray-800 uppercase text-sm">Estado de Zona</h3>
-                    <div id="zone-status-list" class="space-y-2"></div>
-                </div>
-            </div>
-
-            <div id="sec-input" class="section-content hidden space-y-4">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
-                    <div class="flex gap-2">
-                        <input type="date" id="input-date" class="flex-1 p-3 bg-gray-50 rounded-xl border-none font-bold text-gray-700">
-                        <select id="input-type" class="flex-1 p-3 bg-gray-50 rounded-xl border-none font-bold text-gray-700" onchange="updateInputUI()">
-                            <option value="prod">PRODUCCIÓN</option>
-                            <option value="merma">MERMA</option>
-                        </select>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                    <h3 class="font-black text-gray-800 uppercase mb-4 text-sm">Resumen Diario</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="text-gray-400 border-b">
+                                    <th class="pb-2">PRODUCTO</th>
+                                    <th class="pb-2 text-center">PROD</th>
+                                    <th class="pb-2 text-center">MERMA</th>
+                                    <th class="pb-2 text-right">%</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-table-body" class="divide-y divide-gray-50">
+                                </tbody>
+                        </table>
                     </div>
-                    <select id="input-turno" class="w-full p-3 bg-blue-50 text-blue-700 rounded-xl border-none font-bold">
-                        <option value="Obrador">TURNO OBRADOR (Mañana)</option>
-                        <option value="Mediodía">TURNO MEDIODÍA</option>
-                        <option value="Tarde">TURNO TARDE</option>
+                </div>
+            </section>
+
+            <section id="sec-input" class="hidden space-y-6">
+                <div class="bg-white p-5 rounded-3xl shadow-md border-b-4 border-blue-600 flex gap-4">
+                    <input type="date" id="input-date" class="flex-1 font-bold text-gray-700 outline-none">
+                    <select id="input-type" onchange="updateTurnoUI()" class="font-black text-blue-600 bg-blue-50 px-4 rounded-xl outline-none">
+                        <option value="prod">PRODUCCIÓN</option>
+                        <option value="merma">MERMA</option>
                     </select>
                 </div>
 
-                <div class="space-y-2 overflow-hidden">
-                    <div id="cat-filters" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar"></div>
-                    <div id="subcat-filters" class="flex gap-2 overflow-x-auto pb-2 no-scrollbar"></div>
+                <div id="step-turno">
+                    <p class="text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">1. Seleccionar Turno</p>
+                    <select id="input-turno" class="w-full p-4 bg-white rounded-2xl shadow-sm border-none font-bold text-gray-700">
+                        <option value="Obrador">OBRADOR (Principal)</option>
+                        <option value="Mediodía">MEDIODÍA</option>
+                        <option value="Tarde">TARDE</option>
+                    </select>
                 </div>
 
-                <div id="product-list" class="space-y-2"></div>
-
-                <div class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t flex gap-2">
-                    <button onclick="submitData()" class="flex-1 bg-green-600 text-white font-black py-4 rounded-xl shadow-lg">GUARDAR DATOS</button>
-                    <button id="btn-zero-merma" onclick="setZeroMerma()" class="hidden bg-gray-800 text-white px-6 rounded-xl font-bold">TODO 0</button>
+                <div id="step-category">
+                    <p class="text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">2. Categoría</p>
+                    <div id="cat-list" class="flex gap-2 overflow-x-auto no-scrollbar pb-2"></div>
                 </div>
-            </div>
 
-            <div id="sec-audit" class="section-content hidden">
-                <div class="bg-white p-4 rounded-2xl shadow-sm text-center py-20 text-gray-400 font-bold uppercase">Módulo de Auditoría Avanzada</div>
-            </div>
-            <div id="sec-admin" class="section-content hidden">
-                <div class="bg-white p-4 rounded-2xl shadow-sm text-center py-20 text-gray-400 font-bold uppercase">Módulo de Administración de Sistema</div>
-            </div>
+                <div id="step-subcategory" class="hidden">
+                    <p class="text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">3. Subcategoría</p>
+                    <div id="subcat-list" class="flex gap-2 overflow-x-auto no-scrollbar pb-2"></div>
+                </div>
+
+                <div id="step-products" class="hidden space-y-3 pb-32">
+                    <p class="text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">4. Cantidades</p>
+                    <div id="prod-list" class="space-y-3"></div>
+                </div>
+
+                <div class="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white to-transparent z-40">
+                    <button onclick="saveData()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-2xl btn-step">CONFIRMAR Y GUARDAR</button>
+                </div>
+            </section>
 
         </main>
     </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby86Uyfci6i_hyunbHhVlM2XsTwpo6AtxYedAOZX8gJ6xIIn392pUUR6hxzH4hbJ3nrCA/exec";
-        
+        let masterData = null;
         let currentUser = null;
-        let masterData = { productos: [], tiendas: [], zonas: [] };
-        let activeCat = "TODOS";
-        let activeSubCat = "TODOS";
+        let selCat = null;
+        let selSub = null;
 
         window.onload = async () => {
             document.getElementById('input-date').valueAsDate = new Date();
-            await fetchInitialData();
-        };
-
-        async function fetchInitialData() {
+            // Carga silenciosa de datos iniciales
             try {
                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getInitialData' }) });
                 const json = await res.json();
                 if(json.status === 'success') {
-                    // Limpieza de datos (Quitar cabeceras del Sheet)
-                    masterData.productos = json.data.productos.slice(1);
-                    masterData.tiendas = json.data.tiendas.slice(1);
-                    masterData.zonas = json.data.zonas.slice(1);
-                    populateSelectors();
+                    masterData = {
+                        productos: json.data.productos.slice(1).map(r => ({id: r[0], nom: r[1], cat: r[2], sub: r[3], active: r[4]})),
+                        tiendas: json.data.tiendas.slice(1).map(r => ({id: r[0], nom: r[1], pin: r[3]}))
+                    };
+                    populateStores();
                 }
-            } catch (e) { alert("Error de conexión con el servidor"); }
+            } catch (e) { console.error("Error pre-carga", e); }
+        };
+
+        function toggleLoginUI() {
+            const isStore = document.getElementById('user-type').value === 'store';
+            document.getElementById('group-store').classList.toggle('hidden', !isStore);
+            document.getElementById('group-admin').classList.toggle('hidden', isStore);
         }
 
-        function populateSelectors() {
-            const storeSelect = document.getElementById('store-select');
-            storeSelect.innerHTML = masterData.tiendas.map(t => `<option value="${t[0]}">${t[1]} (${t[0]})</option>`).join('');
-            renderFilters();
+        function populateStores() {
+            const select = document.getElementById('store-select');
+            select.innerHTML = masterData.tiendas.map(t => `<option value="${t.id}">${t.nom} (${t.id})</option>`).join('');
         }
 
-        // --- SISTEMA DE LOGIN Y ROLES ---
-        async function attemptLogin() {
-            const btn = document.getElementById('btn-login');
-            btn.innerText = "VERIFICANDO...";
-            btn.disabled = true;
-
+        async function handleLogin() {
             const type = document.getElementById('user-type').value;
+            const overlay = document.getElementById('loading-overlay');
+            overlay.classList.remove('hidden');
+
             let params = { type };
             if (type === 'store') {
                 params.id = document.getElementById('store-select').value;
@@ -188,105 +191,108 @@
             try {
                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', params }) });
                 const json = await res.json();
-                if (json.status === 'success') {
+                overlay.classList.add('hidden');
+
+                if(json.status === 'success') {
                     currentUser = json.data;
-                    setupUIByRole();
+                    initApp();
                 } else {
-                    alert("PIN o Usuario incorrecto");
+                    alert("Credenciales incorrectas");
                 }
-            } catch (e) { alert("Error en el servidor"); }
-            btn.innerText = "ENTRAR AL SISTEMA"; btn.disabled = false;
+            } catch (e) { alert("Error de comunicación. Revisa tu conexión."); overlay.classList.add('hidden'); }
         }
 
-        function setupUIByRole() {
+        function initApp() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('display-user-name').innerText = currentUser.nombre || currentUser.id;
-            document.getElementById('role-tag').innerText = currentUser.rol;
-
-            if(currentUser.rol === 'STORE') {
-                document.getElementById('nav-audit').classList.add('hidden');
-                document.getElementById('nav-input').classList.remove('hidden');
-            } else {
-                document.getElementById('nav-audit').classList.remove('hidden');
-                document.getElementById('manager-view').classList.remove('hidden');
-                if(currentUser.rol === 'ADMIN') document.getElementById('nav-admin').classList.remove('hidden');
+            document.getElementById('user-display').innerText = currentUser.nombre || currentUser.id;
+            document.getElementById('role-display').innerText = currentUser.rol;
+            
+            if(currentUser.rol !== 'STORE') {
+                document.getElementById('btn-tab-audit').classList.remove('hidden');
             }
-            showSection('dashboard');
-            renderProductList();
+            renderCategories();
         }
 
-        // --- SISTEMA DE FILTROS ---
-        function renderFilters() {
-            const cats = ["TODOS", ...new Set(masterData.productos.map(p => p[2]))];
-            const catContainer = document.getElementById('cat-filters');
-            catContainer.innerHTML = cats.map(c => `
-                <button onclick="setCat('${c}')" class="px-4 py-2 rounded-full whitespace-nowrap font-bold text-sm ${activeCat === c ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}">${c}</button>
-            `).join('');
-
-            const filteredProds = activeCat === "TODOS" ? masterData.productos : masterData.productos.filter(p => p[2] === activeCat);
-            const subcats = ["TODOS", ...new Set(filteredProds.map(p => p[3]))];
-            const subContainer = document.getElementById('subcat-filters');
-            subContainer.innerHTML = subcats.map(s => `
-                <button onclick="setSubCat('${s}')" class="px-4 py-1 rounded-full whitespace-nowrap font-bold text-xs ${activeSubCat === s ? 'bg-blue-400 text-white' : 'bg-gray-100 text-gray-500'}">${s}</button>
+        // --- LÓGICA DE REGISTRO PASO A PASO ---
+        function renderCategories() {
+            const cats = [...new Set(masterData.productos.map(p => p.cat))];
+            document.getElementById('cat-list').innerHTML = cats.map(c => `
+                <button onclick="selectCategory('${c}')" id="cat-${c}" class="btn-step px-6 py-3 rounded-2xl font-black text-xs uppercase whitespace-nowrap ${selCat === c ? 'selected-pill' : 'unselected-pill'}">${c}</button>
             `).join('');
         }
 
-        function setCat(c) { activeCat = c; activeSubCat = "TODOS"; renderFilters(); renderProductList(); }
-        function setSubCat(s) { activeSubCat = s; renderFilters(); renderProductList(); }
+        function selectCategory(c) {
+            selCat = c;
+            selSub = null;
+            renderCategories();
+            document.getElementById('step-subcategory').classList.remove('hidden');
+            document.getElementById('step-products').classList.add('hidden');
+            renderSubcategories();
+        }
 
-        // --- LISTA DE PRODUCTOS ---
-        function renderProductList() {
-            const container = document.getElementById('product-list');
-            const filtered = masterData.productos.filter(p => {
-                const matchCat = activeCat === "TODOS" || p[2] === activeCat;
-                const matchSub = activeSubCat === "TODOS" || p[3] === activeSubCat;
-                const isActive = p[4] === true || p[4] === "TRUE";
-                return matchCat && matchSub && isActive;
-            });
+        function renderSubcategories() {
+            const subs = [...new Set(masterData.productos.filter(p => p.cat === selCat).map(p => p.sub))];
+            document.getElementById('subcat-list').innerHTML = subs.map(s => `
+                <button onclick="selectSubcategory('${s}')" id="sub-${s}" class="btn-step px-6 py-3 rounded-2xl font-black text-[10px] uppercase whitespace-nowrap ${selSub === s ? 'selected-pill' : 'unselected-pill'}">${s}</button>
+            `).join('');
+        }
 
-            container.innerHTML = filtered.map(p => `
-                <div class="flex items-center justify-between p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
-                    <div class="flex-1">
-                        <p class="font-black text-gray-800 leading-none mb-1">${p[1]}</p>
-                        <p class="text-[10px] text-gray-400 uppercase font-bold">${p[3]}</p>
+        function selectSubcategory(s) {
+            selSub = s;
+            renderSubcategories();
+            document.getElementById('step-products').classList.remove('hidden');
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const prods = masterData.productos.filter(p => p.cat === selCat && p.sub === selSub && (p.active === true || p.active === "TRUE"));
+            document.getElementById('prod-list').innerHTML = prods.map(p => `
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex justify-between items-center">
+                    <div>
+                        <p class="font-black text-lg text-gray-800 leading-tight">${p.nom}</p>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase italic">${p.sub}</p>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <button onclick="adjValue('${p[0]}', -1)" class="w-10 h-10 bg-gray-100 rounded-xl font-black text-xl text-gray-500">-</button>
-                        <input type="number" id="val-${p[0]}" value="0" class="w-12 text-center font-black text-xl text-blue-600 bg-transparent border-none">
-                        <button onclick="adjValue('${p[0]}', 1)" class="w-10 h-10 bg-gray-100 rounded-xl font-black text-xl text-gray-500">+</button>
+                    <div class="flex items-center gap-4">
+                        <button onclick="adj('${p.id}', -1)" class="w-12 h-12 bg-gray-50 rounded-2xl font-black text-2xl text-gray-400 border border-gray-100">-</button>
+                        <input type="number" id="val-${p.id}" value="0" class="w-12 text-center font-black text-2xl text-blue-600 bg-transparent outline-none">
+                        <button onclick="adj('${p.id}', 1)" class="w-12 h-12 bg-gray-50 rounded-2xl font-black text-2xl text-gray-400 border border-gray-100">+</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        function adjValue(id, delta) {
-            const input = document.getElementById(`val-${id}`);
-            input.value = Math.max(0, parseInt(input.value) + delta);
+        function adj(id, delta) {
+            const el = document.getElementById('val-'+id);
+            el.value = Math.max(0, parseInt(el.value) + delta);
         }
 
-        function updateInputUI() {
-            const type = document.getElementById('input-type').value;
-            const turnoDiv = document.getElementById('input-turno');
-            const btnZero = document.getElementById('btn-zero-merma');
+        function updateTurnoUI() {
+            const isMerma = document.getElementById('input-type').value === 'merma';
+            document.getElementById('step-turno').classList.toggle('hidden', isMerma);
+        }
+
+        function changeTab(tab) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('sec-'+tab).classList.remove('hidden');
             
-            if(type === 'merma') {
-                turnoDiv.classList.add('hidden');
-                btnZero.classList.remove('hidden');
-            } else {
-                turnoDiv.classList.remove('hidden');
-                btnZero.classList.add('hidden');
-            }
+            document.querySelectorAll('nav button').forEach(b => {
+                b.classList.remove('border-blue-600', 'text-blue-600');
+                b.classList.add('border-transparent', 'text-gray-400');
+            });
+            document.getElementById('btn-tab-'+tab).classList.add('border-blue-600', 'text-blue-600');
         }
 
-        // --- ACCIONES DE DATOS ---
-        async function submitData() {
+        async function saveData() {
             const items = masterData.productos.map(p => {
-                const val = parseInt(document.getElementById(`val-${p[0]}`)?.value || 0);
-                return { prodId: p[0], val };
+                const v = parseInt(document.getElementById('val-'+p.id)?.value || 0);
+                return { prodId: p.id, val: v };
             }).filter(i => i.val > 0);
 
-            if(items.length === 0) return alert("No hay datos que guardar");
+            if(items.length === 0) return alert("Introduce cantidades");
+
+            const overlay = document.getElementById('loading-overlay');
+            overlay.classList.remove('hidden');
 
             const payload = {
                 action: 'saveDaily',
@@ -301,31 +307,13 @@
 
             const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
             const json = await res.json();
+            overlay.classList.add('hidden');
+
             if(json.status === 'success') {
-                alert("DATOS GUARDADOS");
+                alert("DATOS GUARDADOS CON ÉXITO");
                 location.reload();
             }
         }
-
-        function setZeroMerma() {
-            if(confirm("¿Seguro que quieres marcar 0 merma en TODO?")) {
-                // Implementar lógica de envío rápido masivo si fuese necesario
-                alert("Simulación: Guardando día con 0 mermas...");
-            }
-        }
-
-        function showSection(id) {
-            document.querySelectorAll('.section-content').forEach(s => s.classList.add('hidden'));
-            document.getElementById(`sec-${id}`).classList.remove('hidden');
-            
-            document.querySelectorAll('.nav-item').forEach(n => {
-                n.classList.remove('border-blue-600', 'text-blue-600');
-                n.classList.add('border-transparent', 'text-gray-500');
-            });
-            event.currentTarget.classList.add('border-blue-600', 'text-blue-600');
-        }
-
-        function logout() { location.reload(); }
     </script>
 </body>
 </html>
