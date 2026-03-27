@@ -109,10 +109,10 @@
                         <h3 class="font-black text-slate-800 uppercase text-sm mb-4">Módulo de Auditoría Operativa</h3>
                         <p class="text-xs text-gray-500 mb-6">Herramienta analítica de extracción de datos del sistema para Área Managers.</p>
                         <div class="grid grid-cols-2 gap-4 mb-4">
-                            <input type="date" class="p-3 bg-gray-50 rounded-xl font-bold text-xs" title="Fecha Inicio">
-                            <input type="date" class="p-3 bg-gray-50 rounded-xl font-bold text-xs" title="Fecha Fin">
+                            <input type="date" id="audit-start" class="p-3 bg-gray-50 rounded-xl font-bold text-xs" title="Fecha Inicio">
+                            <input type="date" id="audit-end" class="p-3 bg-gray-50 rounded-xl font-bold text-xs" title="Fecha Fin">
                         </div>
-                        <button class="w-full bg-blue-600 text-white font-black py-4 rounded-xl text-xs uppercase" onclick="alert('Exportación CSV en desarrollo fase 2')">Descargar CSV Filtrado</button>
+                        <button onclick="downloadAuditCSV()" class="w-full bg-blue-600 text-white font-black py-4 rounded-xl text-xs uppercase hover:bg-blue-700 active:scale-95 transition-all shadow-md">Descargar CSV Filtrado</button>
                     </div>
                 </section>
 
@@ -140,7 +140,6 @@
         let cache = { cat: 'TODOS', sub: 'TODOS' };
         let inputState = {};
 
-        // FORMATEADOR DE FECHAS (Requisito 3)
         function parseFechaAmigable(dateStr) {
             if(!dateStr) return "";
             const parts = dateStr.split("-");
@@ -186,7 +185,6 @@
         }
 
         async function handleLogin() {
-            // Requisito 1: Carga visual inmediata
             const loader = document.getElementById('loading');
             document.getElementById('loading-text').innerText = "Autenticando...";
             loader.classList.remove('hidden');
@@ -249,12 +247,10 @@
             renderDashboard();
         }
 
-        // --- RENDERIZACIÓN DE DASHBOARDS SEPARADOS POR ROL ---
         function renderDashboard() {
             const widgets = document.getElementById('dash-widgets');
             const main = document.getElementById('dash-main-content');
 
-            // 1. DASHBOARD ADMIN (Limpio, Requisito 6)
             if(user.rol === 'ADMIN') {
                 widgets.innerHTML = `
                     <div class="bg-blue-600 p-5 rounded-3xl shadow-sm col-span-2 text-white flex items-center justify-between">
@@ -276,7 +272,6 @@
                 return;
             }
 
-            // 2. DASHBOARD TIENDA (Requisito 5)
             if(user.rol === 'STORE') {
                 widgets.innerHTML = `
                     <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100"><p class="text-[10px] font-bold text-gray-400 uppercase">Eficiencia (Mes)</p><p class="text-3xl font-black text-slate-800">${dashData ? dashData.eficiencia : 0}%</p></div>
@@ -285,7 +280,6 @@
                 
                 let storeHTML = '';
                 
-                // Tareas pendientes Tienda
                 if(dashData && dashData.listaPendientes && dashData.listaPendientes.length > 0) {
                     storeHTML += `
                     <div class="bg-red-50 border border-red-100 rounded-[2rem] p-6 shadow-sm">
@@ -298,7 +292,6 @@
                     storeHTML += `<div class="bg-green-50 border border-green-100 rounded-2xl p-4 text-green-700 font-bold text-xs text-center mb-6">¡Todo al día! No tienes tareas pendientes.</div>`;
                 }
 
-                // Tabla resumen de hoy
                 storeHTML += `<div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 mt-6"><h3 class="font-black text-xs uppercase text-gray-400 mb-4">Resumen de Hoy</h3>`;
                 if(dashData && dashData.resumenHoy && dashData.resumenHoy.length > 0) {
                     storeHTML += `
@@ -314,10 +307,8 @@
                     storeHTML += '<p class="text-sm text-gray-500">No hay datos introducidos hoy aún.</p>';
                 }
                 storeHTML += '</div>';
-                
                 main.innerHTML = storeHTML;
             } 
-            // 3. DASHBOARD AREA MANAGER (Requisitos 2, 3 y 4)
             else {
                 widgets.innerHTML = `
                     <div class="bg-white p-5 rounded-3xl shadow-sm border-b-4 border-blue-600 col-span-2 flex justify-between items-center">
@@ -328,7 +319,6 @@
                 
                 let amHTML = '';
 
-                // RANKING DE MERMA (Ordenado de menor a mayor merma)
                 if(dashData && dashData.ranking && dashData.ranking.length > 0) {
                     amHTML += `
                     <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 mb-6">
@@ -347,13 +337,12 @@
                     </div>`;
                 }
 
-                // TAREAS PENDIENTES MANAGER (Desplegable y Botones individuales)
                 amHTML += `<div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100"><h3 class="font-black text-xs uppercase text-gray-400 mb-4">Auditoría de Cierre</h3>`;
                 
                 if(dashData && dashData.listaPendientes && dashData.listaPendientes.length > 0) {
                     amHTML += `<div class="space-y-4 mb-6">` + dashData.listaPendientes.map(t => {
                         let fDates = t.dias.map(d => parseFechaAmigable(d));
-                        let fDatesStr = JSON.stringify(fDates).replace(/"/g, '&quot;'); // Escape for HTML
+                        let fDatesStr = JSON.stringify(fDates).replace(/"/g, '&quot;');
                         return `
                         <div class="border border-red-100 rounded-2xl overflow-hidden">
                             <div class="bg-red-50 p-4 flex justify-between items-center">
@@ -397,7 +386,6 @@
             alert("Informe global de zona copiado al portapapeles.");
         }
 
-        // --- SISTEMA DE REGISTRO (Intacto y Seguro) ---
         function renderCats() {
             const activeProds = master.prods.filter(p => p.act === true);
             const rawCats = [...new Set(activeProds.map(p => p.cat))].sort();
@@ -486,6 +474,67 @@
                     showSec('dash');
                 }
             } catch (e) { alert("Error al guardar en la base de datos."); }
+            loader.classList.add('hidden');
+        }
+
+        // --- MÓDULO DE AUDITORÍA: EXPORTACIÓN CSV ---
+        async function downloadAuditCSV() {
+            const start = document.getElementById('audit-start').value;
+            const end = document.getElementById('audit-end').value;
+
+            if (!start || !end) {
+                alert("Selecciona la fecha de inicio y de fin para exportar el reporte.");
+                return;
+            }
+            if (start > end) {
+                alert("La fecha de inicio no puede ser posterior a la fecha de fin.");
+                return;
+            }
+
+            const loader = document.getElementById('loading');
+            document.getElementById('loading-text').innerText = "Generando CSV...";
+            loader.classList.remove('hidden');
+
+            try {
+                const r = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'getAuditData',
+                        params: { startDate: start, endDate: end, rol: user.rol, zonas: user.zonas }
+                    })
+                });
+                const d = await r.json();
+
+                if (d.status === 'success' && d.data.csvData.length > 0) {
+                    const data = d.data.csvData;
+                    const headers = Object.keys(data[0]);
+                    const csvRows = [];
+                    
+                    csvRows.push(headers.join(','));
+                    
+                    for (const row of data) {
+                        const values = headers.map(header => {
+                            const val = row[header] === null || row[header] === undefined ? "" : row[header];
+                            return `"${String(val).replace(/"/g, '""')}"`;
+                        });
+                        csvRows.push(values.join(','));
+                    }
+                    
+                    const csvString = csvRows.join('\n');
+                    const blob = new Blob(["\uFEFF" + csvString], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", `AUDITORIA_LIO_${start}_AL_${end}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } else {
+                    alert("No hay datos registrados en el rango de fechas seleccionado para tu zona.");
+                }
+            } catch (e) {
+                alert("Fallo al generar el archivo. Verifica tu conexión.");
+            }
             loader.classList.add('hidden');
         }
     </script>
