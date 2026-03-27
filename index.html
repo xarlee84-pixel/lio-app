@@ -9,8 +9,9 @@
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .pill-selected { @apply bg-blue-600 text-white shadow-md scale-105; }
-        .pill-default { @apply bg-gray-100 text-gray-500 hover:bg-gray-200; }
+        /* Mejora visual: Botones tipo Galleta (Pills) con bordes explícitos */
+        .pill-selected { @apply bg-blue-600 text-white shadow-md scale-105 border-2 border-blue-600 transition-all; }
+        .pill-default { @apply bg-white text-gray-600 hover:bg-gray-50 border-2 border-gray-300 transition-all; }
         .tab-active { @apply border-blue-600 text-blue-600 font-black; }
         .tab-inactive { @apply border-transparent text-gray-400 font-bold; }
     </style>
@@ -118,9 +119,11 @@
         const API_URL = "https://script.google.com/macros/s/AKfycby86Uyfci6i_hyunbHhVlM2XsTwpo6AtxYedAOZX8gJ6xIIn392pUUR6hxzH4hbJ3nrCA/exec";
         let master = null;
         let user = null;
-        let cache = { cat: null, sub: null };
+        let cache = { cat: 'TODOS', sub: 'TODOS' };
+        
+        // MEMORIA TEMPORAL DE DATOS (Solución al Problema 3)
+        let inputState = {};
 
-        // --- INICIO Y CARGA CON SANITIZACIÓN CRÍTICA ---
         window.onload = async () => {
             document.getElementById('input-date').valueAsDate = new Date();
             await loadMasterData();
@@ -131,14 +134,10 @@
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getInitialData' }) });
                 const d = await r.json();
                 if(d.status === 'success') {
-                    
-                    // AUDITORÍA DE DATOS: Filtrado y limpieza absoluta de la información de Sheets
                     master = {
                         prods: d.data.productos.slice(1)
-                            .filter(x => x[0] && String(x[1]).trim() !== '') // Elimina filas fantasma
+                            .filter(x => x[0] && String(x[1]).trim() !== '')
                             .map(x => {
-                                // Lógica de protección: si la columna activo está vacía, se asume TRUE. 
-                                // Solo se oculta si es explícitamente FALSE.
                                 let isActive = true;
                                 if(x[4] === false || String(x[4]).trim().toUpperCase() === 'FALSE') {
                                     isActive = false;
@@ -173,7 +172,6 @@
             document.getElementById('group-admin').classList.toggle('hidden', isStore);
         }
 
-        // --- GESTIÓN DE LOGIN Y ROLES ---
         async function handleLogin() {
             document.getElementById('loading').classList.remove('hidden');
             const type = document.getElementById('user-type').value;
@@ -224,7 +222,6 @@
             renderDashboard();
         }
 
-        // --- DASHBOARD ---
         function renderDashboard() {
             const widgets = document.getElementById('dash-widgets');
             const main = document.getElementById('dash-main-content');
@@ -246,39 +243,37 @@
             }
         }
 
-        // --- LÓGICA DE REGISTRO FILTRADO ---
+        // --- LÓGICA DE REGISTRO CON BOTÓN "TODOS" ---
         function renderCats() {
             const activeProds = master.prods.filter(p => p.act === true);
-            const cats = [...new Set(activeProds.map(p => p.cat))].sort();
+            const rawCats = [...new Set(activeProds.map(p => p.cat))].sort();
+            const cats = ["TODOS", ...rawCats];
             
             const div = document.getElementById('pill-cats');
             div.innerHTML = cats.map(c => `<button onclick="selCat('${c}')" class="px-6 py-3 rounded-2xl font-black text-[10px] uppercase whitespace-nowrap ${cache.cat === c ? 'pill-selected' : 'pill-default'}">${c}</button>`).join('');
             
-            if(cache.cat && cats.includes(cache.cat)) {
+            if(cache.cat) {
                 renderSubs();
-            } else {
-                document.getElementById('pill-subs').classList.add('hidden');
-                document.getElementById('prod-grid').innerHTML = '';
             }
         }
 
         function selCat(c) {
             cache.cat = c; 
-            cache.sub = null;
+            cache.sub = 'TODOS'; 
             renderCats();
             document.getElementById('pill-subs').classList.remove('hidden');
-            document.getElementById('prod-grid').innerHTML = '';
             renderSubs();
         }
 
         function renderSubs() {
-            const activeProds = master.prods.filter(p => p.act === true && p.cat === cache.cat);
-            const subs = [...new Set(activeProds.map(p => p.sub))].sort();
+            const activeProds = master.prods.filter(p => p.act === true && (cache.cat === 'TODOS' || p.cat === cache.cat));
+            const rawSubs = [...new Set(activeProds.map(p => p.sub))].sort();
+            const subs = ["TODOS", ...rawSubs];
             
             const div = document.getElementById('pill-subs');
             div.innerHTML = subs.map(s => `<button onclick="selSub('${s}')" class="px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap ${cache.sub === s ? 'pill-selected' : 'pill-default'}">${s}</button>`).join('');
             
-            if(cache.sub && subs.includes(cache.sub)) renderProds();
+            renderProds();
         }
 
         function selSub(s) {
@@ -288,37 +283,52 @@
         }
 
         function renderProds() {
-            const list = master.prods.filter(p => p.cat === cache.cat && p.sub === cache.sub && p.act === true);
+            const list = master.prods.filter(p => 
+                p.act === true && 
+                (cache.cat === 'TODOS' || p.cat === cache.cat) && 
+                (cache.sub === 'TODOS' || p.sub === cache.sub)
+            );
+            
             const div = document.getElementById('prod-grid');
             
             if(list.length === 0) {
-                div.innerHTML = '<p class="text-center text-gray-400 font-bold py-8">No hay productos activos en esta subcategoría.</p>';
+                div.innerHTML = '<p class="text-center text-gray-400 font-bold py-8">No hay productos activos en esta selección.</p>';
                 return;
             }
 
+            // Aquí inyectamos el valor desde inputState para no perder los datos al navegar
             div.innerHTML = list.map(p => `
                 <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-100 flex justify-between items-center transition-all hover:border-blue-200">
                     <div class="flex-1">
                         <p class="font-black text-slate-800 leading-tight uppercase text-sm">${p.nom}</p>
-                        <p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">${p.sub} | ID: ${p.id}</p>
+                        <p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">${p.cat} / ${p.sub}</p>
                     </div>
                     <div class="flex items-center gap-4">
                         <button onclick="val('${p.id}',-1)" class="w-10 h-10 bg-gray-50 rounded-xl font-black text-xl text-gray-400 border border-gray-100">-</button>
-                        <input type="number" id="v-${p.id}" value="0" class="w-12 text-center font-black text-xl text-blue-600 bg-transparent outline-none">
+                        <input type="number" id="v-${p.id}" value="${inputState[p.id] || 0}" oninput="updateState('${p.id}', this.value)" class="w-12 text-center font-black text-xl text-blue-600 bg-transparent outline-none">
                         <button onclick="val('${p.id}',1)" class="w-10 h-10 bg-gray-50 rounded-xl font-black text-xl text-gray-400 border border-gray-100">+</button>
                     </div>
                 </div>
             `).join('');
         }
 
+        // --- SISTEMA DE ALMACENAMIENTO DE ESTADO TEMPORAL ---
+        function updateState(id, value) {
+            inputState[id] = Math.max(0, parseInt(value) || 0);
+        }
+
         function val(id, d) {
             const i = document.getElementById('v-'+id);
-            i.value = Math.max(0, parseInt(i.value) + d);
+            const newValue = Math.max(0, parseInt(i.value || 0) + d);
+            i.value = newValue;
+            inputState[id] = newValue; // Guardamos en memoria global
         }
 
         function updateInputView() {
             const isMerma = document.getElementById('input-type').value === 'merma';
             document.getElementById('area-turno').classList.toggle('hidden', isMerma);
+            // Opcional: Si cambias entre producción y merma, tal vez quieras vaciar la memoria.
+            // Para evitar borrados accidentales, de momento mantenemos la memoria intacta.
         }
 
         function showSec(id) {
@@ -336,12 +346,13 @@
         }
 
         async function processSave() {
+            // Ahora leemos la información de inputState (memoria total) en lugar del DOM actual
             const items = master.prods.map(p => ({
                 id: p.id,
-                v: parseInt(document.getElementById('v-'+p.id)?.value || 0)
+                v: inputState[p.id] || 0
             })).filter(x => x.v > 0);
 
-            if(items.length === 0) return alert("Introduce cantidades.");
+            if(items.length === 0) return alert("No has introducido ninguna cantidad.");
             
             document.getElementById('loading').classList.remove('hidden');
             const payload = {
@@ -360,6 +371,7 @@
                 const d = await r.json();
                 if(d.status === 'success') {
                     alert("¡DATOS GUARDADOS CORRECTAMENTE!");
+                    inputState = {}; // Limpiamos la memoria tras el guardado exitoso
                     location.reload();
                 }
             } catch (e) { 
