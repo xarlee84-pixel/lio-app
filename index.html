@@ -27,11 +27,23 @@
 
     <div id="login-screen" class="min-h-screen flex items-center justify-center p-6 bg-slate-900">
         <div class="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-md">
-            <div class="text-center mb-8"><h1 class="text-5xl font-black text-slate-900 italic tracking-tighter">LIO</h1><div class="h-1 w-12 bg-blue-600 mx-auto mt-2 rounded-full"></div></div>
+            <div class="text-center mb-8">
+                <h1 class="text-5xl font-black text-slate-900 italic tracking-tighter">LIO</h1>
+                <div class="h-1 w-12 bg-blue-600 mx-auto mt-2 rounded-full"></div>
+            </div>
             <div class="space-y-4">
-                <select id="user-type" onchange="toggleLoginUI()" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold text-gray-700 outline-none focus:ring-blue-600 transition-all"><option value="store">ACCESO TIENDA</option><option value="admin">ACCESO MANAGEMENT</option></select>
-                <div id="group-store" class="space-y-4"><select id="store-select" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold text-gray-700 outline-none"></select><input type="password" id="store-pin" inputmode="numeric" placeholder="PIN" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 text-center text-3xl font-black tracking-[0.5em] outline-none focus:ring-blue-600"></div>
-                <div id="group-admin" class="hidden space-y-4"><input type="text" id="admin-user" placeholder="USUARIO" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none text-center"><input type="password" id="admin-pass" placeholder="CONTRASEÑA" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none text-center tracking-widest"></div>
+                <select id="user-type" onchange="toggleLoginUI()" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold text-gray-700 outline-none focus:ring-blue-600 transition-all">
+                    <option value="store">ACCESO TIENDA</option>
+                    <option value="admin">ACCESO MANAGEMENT</option>
+                </select>
+                <div id="group-store" class="space-y-4">
+                    <select id="store-select" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold text-gray-700 outline-none"></select>
+                    <input type="password" id="store-pin" inputmode="numeric" placeholder="PIN" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 text-center text-3xl font-black tracking-[0.5em] outline-none focus:ring-blue-600">
+                </div>
+                <div id="group-admin" class="hidden space-y-4">
+                    <input type="text" id="admin-user" placeholder="USUARIO" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none text-center">
+                    <input type="password" id="admin-pass" placeholder="CONTRASEÑA" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none text-center tracking-widest">
+                </div>
                 <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-blue-700 active:scale-95 transition-all text-sm uppercase tracking-widest mt-4">Entrar</button>
             </div>
         </div>
@@ -39,8 +51,13 @@
 
     <div id="main-app" class="hidden min-h-screen flex flex-col">
         <header class="bg-white p-4 border-b flex justify-between items-center sticky top-0 z-50 shadow-sm">
-            <div><p id="role-display" class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1"></p><h2 id="user-display" class="font-black text-lg text-slate-800 uppercase italic leading-none"></h2></div>
-            <button onclick="location.reload()" class="bg-gray-50 p-3 rounded-2xl text-gray-400 hover:text-red-500 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg></button>
+            <div>
+                <p id="role-display" class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1"></p>
+                <h2 id="user-display" class="font-black text-lg text-slate-800 uppercase italic leading-none"></h2>
+            </div>
+            <button onclick="location.reload()" class="bg-gray-50 p-3 rounded-2xl text-gray-400 hover:text-red-500 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            </button>
         </header>
 
         <nav id="app-nav" class="bg-white border-b flex justify-around font-black text-[10px] uppercase tracking-wider sticky top-[73px] z-40 shadow-sm"></nav>
@@ -56,74 +73,112 @@
                 <section id="sec-input" class="app-section hidden space-y-6">
                     <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex gap-2">
                         <input type="date" id="input-date" class="flex-1 font-bold text-slate-700 outline-none bg-transparent">
-                        <select id="input-type" onchange="updateInputView()" class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-black text-xs border-none outline-none"><option value="prod">PRODUCCIÓN</option><option value="merma">MERMA</option></select>
+                        <select id="input-type" onchange="updateInputView()" class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-black text-xs border-none outline-none">
+                            <option value="prod">PRODUCCIÓN</option>
+                            <option value="merma">MERMA</option>
+                        </select>
                     </div>
                     <div id="area-turno" class="bg-white p-4 rounded-3xl border border-blue-100">
                         <p class="text-[10px] font-black text-gray-400 uppercase mb-3 ml-2">Seleccionar Turno</p>
-                        <select id="input-turno" class="w-full font-bold text-slate-800 outline-none bg-transparent"><option value="Obrador">OBRADOR</option><option value="Mediodía">MEDIODÍA</option><option value="Tarde">TARDE</option></select>
+                        <select id="input-turno" class="w-full font-bold text-slate-800 outline-none bg-transparent">
+                            <option value="Obrador">OBRADOR</option>
+                            <option value="Mediodía">MEDIODÍA</option>
+                            <option value="Tarde">TARDE</option>
+                        </select>
                     </div>
-                    <div class="space-y-4"><div id="pill-cats" class="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1"></div><div id="pill-subs" class="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1 hidden"></div></div>
+                    <div class="space-y-4">
+                        <div id="pill-cats" class="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1"></div>
+                        <div id="pill-subs" class="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1 hidden"></div>
+                    </div>
                     <div id="prod-grid" class="space-y-3"></div>
-                    <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent z-50 pointer-events-none"><button onclick="processSave()" class="w-full max-w-4xl mx-auto block bg-slate-900 text-white font-black py-5 rounded-3xl shadow-2xl active:scale-95 transition-all text-sm uppercase tracking-widest pointer-events-auto">Confirmar Envío</button></div>
+                    <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent z-50 pointer-events-none">
+                        <button onclick="processSave()" class="w-full max-w-4xl mx-auto block bg-slate-900 text-white font-black py-5 rounded-3xl shadow-2xl active:scale-95 transition-all text-sm uppercase tracking-widest pointer-events-auto">Confirmar Envío</button>
+                    </div>
                 </section>
 
                 <section id="sec-audit" class="app-section hidden space-y-6">
                     <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
                         <h3 class="font-black text-slate-800 uppercase text-sm mb-4">Motor de Filtros</h3>
                         <div class="grid grid-cols-2 gap-4 mb-6">
-                            <div><label class="text-[10px] font-bold text-gray-400 uppercase">Desde</label><input type="date" id="audit-start" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none focus:ring-2 focus:ring-blue-600"></div>
-                            <div><label class="text-[10px] font-bold text-gray-400 uppercase">Hasta</label><input type="date" id="audit-end" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none focus:ring-2 focus:ring-blue-600"></div>
-                            <div class="col-span-2"><label class="text-[10px] font-bold text-gray-400 uppercase">Tiendas</label><select id="audit-stores" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none h-20"></select></div>
-                            <div class="col-span-1"><label class="text-[10px] font-bold text-gray-400 uppercase">Categorías</label><select id="audit-cats" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none h-20"></select></div>
-                            <div class="col-span-1"><label class="text-[10px] font-bold text-gray-400 uppercase">Productos</label><select id="audit-prods" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none h-20"></select></div>
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase">Desde</label>
+                                <input type="date" id="audit-start" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none focus:ring-2 focus:ring-blue-600">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase">Hasta</label>
+                                <input type="date" id="audit-end" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none focus:ring-2 focus:ring-blue-600">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase">Tiendas</label>
+                                <select id="audit-stores" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none h-20"></select>
+                            </div>
+                            <div class="col-span-1">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase">Categorías</label>
+                                <select id="audit-cats" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none h-20"></select>
+                            </div>
+                            <div class="col-span-1">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase">Productos</label>
+                                <select id="audit-prods" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none h-20"></select>
+                            </div>
                         </div>
                         <button onclick="generateAuditReport()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl text-xs uppercase hover:bg-slate-800 active:scale-95 transition-all shadow-md">Generar Análisis</button>
                     </div>
 
                     <div id="audit-results-container" class="hidden space-y-6">
                         <div class="grid grid-cols-3 gap-3">
-                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center"><p class="text-[9px] font-bold text-gray-400 uppercase">Prod. Total</p><p id="kpi-prod" class="text-xl font-black text-blue-600">0</p></div>
-                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center"><p class="text-[9px] font-bold text-gray-400 uppercase">Merma Total</p><p id="kpi-merma" class="text-xl font-black text-red-500">0</p></div>
-                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center"><p class="text-[9px] font-bold text-gray-400 uppercase">% Global</p><p id="kpi-porc" class="text-xl font-black text-slate-800">0%</p></div>
+                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center">
+                                <p class="text-[9px] font-bold text-gray-400 uppercase">Prod. Total</p>
+                                <p id="kpi-prod" class="text-xl font-black text-blue-600">0</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center">
+                                <p class="text-[9px] font-bold text-gray-400 uppercase">Merma Total</p>
+                                <p id="kpi-merma" class="text-xl font-black text-red-500">0</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center">
+                                <p class="text-[9px] font-bold text-gray-400 uppercase">% Global</p>
+                                <p id="kpi-porc" class="text-xl font-black text-slate-800">0%</p>
+                            </div>
                         </div>
 
                         <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 relative" id="cont-chart1">
                             <button onclick="toggleFS('cont-chart1')" class="absolute top-4 right-4 text-gray-400 hover:text-slate-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
                             <h3 class="font-black text-slate-800 uppercase text-xs mb-1">Comparativa General</h3>
-                            <p class="text-[10px] text-gray-400 mb-4 leading-tight">Volumen de Producción vs Merma por tienda o categoría.</p>
+                            <p class="text-xs text-gray-600 font-medium mb-4 leading-tight">Compara el volumen total de Producción frente a la Merma generada por cada tienda.</p>
                             <div class="h-64 w-full"><canvas id="auditChartStore"></canvas></div>
                         </div>
 
                         <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 relative" id="cont-chart2">
                             <button onclick="toggleFS('cont-chart2')" class="absolute top-4 right-4 text-gray-400 hover:text-slate-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
                             <h3 class="font-black text-slate-800 uppercase text-xs mb-1">Desglose Operativo (Turnos)</h3>
-                            <p class="text-[10px] text-gray-400 mb-4 leading-tight">Detecta reposiciones de tarde innecesarias que acaban en basura.</p>
+                            <p class="text-xs text-gray-600 font-medium mb-4 leading-tight">Analiza en qué turno se fabrica el producto que acaba en la basura. Cuidado con los excesos de Tarde.</p>
                             <div class="h-64 w-full"><canvas id="auditChartTurnos"></canvas></div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 relative" id="cont-chart3">
                                 <button onclick="toggleFS('cont-chart3')" class="absolute top-4 right-4 text-gray-400 hover:text-slate-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
-                                <h3 class="font-black text-slate-800 uppercase text-xs mb-1">Concentración (Pareto)</h3>
-                                <p class="text-[10px] text-gray-400 mb-4 leading-tight">Top 5 productos responsables de las pérdidas.</p>
-                                <div class="h-56 w-full flex justify-center"><canvas id="auditChartProd"></canvas></div>
+                                <h3 class="font-black text-slate-800 uppercase text-xs mb-1">Concentración de Merma (Top 10)</h3>
+                                <p class="text-xs text-gray-600 font-medium mb-4 leading-tight">Identifica los 10 productos que más pérdidas físicas generan en tu zona.</p>
+                                <div class="h-64 w-full"><canvas id="auditChartProd"></canvas></div>
                             </div>
 
                             <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 relative" id="cont-chart4">
                                 <button onclick="toggleFS('cont-chart4')" class="absolute top-4 right-4 text-gray-400 hover:text-slate-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
                                 <h3 class="font-black text-slate-800 uppercase text-xs mb-1">Tendencia Semanal</h3>
-                                <p class="text-[10px] text-gray-400 mb-4 leading-tight">Evolución de la merma según el día de la semana.</p>
-                                <div class="h-56 w-full"><canvas id="auditChartTrend"></canvas></div>
+                                <p class="text-xs text-gray-600 font-medium mb-4 leading-tight">Evolución de la merma según el día de la semana. Útil para ajustar las plantillas del obrador.</p>
+                                <div class="h-64 w-full"><canvas id="auditChartTrend"></canvas></div>
                             </div>
                         </div>
 
                         <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
                             <h3 class="font-black text-slate-800 uppercase text-xs mb-1">Desglose Detallado</h3>
-                            <p class="text-[10px] text-gray-400 mb-4 leading-tight">Desliza horizontalmente para ver el detalle por días.</p>
-                            <div class="overflow-x-auto no-scrollbar pb-4" id="pivot-container"></div>
+                            <p class="text-xs text-gray-600 font-medium mb-4 leading-tight">Desliza horizontalmente para ver el detalle de Producción vs Merma y su porcentaje por días.</p>
+                            <div class="overflow-x-auto pb-4" id="pivot-container"></div>
                         </div>
 
-                        <div class="text-center pb-8"><button onclick="downloadAuditCSV()" class="text-xs font-bold text-blue-500 uppercase tracking-widest hover:text-blue-700 underline bg-blue-50 px-6 py-3 rounded-xl transition-colors">Exportar Datos Crudos (.CSV)</button></div>
+                        <div class="text-center pb-8">
+                            <button onclick="downloadAuditCSV()" class="text-xs font-bold text-blue-500 uppercase tracking-widest hover:text-blue-700 underline bg-blue-50 px-6 py-3 rounded-xl transition-colors">Exportar Datos Crudos (.CSV)</button>
+                        </div>
                     </div>
                 </section>
 
@@ -149,77 +204,107 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby86Uyfci6i_hyunbHhVlM2XsTwpo6AtxYedAOZX8gJ6xIIn392pUUR6hxzH4hbJ3nrCA/exec";
-        let master = null, user = null, dashData = null; 
-        let cache = { cat: 'TODOS', sub: 'TODOS' }, inputState = {};
+        let master = null;
+        let user = null;
+        let dashData = null; 
+        let cache = { cat: 'TODOS', sub: 'TODOS' };
+        let inputState = {};
+        
         let charts = { store: null, turnos: null, prod: null, trend: null };
 
         function fmtDate(dStr) {
             if(!dStr) return "";
             const pts = dStr.split("-");
-            return `${pts[2]}/${pts[1]}`; // Corto para gráficos DD/MM
+            return `${pts[2]}/${pts[1]}`; 
         }
+
         function fmtFullDate(dStr) {
             if(!dStr) return "";
-            const pts = dStr.split("-"), d = new Date(pts[0], pts[1]-1, pts[2]);
+            const pts = dStr.split("-");
+            const d = new Date(pts[0], pts[1]-1, pts[2]);
             const dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
             return `${dias[d.getDay()]} ${d.getDate()}`; 
         }
 
         window.onload = async () => {
             document.getElementById('input-date').valueAsDate = new Date();
-            let t = new Date(), lw = new Date(); lw.setDate(t.getDate() - 7);
-            document.getElementById('audit-end').valueAsDate = t;
-            document.getElementById('audit-start').valueAsDate = lw;
+            let today = new Date();
+            let lastWeek = new Date(); 
+            lastWeek.setDate(today.getDate() - 7);
+            document.getElementById('audit-end').valueAsDate = today;
+            document.getElementById('audit-start').valueAsDate = lastWeek;
             await loadMasterData();
         };
 
         async function loadMasterData() {
             try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getInitialData' }) });
-                const d = await r.json();
+                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getInitialData' }) });
+                const d = await response.json();
                 if(d.status === 'success') {
                     master = {
-                        prods: d.data.productos.slice(1).filter(x => x[0] && String(x[1]).trim() !== '').map((x, i) => ({ id: String(x[0]).trim(), uid: 'ui_'+i, nom: String(x[1]).trim(), cat: String(x[2]||'SC').trim(), sub: String(x[3]||'SC').trim(), act: x[4] !== false })),
-                        tiendas: d.data.tiendas.slice(1).filter(x => x[0]).map(x => ({ id: String(x[0]).trim(), nom: String(x[1]).trim(), zona: String(x[2]||'').trim(), pin: String(x[3]||'').trim() })),
+                        prods: d.data.productos.slice(1).filter(x => x[0] && String(x[1]).trim() !== '').map((x, i) => ({ 
+                            id: String(x[0]).trim(), uid: 'ui_'+i, nom: String(x[1]).trim(), 
+                            cat: String(x[2]||'SC').trim(), sub: String(x[3]||'SC').trim(), act: x[4] !== false 
+                        })),
+                        tiendas: d.data.tiendas.slice(1).filter(x => x[0]).map(x => ({ 
+                            id: String(x[0]).trim(), nom: String(x[1]).trim(), zona: String(x[2]||'').trim(), pin: String(x[3]||'').trim() 
+                        })),
                         config: d.data.config
                     };
                     document.getElementById('store-select').innerHTML = master.tiendas.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
                     document.getElementById('cfg-am').value = master.config.UMBRAL_AMARILLO || 5;
                     document.getElementById('cfg-ro').value = master.config.UMBRAL_ROJO || 15;
                 }
-            } catch (e) { alert("Error de conexión crítica."); }
+            } catch (e) { 
+                alert("Error de conexión crítica."); 
+            }
         }
 
         function toggleLoginUI() {
-            const isS = document.getElementById('user-type').value === 'store';
-            document.getElementById('group-store').classList.toggle('hidden', !isS);
-            document.getElementById('group-admin').classList.toggle('hidden', isS);
+            const isStore = document.getElementById('user-type').value === 'store';
+            document.getElementById('group-store').classList.toggle('hidden', !isStore);
+            document.getElementById('group-admin').classList.toggle('hidden', isStore);
         }
 
         async function handleLogin() {
-            const l = document.getElementById('loading');
+            const loader = document.getElementById('loading');
             document.getElementById('loading-text').innerText = "Autenticando...";
-            l.classList.remove('hidden');
+            loader.classList.remove('hidden');
+            
             const type = document.getElementById('user-type').value;
             let p = { type };
-            if (type === 'store') { p.id = document.getElementById('store-select').value; p.pin = document.getElementById('store-pin').value; } 
-            else { p.user = document.getElementById('admin-user').value; p.pass = document.getElementById('admin-pass').value; }
+            if (type === 'store') { 
+                p.id = document.getElementById('store-select').value; 
+                p.pin = document.getElementById('store-pin').value; 
+            } else { 
+                p.user = document.getElementById('admin-user').value; 
+                p.pass = document.getElementById('admin-pass').value; 
+            }
 
             try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', params: p }) });
-                const d = await r.json();
+                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', params: p }) });
+                const d = await response.json();
                 if(d.status === 'success') {
                     user = d.data;
                     document.getElementById('loading-text').innerText = "Cargando métricas...";
-                    await fetchDashboard(); initAppStructure();
-                } else alert("Credenciales Incorrectas"); 
-            } catch (e) { alert("Fallo de comunicación."); }
-            l.classList.add('hidden');
+                    await fetchDashboard(); 
+                    initAppStructure();
+                } else {
+                    alert("Credenciales Incorrectas"); 
+                }
+            } catch (e) { 
+                alert("Fallo de comunicación con el servidor."); 
+            }
+            loader.classList.add('hidden');
         }
 
         async function fetchDashboard() {
-            const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getDashboardData', params: { userId: user.id, rol: user.rol, zonas: user.zonas } }) });
-            const d = await r.json(); if(d.status === 'success') dashData = d.data;
+            const response = await fetch(API_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: 'getDashboardData', params: { userId: user.id, rol: user.rol, zonas: user.zonas } }) 
+            });
+            const d = await response.json(); 
+            if(d.status === 'success') dashData = d.data;
         }
 
         function initAppStructure() {
@@ -229,69 +314,131 @@
             document.getElementById('role-display').innerText = user.rol;
 
             let tabs = `<button onclick="showSec('dash')" id="tab-dash" class="tab-item flex-1 p-4 border-b-4 tab-active transition-colors">Inicio</button>`;
-            if(user.rol === 'STORE') tabs += `<button onclick="showSec('input')" id="tab-input" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Registro</button>`;
-            else {
+            if(user.rol === 'STORE') {
+                tabs += `<button onclick="showSec('input')" id="tab-input" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Registro</button>`;
+            } else {
                 tabs += `<button onclick="showSec('audit')" id="tab-audit" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Auditoría</button>`;
-                if(user.rol === 'ADMIN') tabs += `<button onclick="showSec('admin')" id="tab-admin" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Ajustes</button>`;
+                if(user.rol === 'ADMIN') {
+                    tabs += `<button onclick="showSec('admin')" id="tab-admin" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Ajustes</button>`;
+                }
             }
             document.getElementById('app-nav').innerHTML = tabs;
+            
             if(user.rol !== 'STORE') populateAuditFilters();
             renderDashboard();
         }
 
         function populateAuditFilters() {
-            let st = master.tiendas; if (user.rol === 'AREA_MANAGER') st = master.tiendas.filter(t => t.zona === user.zonas);
-            document.getElementById('audit-stores').innerHTML = st.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
+            let stores = master.tiendas; 
+            if (user.rol === 'AREA_MANAGER') {
+                stores = master.tiendas.filter(t => t.zona === user.zonas);
+            }
+            document.getElementById('audit-stores').innerHTML = stores.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
+            
             document.getElementById('audit-cats').innerHTML = [...new Set(master.prods.map(p => p.cat))].sort().map(c => `<option value="${c}">${c}</option>`).join('');
-            document.getElementById('audit-prods').innerHTML = master.prods.filter(p => p.act).sort((a,b) => a.nom.localeCompare(b.nom)).map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
+            
+            // Renderizado jerárquico de productos usando <optgroup>
+            let catMap = {};
+            master.prods.filter(p => p.act).forEach(p => {
+                if(!catMap[p.cat]) catMap[p.cat] = [];
+                catMap[p.cat].push(p);
+            });
+            
+            let prodHtml = '';
+            Object.keys(catMap).sort().forEach(category => {
+                prodHtml += `<optgroup label="${category}">`;
+                catMap[category].sort((a,b) => a.nom.localeCompare(b.nom)).forEach(product => {
+                    prodHtml += `<option value="${product.id}">${product.nom}</option>`;
+                });
+                prodHtml += `</optgroup>`;
+            });
+            document.getElementById('audit-prods').innerHTML = prodHtml;
         }
 
         function renderDashboard() {
-            const w = document.getElementById('dash-widgets'), m = document.getElementById('dash-main-content');
+            const widgets = document.getElementById('dash-widgets');
+            const mainContent = document.getElementById('dash-main-content');
+            
             if(user.rol === 'ADMIN') {
-                w.innerHTML = `<div class="bg-blue-600 p-5 rounded-3xl shadow-sm col-span-2 text-white flex items-center justify-between"><div><p class="text-[10px] font-bold uppercase text-blue-200">Servidor</p><p class="text-2xl font-black">ONLINE</p></div><div class="h-10 w-10 bg-white rounded-full flex items-center justify-center"><div class="h-4 w-4 bg-green-500 rounded-full animate-pulse"></div></div></div>`;
-                m.innerHTML = `<div class="bg-white p-6 rounded-3xl text-center py-12 text-gray-400 font-bold">Panel Activo</div>`; return;
+                widgets.innerHTML = `<div class="bg-blue-600 p-5 rounded-3xl shadow-sm col-span-2 text-white flex items-center justify-between"><div><p class="text-[10px] font-bold uppercase text-blue-200">Servidor</p><p class="text-2xl font-black">ONLINE</p></div><div class="h-10 w-10 bg-white rounded-full flex items-center justify-center"><div class="h-4 w-4 bg-green-500 rounded-full animate-pulse"></div></div></div>`;
+                mainContent.innerHTML = `<div class="bg-white p-6 rounded-3xl text-center py-12 text-gray-400 font-bold">Panel Activo</div>`; 
+                return;
             }
+            
             if(user.rol === 'STORE') {
-                w.innerHTML = `<div class="bg-white p-5 rounded-3xl"><p class="text-[10px] text-gray-400 uppercase">Eficiencia</p><p class="text-3xl font-black">${dashData.eficiencia}%</p></div><div class="bg-white p-5 rounded-3xl"><p class="text-[10px] text-gray-400 uppercase">Alertas</p><p class="text-3xl font-black ${dashData.pendientes>0?'text-red-500':'text-green-500'}">${dashData.pendientes}</p></div>`;
-                let html = dashData.pendientes > 0 ? `<div class="bg-red-50 p-6 rounded-[2rem]"><h4 class="font-black text-red-700 text-sm mb-3">Faltan Datos</h4><ul class="text-xs text-red-600 font-bold space-y-3">${dashData.listaPendientes.map(d => `<li>• ${fmtFullDate(d.f)} <span class="text-[9px] uppercase ml-2 text-red-500">(${d.motivo})</span></li>`).join('')}</ul></div>` : `<div class="bg-green-50 p-4 rounded-2xl text-green-700 font-bold text-xs text-center mb-6">¡Todo al día!</div>`;
-                m.innerHTML = html;
+                widgets.innerHTML = `
+                    <div class="bg-white p-5 rounded-3xl"><p class="text-[10px] text-gray-400 uppercase">Eficiencia</p><p class="text-3xl font-black">${dashData.eficiencia}%</p></div>
+                    <div class="bg-white p-5 rounded-3xl"><p class="text-[10px] text-gray-400 uppercase">Alertas</p><p class="text-3xl font-black ${dashData.pendientes>0?'text-red-500':'text-green-500'}">${dashData.pendientes}</p></div>
+                `;
+                let html = dashData.pendientes > 0 
+                    ? `<div class="bg-red-50 p-6 rounded-[2rem]"><h4 class="font-black text-red-700 text-sm mb-3">Faltan Datos</h4><ul class="text-xs text-red-600 font-bold space-y-3">${dashData.listaPendientes.map(d => `<li>• ${fmtFullDate(d.f)} <span class="text-[9px] uppercase ml-2 text-red-500">(${d.motivo})</span></li>`).join('')}</ul></div>` 
+                    : `<div class="bg-green-50 p-4 rounded-2xl text-green-700 font-bold text-xs text-center mb-6">¡Todo al día!</div>`;
+                mainContent.innerHTML = html;
             } else {
-                w.innerHTML = `<div class="bg-white p-5 rounded-3xl col-span-2 flex justify-between"><div><p class="text-[10px] text-gray-400 uppercase">Zona</p><p class="text-xl font-black">${dashData.zonaNombre}</p></div><div class="text-right"><p class="text-[10px] text-gray-400 uppercase">Alertas Totales</p><p class="text-3xl font-black ${dashData.pendientes>0?'text-red-500':'text-green-500'}">${dashData.pendientes}</p></div></div>`;
+                widgets.innerHTML = `
+                    <div class="bg-white p-5 rounded-3xl col-span-2 flex justify-between">
+                        <div><p class="text-[10px] text-gray-400 uppercase">Zona</p><p class="text-xl font-black">${dashData.zonaNombre}</p></div>
+                        <div class="text-right"><p class="text-[10px] text-gray-400 uppercase">Alertas Totales</p><p class="text-3xl font-black ${dashData.pendientes>0?'text-red-500':'text-green-500'}">${dashData.pendientes}</p></div>
+                    </div>
+                `;
                 let html = '';
-                if(dashData.ranking.length > 0) html += `<div class="bg-white p-6 rounded-[2rem] mb-6"><h3 class="font-black text-xs text-gray-400 mb-4">Ranking Merma</h3><div class="space-y-2">${dashData.ranking.map((t,i) => `<div class="flex justify-between p-3 bg-gray-50 rounded-xl"><div class="flex gap-3 font-bold text-xs"><span class="${i===0?'text-yellow-600':''}">${i+1}.</span> ${t.tienda}</div><div class="font-black text-sm ${t.eficiencia>15?'text-red-500':(t.eficiencia>5?'text-orange-400':'text-green-500')}">${t.eficiencia}%</div></div>`).join('')}</div></div>`;
-                if(dashData.pendientes > 0) html += `<div class="bg-white p-6 rounded-[2rem]"><h3 class="font-black text-xs text-gray-400 mb-4">Alertas de Cierre</h3><div class="space-y-4">` + dashData.listaPendientes.map(t => `<div class="border border-red-100 rounded-2xl"><div class="bg-red-50 p-4 font-black text-sm text-red-900">${t.tienda}</div><div class="p-4"><ul class="text-xs text-red-600 font-bold space-y-2">${t.dias.map(d=>`<li>• ${fmtFullDate(d.f)} (${d.motivo})</li>`).join('')}</ul></div></div>`).join('') + `</div></div>`;
-                m.innerHTML = html;
+                if(dashData.ranking.length > 0) {
+                    html += `<div class="bg-white p-6 rounded-[2rem] mb-6"><h3 class="font-black text-xs text-gray-400 mb-4">Ranking Merma</h3><div class="space-y-2">${dashData.ranking.map((t,i) => `<div class="flex justify-between p-3 bg-gray-50 rounded-xl"><div class="flex gap-3 font-bold text-xs"><span class="${i===0?'text-yellow-600':''}">${i+1}.</span> ${t.tienda}</div><div class="font-black text-sm ${t.eficiencia>15?'text-red-500':(t.eficiencia>5?'text-orange-400':'text-green-500')}">${t.eficiencia}%</div></div>`).join('')}</div></div>`;
+                }
+                if(dashData.pendientes > 0) {
+                    html += `<div class="bg-white p-6 rounded-[2rem]"><h3 class="font-black text-xs text-gray-400 mb-4">Alertas de Cierre</h3><div class="space-y-4">` + dashData.listaPendientes.map(t => `<div class="border border-red-100 rounded-2xl"><div class="bg-red-50 p-4 font-black text-sm text-red-900">${t.tienda}</div><div class="p-4"><ul class="text-xs text-red-600 font-bold space-y-2">${t.dias.map(d=>`<li>• ${fmtFullDate(d.f)} (${d.motivo})</li>`).join('')}</ul></div></div>`).join('') + `</div></div>`;
+                }
+                mainContent.innerHTML = html;
             }
         }
 
+        // ... Registro Operativo ...
         function renderCats() {
-            const act = master.prods.filter(p => p.act), cats = ["TODOS", ...new Set(act.map(p => p.cat))].sort();
+            const act = master.prods.filter(p => p.act);
+            const cats = ["TODOS", ...new Set(act.map(p => p.cat))].sort();
             document.getElementById('pill-cats').innerHTML = cats.map(c => `<button onclick="selCat('${c}')" class="px-6 py-3 rounded-xl font-black text-xs uppercase ${cache.cat===c?'pill-selected':'pill-default'}">${c}</button>`).join('');
             if(cache.cat) renderSubs();
         }
         function selCat(c) { cache.cat = c; cache.sub = 'TODOS'; renderCats(); document.getElementById('pill-subs').classList.remove('hidden'); renderSubs(); }
+        
         function renderSubs() {
-            const act = master.prods.filter(p => p.act && (cache.cat==='TODOS'||p.cat===cache.cat)), subs = ["TODOS", ...new Set(act.map(p => p.sub))].sort();
+            const act = master.prods.filter(p => p.act && (cache.cat==='TODOS'||p.cat===cache.cat));
+            const subs = ["TODOS", ...new Set(act.map(p => p.sub))].sort();
             document.getElementById('pill-subs').innerHTML = subs.map(s => `<button onclick="selSub('${s}')" class="px-5 py-2 rounded-xl font-bold text-[10px] uppercase ${cache.sub===s?'pill-selected':'pill-default'}">${s}</button>`).join('');
             renderProds();
         }
         function selSub(s) { cache.sub = s; renderSubs(); renderProds(); }
+        
         function renderProds() {
             const lst = master.prods.filter(p => p.act && (cache.cat==='TODOS'||p.cat===cache.cat) && (cache.sub==='TODOS'||p.sub===cache.sub));
             const div = document.getElementById('prod-grid');
-            if(!lst.length) return div.innerHTML = '<p class="text-center text-gray-400 py-8">Vacío.</p>';
-            div.innerHTML = lst.map(p => `<div class="bg-white p-5 rounded-[2rem] shadow-sm flex justify-between items-center"><div class="flex-1 pr-2"><p class="font-black text-sm">${p.nom}</p><p class="text-[9px] text-gray-400">${p.cat}</p></div><div class="flex gap-3"><button onclick="val('${p.uid}',-1)" class="w-10 h-10 bg-gray-100 rounded-xl font-black text-xl">-</button><input type="number" id="v-${p.uid}" value="${inputState[p.uid]||0}" oninput="updateState('${p.uid}',this.value)" class="w-10 text-center font-black text-xl text-blue-600 bg-transparent outline-none"><button onclick="val('${p.uid}',1)" class="w-10 h-10 bg-gray-100 rounded-xl font-black text-xl">+</button></div></div>`).join('');
+            if(!lst.length) { div.innerHTML = '<p class="text-center text-gray-400 py-8">Vacío.</p>'; return; }
+            div.innerHTML = lst.map(p => `
+                <div class="bg-white p-5 rounded-[2rem] shadow-sm flex justify-between items-center">
+                    <div class="flex-1 pr-2">
+                        <p class="font-black text-sm">${p.nom}</p>
+                        <p class="text-[9px] text-gray-400">${p.cat}</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="val('${p.uid}',-1)" class="w-10 h-10 bg-gray-100 rounded-xl font-black text-xl">-</button>
+                        <input type="number" id="v-${p.uid}" value="${inputState[p.uid]||0}" oninput="updateState('${p.uid}',this.value)" class="w-10 text-center font-black text-xl text-blue-600 bg-transparent outline-none">
+                        <button onclick="val('${p.uid}',1)" class="w-10 h-10 bg-gray-100 rounded-xl font-black text-xl">+</button>
+                    </div>
+                </div>`).join('');
         }
         function updateState(uid, v) { inputState[uid] = Math.max(0, parseInt(v)||0); }
-        function val(uid, d) { const i = document.getElementById('v-'+uid), n = Math.max(0, parseInt(i.value||0)+d); i.value = n; inputState[uid] = n; }
+        function val(uid, d) { const i = document.getElementById('v-'+uid); const n = Math.max(0, parseInt(i.value||0)+d); i.value = n; inputState[uid] = n; }
         function updateInputView() { document.getElementById('area-turno').classList.toggle('hidden', document.getElementById('input-type').value==='merma'); }
 
         function showSec(id) {
             document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
             document.getElementById('sec-'+id).classList.remove('hidden');
-            document.querySelectorAll('.tab-item').forEach(t => { t.classList.replace('tab-active', 'tab-inactive'); t.classList.remove('border-blue-600', 'text-blue-600'); });
+            document.querySelectorAll('.tab-item').forEach(t => { 
+                t.classList.replace('tab-active', 'tab-inactive'); 
+                t.classList.remove('border-blue-600', 'text-blue-600'); 
+            });
             document.getElementById('tab-'+id).classList.replace('tab-inactive', 'tab-active');
+            
             if(id === 'input') renderCats();
             if(id === 'audit') document.getElementById('audit-results-container').classList.add('hidden');
         }
@@ -299,85 +446,227 @@
         async function processSave() {
             const itm = master.prods.map(p => ({ id: p.id, v: inputState[p.uid]||0 })).filter(x => x.v>0);
             if(!itm.length) return alert("Nada introducido.");
-            const l = document.getElementById('loading'); document.getElementById('loading-text').innerText = "Guardando..."; l.classList.remove('hidden');
-            const p = { action: 'saveDaily', params: { fecha: document.getElementById('input-date').value, type: document.getElementById('input-type').value, turno: document.getElementById('input-turno').value, tiendaId: user.id, items: itm.map(x => ({prodId: x.id, val: x.v})) } };
+            
+            const loader = document.getElementById('loading'); 
+            document.getElementById('loading-text').innerText = "Guardando..."; 
+            loader.classList.remove('hidden');
+            
+            const payload = { 
+                action: 'saveDaily', 
+                params: { 
+                    fecha: document.getElementById('input-date').value, 
+                    type: document.getElementById('input-type').value, 
+                    turno: document.getElementById('input-turno').value, 
+                    tiendaId: user.id, 
+                    items: itm.map(x => ({prodId: x.id, val: x.v})) 
+                } 
+            };
+            
             try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }), d = await r.json();
-                if(d.status === 'success') { alert("OK!"); inputState = {}; await fetchDashboard(); renderDashboard(); showSec('dash'); }
-            } catch (e) { alert("Error."); } l.classList.add('hidden');
+                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const d = await response.json();
+                if(d.status === 'success') { 
+                    alert("¡Guardado correctamente!"); 
+                    inputState = {}; 
+                    await fetchDashboard(); 
+                    renderDashboard(); 
+                    showSec('dash'); 
+                }
+            } catch (e) { 
+                alert("Error al guardar."); 
+            } 
+            loader.classList.add('hidden');
         }
 
         // --- MOTOR AUDITORIA ---
         async function generateAuditReport() {
-            const p = { startDate: document.getElementById('audit-start').value, endDate: document.getElementById('audit-end').value, tiendas: Array.from(document.getElementById('audit-stores').selectedOptions).map(o=>o.value), categorias: Array.from(document.getElementById('audit-cats').selectedOptions).map(o=>o.value), productos: Array.from(document.getElementById('audit-prods').selectedOptions).map(o=>o.value), rol: user.rol, zonas: user.zonas };
-            if(!p.startDate) return alert("Falta fecha.");
-            const l = document.getElementById('loading'); document.getElementById('loading-text').innerText = "Analizando..."; l.classList.remove('hidden');
+            const params = { 
+                startDate: document.getElementById('audit-start').value, 
+                endDate: document.getElementById('audit-end').value, 
+                tiendas: Array.from(document.getElementById('audit-stores').selectedOptions).map(o=>o.value), 
+                categorias: Array.from(document.getElementById('audit-cats').selectedOptions).map(o=>o.value), 
+                productos: Array.from(document.getElementById('audit-prods').selectedOptions).map(o=>o.value), 
+                rol: user.rol, 
+                zonas: user.zonas 
+            };
+            
+            if(!params.startDate) return alert("Falta fecha inicial.");
+            
+            const loader = document.getElementById('loading'); 
+            document.getElementById('loading-text').innerText = "Analizando..."; 
+            loader.classList.remove('hidden');
+            
             try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getAuditData', params: p }) }), d = await r.json();
-                if(d.status === 'success' && d.data.chartData.length > 0) { renderAudit(d.data.chartData); document.getElementById('audit-results-container').classList.remove('hidden'); }
-                else alert("Vacío.");
-            } catch (e) { alert("Error."); } l.classList.add('hidden');
+                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getAuditData', params: params }) });
+                const d = await response.json();
+                
+                if(d.status === 'success' && d.data.chartData.length > 0) { 
+                    renderAudit(d.data.chartData); 
+                    document.getElementById('audit-results-container').classList.remove('hidden'); 
+                } else {
+                    alert("No hay datos en este periodo.");
+                }
+            } catch (e) { 
+                alert("Error de procesamiento."); 
+            } 
+            loader.classList.add('hidden');
         }
 
         function renderAudit(data) {
-            let sP=0, sM=0, byS={}, byP={}, byD={};
+            let sumProd = 0, sumMerma = 0;
+            let byStore = {}, byProd = {}, byDate = {};
+
             data.forEach(r => {
-                sP+=r.PROD_TOTAL; sM+=r.MERMA;
-                if(!byS[r.TIENDA]) byS[r.TIENDA]={p:0,m:0}; byS[r.TIENDA].p+=r.PROD_TOTAL; byS[r.TIENDA].m+=r.MERMA;
-                if(!byP[r.PRODUCTO]) byP[r.PRODUCTO]={p:0,m:0,d:[]}; byP[r.PRODUCTO].p+=r.PROD_TOTAL; byP[r.PRODUCTO].m+=r.MERMA;
-                // Para tabla y turnos
-                let dt = r.FECHA;
-                if(!byD[dt]) byD[dt]={p:0, m:0, obr:0, med:0, tar:0};
-                byD[dt].p+=r.PROD_TOTAL; byD[dt].m+=r.MERMA; byD[dt].obr+=r.PROD_OBRADOR; byD[dt].med+=r.PROD_MEDIODIA; byD[dt].tar+=r.PROD_TARDE;
+                sumProd += r.PROD_TOTAL; 
+                sumMerma += r.MERMA;
                 
-                let dpId = dt+"_"+r.PRODUCTO;
-                byP[r.PRODUCTO][dt] = {p: r.PROD_TOTAL, m: r.MERMA};
+                if(!byStore[r.TIENDA]) byStore[r.TIENDA] = { p:0, m:0 }; 
+                byStore[r.TIENDA].p += r.PROD_TOTAL; 
+                byStore[r.TIENDA].m += r.MERMA;
+                
+                if(!byProd[r.PRODUCTO]) {
+                    byProd[r.PRODUCTO] = { cat: r.CATEGORIA, sub: r.SUBCATEGORIA, p:0, m:0, days:{} };
+                }
+                byProd[r.PRODUCTO].p += r.PROD_TOTAL; 
+                byProd[r.PRODUCTO].m += r.MERMA;
+                
+                let dt = r.FECHA;
+                if(!byDate[dt]) byDate[dt] = { p:0, m:0, obr:0, med:0, tar:0 };
+                byDate[dt].p += r.PROD_TOTAL; 
+                byDate[dt].m += r.MERMA; 
+                byDate[dt].obr += r.PROD_OBRADOR; 
+                byDate[dt].med += r.PROD_MEDIODIA; 
+                byDate[dt].tar += r.PROD_TARDE;
+                
+                if(!byProd[r.PRODUCTO].days[dt]) byProd[r.PRODUCTO].days[dt] = { p:0, m:0 };
+                byProd[r.PRODUCTO].days[dt].p += r.PROD_TOTAL;
+                byProd[r.PRODUCTO].days[dt].m += r.MERMA;
             });
 
             // KPIs
-            document.getElementById('kpi-prod').innerText = sP.toLocaleString(); document.getElementById('kpi-merma').innerText = sM.toLocaleString();
-            document.getElementById('kpi-porc').innerText = sP>0?((sM/sP)*100).toFixed(1)+'%':'0%';
+            document.getElementById('kpi-prod').innerText = sumProd.toLocaleString(); 
+            document.getElementById('kpi-merma').innerText = sumMerma.toLocaleString();
+            document.getElementById('kpi-porc').innerText = sumProd > 0 ? ((sumMerma / sumProd) * 100).toFixed(1) + '%' : '0%';
 
             // C1: Bar Tiendas
             if(charts.store) charts.store.destroy();
-            charts.store = new Chart(document.getElementById('auditChartStore').getContext('2d'), { type:'bar', data:{labels:Object.keys(byS), datasets:[{label:'Prod',data:Object.keys(byS).map(k=>byS[k].p),backgroundColor:'#3b82f6'},{label:'Merma',data:Object.keys(byS).map(k=>byS[k].m),backgroundColor:'#ef4444'}]}, options:{responsive:true,maintainAspectRatio:false} });
+            charts.store = new Chart(document.getElementById('auditChartStore').getContext('2d'), { 
+                type: 'bar', 
+                data: {
+                    labels: Object.keys(byStore), 
+                    datasets: [
+                        { label: 'Producción', data: Object.keys(byStore).map(k=>byStore[k].p), backgroundColor: '#3b82f6' },
+                        { label: 'Merma', data: Object.keys(byStore).map(k=>byStore[k].m), backgroundColor: '#ef4444' }
+                    ]
+                }, 
+                options: { responsive: true, maintainAspectRatio: false } 
+            });
 
             // C2: Turnos (Stacked)
             if(charts.turnos) charts.turnos.destroy();
-            let dKeys = Object.keys(byD).sort();
-            charts.turnos = new Chart(document.getElementById('auditChartTurnos').getContext('2d'), { type:'bar', data:{labels:dKeys.map(k=>fmtDate(k)), datasets:[{label:'Obrador',data:dKeys.map(k=>byD[k].obr),backgroundColor:'#93c5fd',stack:'P'},{label:'Mediodía',data:dKeys.map(k=>byD[k].med),backgroundColor:'#3b82f6',stack:'P'},{label:'Tarde',data:dKeys.map(k=>byD[k].tar),backgroundColor:'#1e3a8a',stack:'P'},{label:'Merma',data:dKeys.map(k=>byD[k].m),backgroundColor:'#ef4444',stack:'M'}]}, options:{responsive:true,maintainAspectRatio:false} });
+            let dKeys = Object.keys(byDate).sort();
+            charts.turnos = new Chart(document.getElementById('auditChartTurnos').getContext('2d'), { 
+                type: 'bar', 
+                data: {
+                    labels: dKeys.map(k=>fmtDate(k)), 
+                    datasets: [
+                        { label: 'Obrador', data: dKeys.map(k=>byDate[k].obr), backgroundColor: '#93c5fd', stack: 'P' },
+                        { label: 'Mediodía', data: dKeys.map(k=>byDate[k].med), backgroundColor: '#3b82f6', stack: 'P' },
+                        { label: 'Tarde', data: dKeys.map(k=>byDate[k].tar), backgroundColor: '#1e3a8a', stack: 'P' },
+                        { label: 'Merma', data: dKeys.map(k=>byDate[k].m), backgroundColor: '#ef4444', stack: 'M' }
+                    ]
+                }, 
+                options: { responsive: true, maintainAspectRatio: false } 
+            });
 
-            // C3: Doughnut (Pareto)
+            // C3: Horizontal Bar (Ranking Peores Productos)
             if(charts.prod) charts.prod.destroy();
-            let topP = Object.keys(byP).map(k=>({n:k,m:byP[k].m})).sort((a,b)=>b.m-a.m).slice(0,5);
-            charts.prod = new Chart(document.getElementById('auditChartProd').getContext('2d'), { type:'doughnut', data:{labels:topP.map(x=>x.n),datasets:[{data:topP.map(x=>x.m),backgroundColor:['#ef4444','#f97316','#f59e0b','#eab308','#84cc16']}]}, options:{responsive:true,maintainAspectRatio:false} });
+            let topProds = Object.keys(byProd).map(k => ({ n:k, m:byProd[k].m })).sort((a,b) => b.m - a.m).slice(0, 10);
+            
+            charts.prod = new Chart(document.getElementById('auditChartProd').getContext('2d'), { 
+                type: 'bar', 
+                data: {
+                    labels: topProds.map(x => x.n),
+                    datasets: [{
+                        label: 'Unidades Tiradas',
+                        data: topProds.map(x => x.m),
+                        backgroundColor: '#ef4444'
+                    }]
+                }, 
+                options: { 
+                    indexAxis: 'y', // Convertimos a barras horizontales
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                } 
+            });
 
             // C4: Trend (Line)
             if(charts.trend) charts.trend.destroy();
             let daysMap = [0,0,0,0,0,0,0]; // D,L,M,X,J,V,S
-            data.forEach(r => { let dx = new Date(r.FECHA.split('-')[0],r.FECHA.split('-')[1]-1,r.FECHA.split('-')[2]).getDay(); daysMap[dx] += r.MERMA; });
-            charts.trend = new Chart(document.getElementById('auditChartTrend').getContext('2d'), { type:'line', data:{labels:["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],datasets:[{label:'Merma por Día',data:daysMap,borderColor:'#ef4444',tension:0.4}]}, options:{responsive:true,maintainAspectRatio:false} });
+            data.forEach(r => { 
+                let parts = r.FECHA.split('-');
+                let dx = new Date(parts[0], parts[1]-1, parts[2]).getDay(); 
+                daysMap[dx] += r.MERMA; 
+            });
+            charts.trend = new Chart(document.getElementById('auditChartTrend').getContext('2d'), { 
+                type: 'line', 
+                data: {
+                    labels: ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],
+                    datasets: [{ label: 'Merma Total Acumulada', data: daysMap, borderColor: '#ef4444', tension: 0.4 }]
+                }, 
+                options: { responsive: true, maintainAspectRatio: false } 
+            });
 
-            // TABLA PIVOTANTE
-            let pKeys = Object.keys(byP).sort();
-            let uR = master.config.UMBRAL_ROJO || 15, uA = master.config.UMBRAL_AMARILLO || 5;
-            let ths = dKeys.map(d => `<th class="px-3 py-2 text-center border-l">${fmtDate(d)}</th>`).join('');
+            // TABLA PIVOTANTE MEJORADA (Cat -> Subcat -> Prod)
+            let pKeys = Object.keys(byProd).sort();
+            let uRojo = master.config.UMBRAL_ROJO || 15;
+            let uAmarillo = master.config.UMBRAL_AMARILLO || 5;
+            
+            let ths = dKeys.map(d => `<th class="px-3 py-2 text-center border-l whitespace-nowrap bg-gray-100">${fmtDate(d)}</th>`).join('');
+            
             let trs = pKeys.map(p => {
+                let cat = byProd[p].cat;
+                let sub = byProd[p].sub;
+                
                 let tdDays = dKeys.map(d => {
-                    let vd = byP[p][d] || {p:0,m:0};
-                    let prc = vd.p>0?((vd.m/vd.p)*100).toFixed(0):0;
-                    let col = prc>=uR ? 'text-red-500 bg-red-50' : (prc>=uA ? 'text-orange-500 bg-orange-50' : 'text-gray-400');
-                    return `<td class="px-3 py-2 text-center border-l text-[10px] ${col}"><div class="font-black">${vd.p} / ${vd.m}</div><div>${prc}%</div></td>`;
+                    let vd = byProd[p].days[d] || { p:0, m:0 };
+                    let prc = vd.p > 0 ? ((vd.m / vd.p) * 100).toFixed(0) : 0;
+                    let col = prc >= uRojo ? 'text-red-500 bg-red-50' : (prc >= uAmarillo ? 'text-orange-500 bg-orange-50' : 'text-gray-400');
+                    return `<td class="px-3 py-2 text-center border-l text-[10px] ${col} whitespace-nowrap"><div class="font-black">${vd.p} / ${vd.m}</div><div>${prc}%</div></td>`;
                 }).join('');
-                let prcT = byP[p].p>0?((byP[p].m/byP[p].p)*100).toFixed(1):0;
-                let cT = prcT>=uR?'text-red-600':(prcT>=uA?'text-orange-500':'text-gray-800');
-                return `<tr class="border-b hover:bg-gray-50"><td class="py-2 pr-4 font-bold text-xs whitespace-nowrap sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">${p}</td>${tdDays}<td class="px-3 py-2 text-right border-l font-black ${cT} bg-gray-50">${prcT}%</td></tr>`;
+                
+                let prcTotal = byProd[p].p > 0 ? ((byProd[p].m / byProd[p].p) * 100).toFixed(1) : 0;
+                let colorTotal = prcTotal >= uRojo ? 'text-red-600' : (prcTotal >= uAmarillo ? 'text-orange-500' : 'text-gray-800');
+                
+                return `<tr class="border-b hover:bg-gray-50">
+                    <td class="px-3 py-2 font-bold text-xs whitespace-nowrap text-gray-400">${cat}</td>
+                    <td class="px-3 py-2 font-bold text-xs whitespace-nowrap text-gray-500">${sub}</td>
+                    <td class="px-3 py-2 font-black text-xs whitespace-nowrap text-slate-800">${p}</td>
+                    ${tdDays}
+                    <td class="px-3 py-2 text-right border-l font-black ${colorTotal} bg-gray-50 whitespace-nowrap">${prcTotal}%</td>
+                </tr>`;
             }).join('');
             
-            document.getElementById('pivot-container').innerHTML = `<table class="w-full text-left text-xs"><thead><tr class="text-gray-400 border-b"><th class="py-2 pr-4 sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Producto</th>${ths}<th class="px-3 py-2 text-right border-l">Global</th></tr></thead><tbody>${trs}</tbody></table>`;
+            document.getElementById('pivot-container').innerHTML = `
+                <table class="w-full text-left text-xs bg-white">
+                    <thead>
+                        <tr class="text-gray-500 border-b">
+                            <th class="px-3 py-2 whitespace-nowrap bg-gray-100">Categoría</th>
+                            <th class="px-3 py-2 whitespace-nowrap bg-gray-100">Subcategoría</th>
+                            <th class="px-3 py-2 whitespace-nowrap bg-gray-100">Producto</th>
+                            ${ths}
+                            <th class="px-3 py-2 text-right border-l bg-gray-100 whitespace-nowrap">Global</th>
+                        </tr>
+                    </thead>
+                    <tbody>${trs}</tbody>
+                </table>
+            `;
         }
 
-        function toggleFS(id) { document.getElementById(id).classList.toggle('fs-chart'); }
+        function toggleFS(id) { 
+            document.getElementById(id).classList.toggle('fs-chart'); 
+        }
     </script>
 </body>
 </html>
