@@ -358,7 +358,7 @@
             if(id === 'input') renderCats();
         }
 
-        async function processSave() {
+async function processSave() {
             // Reconstruimos los datos mapeando el UID de vuelta al ID real de la base de datos
             const items = master.prods.map(p => ({
                 id: p.id,
@@ -384,8 +384,15 @@
                 const d = await r.json();
                 if(d.status === 'success') {
                     alert("¡DATOS GUARDADOS CORRECTAMENTE!");
-                    inputState = {}; 
-                    location.reload();
+                    
+                    // SOLUCIÓN: Limpieza suave de la interfaz en lugar de recargar la página
+                    inputState = {}; // Vaciamos la memoria de cantidades
+                    document.getElementById('input-date').valueAsDate = new Date(); // Reseteamos la fecha a hoy
+                    cache.cat = 'TODOS';
+                    cache.sub = 'TODOS';
+                    renderCats(); // Redibuja los productos poniéndolos todos a 0
+                    showSec('dash'); // Te envía de vuelta al Dashboard sin cerrar sesión
+                    
                 }
             } catch (e) { 
                 alert("Error al guardar en la base de datos."); 
