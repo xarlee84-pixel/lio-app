@@ -371,13 +371,12 @@
                     return `<div class="flex flex-col items-center"><div class="w-6 h-6 rounded-full flex items-center justify-center text-xs mb-1 ${cerrado?'bg-green-100 text-green-600':'bg-red-100 text-red-600'}">${cerrado?'✓':'×'}</div><span class="text-[8px] uppercase text-gray-500 font-bold">${fmtMonthYear(mStr).substring(0,3)}</span></div>`;
                 }).join('');
 
-                // Mapeo de meses y tareas pendientes para el CRM
                 let listaMesesPendientes = "";
                 if(t.mesesPendientes && t.mesesPendientes.length > 0) {
                     listaMesesPendientes = t.mesesPendientes.map(m => `<li class="text-red-800">🔥 FALTA CERRAR: ${fmtMonthYear(m)}</li>`).join('');
                 }
 
-                let listaTareasDiarias = "<li class="text-green-600">Al día. No hay registros pendientes.</li>";
+                let listaTareasDiarias = '<li class="text-green-600">Al día. No hay registros pendientes.</li>';
                 if(t.tareasPendientes && t.tareasPendientes.length > 0) {
                     listaTareasDiarias = t.tareasPendientes.map(d => `<li>• ${fmtFullDate(d.f)} (${d.motivo})</li>`).join('');
                 }
