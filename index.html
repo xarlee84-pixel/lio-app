@@ -9,25 +9,11 @@
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Solución 1: Límites visuales estrictos para los botones (Galletas) */
-        .pill-selected { 
-            @apply bg-blue-600 text-white shadow-md scale-105 border-2 border-blue-600 transition-all; 
-        }
-        .pill-default { 
-            @apply bg-white text-gray-700 shadow-sm border-2 border-gray-300 hover:border-blue-400 hover:text-blue-600 transition-all; 
-        }
-        
-        /* Solución 2: Eliminación forzada de flechas en input type="number" */
+        .pill-selected { @apply bg-blue-600 text-white shadow-md scale-105 border-2 border-blue-600 transition-all; }
+        .pill-default { @apply bg-white text-gray-700 shadow-sm border-2 border-gray-300 hover:border-blue-400 hover:text-blue-600 transition-all; }
         input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
-        input[type="number"] { 
-            -moz-appearance: textfield; 
-        }
-
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
         .tab-active { @apply border-blue-600 text-blue-600 font-black; }
         .tab-inactive { @apply border-transparent text-gray-400 font-bold; }
     </style>
@@ -68,7 +54,6 @@
     </div>
 
     <div id="main-app" class="hidden min-h-screen flex flex-col">
-        
         <header class="bg-white p-4 border-b flex justify-between items-center sticky top-0 z-50 shadow-sm">
             <div>
                 <p id="role-display" class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1"></p>
@@ -82,7 +67,6 @@
         <nav id="app-nav" class="bg-white border-b flex justify-around font-black text-[10px] uppercase tracking-wider sticky top-[73px] z-40"></nav>
 
         <main class="flex-1 p-4 overflow-y-auto max-w-4xl mx-auto w-full">
-            
             <div id="content-area">
                 
                 <section id="sec-dash" class="app-section space-y-6">
@@ -120,11 +104,28 @@
                     </div>
                 </section>
 
-                <section id="sec-audit" class="app-section hidden">
-                    <div class="bg-white p-8 rounded-[2rem] text-center text-gray-400 font-bold">MÓDULO DE AUDITORÍA OPERATIVA (CSV/Gráficos)</div>
+                <section id="sec-audit" class="app-section hidden space-y-6">
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+                        <h3 class="font-black text-slate-800 uppercase text-sm mb-4">Módulo de Auditoría Operativa</h3>
+                        <p class="text-xs text-gray-500 mb-6">Herramienta analítica de extracción de datos del sistema para Área Managers.</p>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <input type="date" class="p-3 bg-gray-50 rounded-xl font-bold text-xs" title="Fecha Inicio">
+                            <input type="date" class="p-3 bg-gray-50 rounded-xl font-bold text-xs" title="Fecha Fin">
+                        </div>
+                        <button class="w-full bg-blue-600 text-white font-black py-4 rounded-xl text-xs uppercase" onclick="alert('Exportación CSV en desarrollo fase 2')">Descargar CSV Filtrado</button>
+                    </div>
                 </section>
-                <section id="sec-admin" class="app-section hidden">
-                    <div class="bg-white p-8 rounded-[2rem] text-center text-gray-400 font-bold">PANEL DE ADMINISTRACIÓN (Tiendas/Productos/PINs)</div>
+
+                <section id="sec-admin" class="app-section hidden space-y-6">
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+                        <h3 class="font-black text-slate-800 uppercase text-sm mb-4">Panel de Administración</h3>
+                        <div class="space-y-2">
+                            <button class="w-full text-left p-4 bg-gray-50 rounded-xl font-bold text-sm text-gray-700 hover:bg-gray-100">Gestión de Tiendas y PINs</button>
+                            <button class="w-full text-left p-4 bg-gray-50 rounded-xl font-bold text-sm text-gray-700 hover:bg-gray-100">Catálogo de Productos</button>
+                            <button class="w-full text-left p-4 bg-gray-50 rounded-xl font-bold text-sm text-gray-700 hover:bg-gray-100">Usuarios y Zonas</button>
+                            <button class="w-full text-left p-4 bg-red-50 rounded-xl font-bold text-sm text-red-600 hover:bg-red-100 mt-4" onclick="alert('Requiere clave de SuperAdmin')">Archivado Anual del Sistema</button>
+                        </div>
+                    </div>
                 </section>
 
             </div>
@@ -135,9 +136,8 @@
         const API_URL = "https://script.google.com/macros/s/AKfycby86Uyfci6i_hyunbHhVlM2XsTwpo6AtxYedAOZX8gJ6xIIn392pUUR6hxzH4hbJ3nrCA/exec";
         let master = null;
         let user = null;
+        let dashData = null; // Almacena los datos del dashboard
         let cache = { cat: 'TODOS', sub: 'TODOS' };
-        
-        // Memoria temporal estricta anclada al UID
         let inputState = {};
 
         window.onload = async () => {
@@ -151,32 +151,18 @@
                 const d = await r.json();
                 if(d.status === 'success') {
                     master = {
-                        prods: d.data.productos.slice(1)
-                            .filter(x => x[0] && String(x[1]).trim() !== '')
-                            .map((x, index) => { // Añadimos 'index' para crear un identificador blindado
-                                let isActive = true;
-                                if(x[4] === false || String(x[4]).trim().toUpperCase() === 'FALSE') {
-                                    isActive = false;
-                                }
+                        prods: d.data.productos.slice(1).filter(x => x[0] && String(x[1]).trim() !== '').map((x, index) => {
                                 return {
-                                    id: String(x[0]).trim(),       // ID Real de la Base de Datos
-                                    uid: 'ui_prod_' + index,       // Solución 3: UID Estricto para memoria del Frontend
-                                    nom: String(x[1]).trim(),
-                                    cat: String(x[2] || 'SIN CATEGORÍA').trim(),
-                                    sub: String(x[3] || 'SIN SUBCATEGORÍA').trim(),
-                                    act: isActive
+                                    id: String(x[0]).trim(), uid: 'ui_prod_' + index, nom: String(x[1]).trim(),
+                                    cat: String(x[2] || 'SIN CATEGORÍA').trim(), sub: String(x[3] || 'SIN SUBCATEGORÍA').trim(),
+                                    act: (x[4] === false || String(x[4]).trim().toUpperCase() === 'FALSE') ? false : true
                                 };
                             }),
-                        tiendas: d.data.tiendas.slice(1)
-                            .filter(x => x[0])
-                            .map(x => ({
-                                id: String(x[0]).trim(),
-                                nom: String(x[1]).trim(),
-                                zona: String(x[2] || '').trim(),
-                                pin: String(x[3] || '').trim()
+                        tiendas: d.data.tiendas.slice(1).filter(x => x[0]).map(x => ({
+                                id: String(x[0]).trim(), nom: String(x[1]).trim(),
+                                zona: String(x[2] || '').trim(), pin: String(x[3] || '').trim()
                             }))
                     };
-
                     const sel = document.getElementById('store-select');
                     sel.innerHTML = master.tiendas.map(t => `<option value="${t.id}">${t.nom} (${t.id})</option>`).join('');
                 }
@@ -204,18 +190,28 @@
             try {
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', params: p }) });
                 const d = await r.json();
-                document.getElementById('loading').classList.add('hidden');
-
+                
                 if(d.status === 'success') {
                     user = d.data;
+                    await fetchDashboard(); // Cargar datos del dashboard antes de mostrar la UI
                     initAppStructure();
                 } else { 
                     alert("Credenciales Incorrectas"); 
                 }
             } catch (e) {
-                document.getElementById('loading').classList.add('hidden');
                 alert("Fallo de comunicación con el servidor.");
             }
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        // Llama a la API para obtener analíticas
+        async function fetchDashboard() {
+            const r = await fetch(API_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: 'getDashboardData', params: { userId: user.id, rol: user.rol, zonas: user.zonas } }) 
+            });
+            const d = await r.json();
+            if(d.status === 'success') dashData = d.data;
         }
 
         function initAppStructure() {
@@ -239,79 +235,90 @@
             renderDashboard();
         }
 
+        // Dibuja el Dashboard basándose en los datos descargados
         function renderDashboard() {
             const widgets = document.getElementById('dash-widgets');
             const main = document.getElementById('dash-main-content');
 
             if(user.rol === 'STORE') {
                 widgets.innerHTML = `
-                    <div class="bg-white p-5 rounded-3xl shadow-sm border-b-4 border-green-500"><p class="text-[10px] font-bold text-gray-400 uppercase">Eficiencia</p><p class="text-3xl font-black">--%</p></div>
-                    <div class="bg-white p-5 rounded-3xl shadow-sm border-b-4 border-orange-500"><p class="text-[10px] font-bold text-gray-400 uppercase">Alertas</p><p class="text-3xl font-black">0</p></div>
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100"><p class="text-[10px] font-bold text-gray-400 uppercase">Eficiencia (Mes)</p><p class="text-3xl font-black text-slate-800">${dashData ? dashData.eficiencia : 0}%</p></div>
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100"><p class="text-[10px] font-bold text-gray-400 uppercase">Días Faltantes</p><p class="text-3xl font-black ${dashData && dashData.pendientes > 0 ? 'text-red-500' : 'text-green-500'}">${dashData ? dashData.pendientes : 0}</p></div>
                 `;
-                main.innerHTML = `<h3 class="font-black text-xs uppercase text-gray-400 mb-4">Resumen de Hoy</h3><p class="text-sm text-gray-500">No hay datos introducidos hoy aún.</p>`;
+                
+                let tableHTML = '<p class="text-sm text-gray-500">No hay datos introducidos hoy aún.</p>';
+                if(dashData && dashData.resumenHoy && dashData.resumenHoy.length > 0) {
+                    tableHTML = `
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead><tr class="text-gray-400 border-b"><th class="pb-2">Producto</th><th class="pb-2 text-center">Prod</th><th class="pb-2 text-center">Merma</th><th class="pb-2 text-right">%</th></tr></thead>
+                            <tbody class="divide-y divide-gray-50">
+                                ${dashData.resumenHoy.map(r => `<tr><td class="py-3 font-bold text-gray-800">${r.nom}</td><td class="py-3 text-center font-black">${r.prod}</td><td class="py-3 text-center font-black text-red-500">${r.merma}</td><td class="py-3 text-right font-black text-gray-400">${r.porc}%</td></tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>`;
+                }
+                main.innerHTML = `<h3 class="font-black text-xs uppercase text-gray-400 mb-4">Resumen de Hoy</h3>${tableHTML}`;
+            
             } else {
                 widgets.innerHTML = `
-                    <div class="bg-white p-5 rounded-3xl shadow-sm border-b-4 border-blue-600 col-span-2 text-center">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase">Tiendas Bajo Supervisión</p>
-                        <p class="text-3xl font-black">ZONA: ${user.zonas || 'TOTAL'}</p>
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border-b-4 border-blue-600 col-span-2 flex justify-between items-center">
+                        <div><p class="text-[10px] font-bold text-gray-400 uppercase">Supervisión</p><p class="text-xl font-black text-slate-800">ZONA: ${user.zonas || 'TOTAL'}</p></div>
+                        <div class="text-right"><p class="text-[10px] font-bold text-gray-400 uppercase">Pendientes Totales</p><p class="text-3xl font-black text-red-500">${dashData ? dashData.pendientes : 0}</p></div>
                     </div>
                 `;
-                main.innerHTML = `<h3 class="font-black text-xs uppercase text-gray-400 mb-4">Estado de Tiendas</h3><div class="space-y-2"><p class="text-sm">Cargando reporte de zona...</p></div>`;
+                
+                let pendingHTML = '<p class="text-sm text-green-600 font-bold">Todas las tiendas están al día.</p>';
+                if(dashData && dashData.listaPendientes && dashData.listaPendientes.length > 0) {
+                    pendingHTML = `<div class="space-y-3 mb-6">` + dashData.listaPendientes.map(t => `
+                        <div class="p-4 bg-red-50 rounded-xl border border-red-100">
+                            <p class="font-black text-sm text-red-900">${t.tienda}</p>
+                            <p class="text-xs text-red-600 font-bold mt-1">Faltan datos: ${t.dias.join(', ')}</p>
+                        </div>
+                    `).join('') + `</div>
+                    <button onclick="copyToWhatsApp()" class="w-full bg-green-500 text-white font-black py-4 rounded-xl shadow-md hover:bg-green-600 text-xs uppercase tracking-widest flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.347-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                        Copiar Informe
+                    </button>`;
+                }
+                main.innerHTML = `<h3 class="font-black text-xs uppercase text-gray-400 mb-4">Auditoría de Cierre</h3>${pendingHTML}`;
             }
         }
 
-        // --- SISTEMA DE NAVEGACIÓN Y RENDERIZADO AISLADO ---
+        function copyToWhatsApp() {
+            let txt = "⚠️ *INFORME DE TAREAS PENDIENTES* ⚠️\n\n";
+            dashData.listaPendientes.forEach(t => {
+                txt += `🏪 *${t.tienda}*\nFaltan datos de: ${t.dias.join(', ')}\n\n`;
+            });
+            navigator.clipboard.writeText(txt);
+            alert("Informe copiado al portapapeles. Listo para pegar en WhatsApp.");
+        }
+
+        // --- SISTEMA DE REGISTRO ---
         function renderCats() {
             const activeProds = master.prods.filter(p => p.act === true);
             const rawCats = [...new Set(activeProds.map(p => p.cat))].sort();
             const cats = ["TODOS", ...rawCats];
-            
-            const div = document.getElementById('pill-cats');
-            div.innerHTML = cats.map(c => `<button onclick="selCat('${c}')" class="px-6 py-3 rounded-xl font-black text-xs uppercase whitespace-nowrap ${cache.cat === c ? 'pill-selected' : 'pill-default'}">${c}</button>`).join('');
-            
+            document.getElementById('pill-cats').innerHTML = cats.map(c => `<button onclick="selCat('${c}')" class="px-6 py-3 rounded-xl font-black text-xs uppercase whitespace-nowrap ${cache.cat === c ? 'pill-selected' : 'pill-default'}">${c}</button>`).join('');
             if(cache.cat) renderSubs();
         }
 
-        function selCat(c) {
-            cache.cat = c; 
-            cache.sub = 'TODOS'; 
-            renderCats();
-            document.getElementById('pill-subs').classList.remove('hidden');
-            renderSubs();
-        }
+        function selCat(c) { cache.cat = c; cache.sub = 'TODOS'; renderCats(); document.getElementById('pill-subs').classList.remove('hidden'); renderSubs(); }
 
         function renderSubs() {
             const activeProds = master.prods.filter(p => p.act === true && (cache.cat === 'TODOS' || p.cat === cache.cat));
             const rawSubs = [...new Set(activeProds.map(p => p.sub))].sort();
             const subs = ["TODOS", ...rawSubs];
-            
-            const div = document.getElementById('pill-subs');
-            div.innerHTML = subs.map(s => `<button onclick="selSub('${s}')" class="px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap ${cache.sub === s ? 'pill-selected' : 'pill-default'}">${s}</button>`).join('');
-            
+            document.getElementById('pill-subs').innerHTML = subs.map(s => `<button onclick="selSub('${s}')" class="px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap ${cache.sub === s ? 'pill-selected' : 'pill-default'}">${s}</button>`).join('');
             renderProds();
         }
 
-        function selSub(s) {
-            cache.sub = s;
-            renderSubs();
-            renderProds();
-        }
+        function selSub(s) { cache.sub = s; renderSubs(); renderProds(); }
 
         function renderProds() {
-            const list = master.prods.filter(p => 
-                p.act === true && 
-                (cache.cat === 'TODOS' || p.cat === cache.cat) && 
-                (cache.sub === 'TODOS' || p.sub === cache.sub)
-            );
-            
+            const list = master.prods.filter(p => p.act === true && (cache.cat === 'TODOS' || p.cat === cache.cat) && (cache.sub === 'TODOS' || p.sub === cache.sub));
             const div = document.getElementById('prod-grid');
-            
-            if(list.length === 0) {
-                div.innerHTML = '<p class="text-center text-gray-400 font-bold py-8">No hay productos activos en esta selección.</p>';
-                return;
-            }
-
-            // Utilizamos p.uid en lugar de p.id para blindar la memoria
+            if(list.length === 0) { div.innerHTML = '<p class="text-center text-gray-400 font-bold py-8">No hay productos activos en esta selección.</p>'; return; }
             div.innerHTML = list.map(p => `
                 <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-100 flex justify-between items-center transition-all hover:border-blue-200">
                     <div class="flex-1 pr-2">
@@ -327,17 +334,8 @@
             `).join('');
         }
 
-        // --- MANEJO ESTRICTO DEL ESTADO (MEMORIA INDEPENDIENTE) ---
-        function updateState(uid, value) {
-            inputState[uid] = Math.max(0, parseInt(value) || 0);
-        }
-
-        function val(uid, d) {
-            const i = document.getElementById('v-'+uid);
-            const newValue = Math.max(0, parseInt(i.value || 0) + d);
-            i.value = newValue;
-            inputState[uid] = newValue; // Guardado ciego y seguro en el UID
-        }
+        function updateState(uid, value) { inputState[uid] = Math.max(0, parseInt(value) || 0); }
+        function val(uid, d) { const i = document.getElementById('v-'+uid); const newValue = Math.max(0, parseInt(i.value || 0) + d); i.value = newValue; inputState[uid] = newValue; }
 
         function updateInputView() {
             const isMerma = document.getElementById('input-type').value === 'merma';
@@ -347,24 +345,13 @@
         function showSec(id) {
             document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
             document.getElementById('sec-'+id).classList.remove('hidden');
-            
-            document.querySelectorAll('.tab-item').forEach(t => {
-                t.classList.replace('tab-active', 'tab-inactive');
-                t.classList.remove('border-blue-600', 'text-blue-600');
-            });
-            const active = document.getElementById('tab-'+id);
-            active.classList.replace('tab-inactive', 'tab-active');
-            
+            document.querySelectorAll('.tab-item').forEach(t => { t.classList.replace('tab-active', 'tab-inactive'); t.classList.remove('border-blue-600', 'text-blue-600'); });
+            document.getElementById('tab-'+id).classList.replace('tab-inactive', 'tab-active');
             if(id === 'input') renderCats();
         }
 
-async function processSave() {
-            // Reconstruimos los datos mapeando el UID de vuelta al ID real de la base de datos
-            const items = master.prods.map(p => ({
-                id: p.id,
-                v: inputState[p.uid] || 0
-            })).filter(x => x.v > 0);
-
+        async function processSave() {
+            const items = master.prods.map(p => ({ id: p.id, v: inputState[p.uid] || 0 })).filter(x => x.v > 0);
             if(items.length === 0) return alert("No has introducido ninguna cantidad.");
             
             document.getElementById('loading').classList.remove('hidden');
@@ -375,7 +362,7 @@ async function processSave() {
                     type: document.getElementById('input-type').value,
                     turno: document.getElementById('input-turno').value,
                     tiendaId: user.id,
-                    items: items.map(x => ({prodId: x.id, val: x.v})) // Enviamos el ID real a Google
+                    items: items.map(x => ({prodId: x.id, val: x.v}))
                 }
             };
 
@@ -384,19 +371,14 @@ async function processSave() {
                 const d = await r.json();
                 if(d.status === 'success') {
                     alert("¡DATOS GUARDADOS CORRECTAMENTE!");
-                    
-                    // SOLUCIÓN: Limpieza suave de la interfaz en lugar de recargar la página
-                    inputState = {}; // Vaciamos la memoria de cantidades
-                    document.getElementById('input-date').valueAsDate = new Date(); // Reseteamos la fecha a hoy
-                    cache.cat = 'TODOS';
-                    cache.sub = 'TODOS';
-                    renderCats(); // Redibuja los productos poniéndolos todos a 0
-                    showSec('dash'); // Te envía de vuelta al Dashboard sin cerrar sesión
-                    
+                    inputState = {}; 
+                    document.getElementById('input-date').valueAsDate = new Date();
+                    cache.cat = 'TODOS'; cache.sub = 'TODOS';
+                    await fetchDashboard(); 
+                    renderDashboard();
+                    showSec('dash');
                 }
-            } catch (e) { 
-                alert("Error al guardar en la base de datos."); 
-            }
+            } catch (e) { alert("Error al guardar en la base de datos."); }
             document.getElementById('loading').classList.add('hidden');
         }
     </script>
