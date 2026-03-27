@@ -106,13 +106,40 @@
 
                 <section id="sec-audit" class="app-section hidden space-y-6">
                     <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
-                        <h3 class="font-black text-slate-800 uppercase text-sm mb-4">Módulo de Auditoría Operativa</h3>
-                        <p class="text-xs text-gray-500 mb-6">Herramienta analítica de extracción de datos del sistema para Área Managers.</p>
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <input type="date" id="audit-start" class="p-3 bg-gray-50 rounded-xl font-bold text-xs" title="Fecha Inicio">
-                            <input type="date" id="audit-end" class="p-3 bg-gray-50 rounded-xl font-bold text-xs" title="Fecha Fin">
+                        <h3 class="font-black text-slate-800 uppercase text-sm mb-4">Motor de Filtros</h3>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase">Desde</label>
+                                <input type="date" id="audit-start" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none focus:ring-2 focus:ring-blue-600">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase">Hasta</label>
+                                <input type="date" id="audit-end" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none focus:ring-2 focus:ring-blue-600">
+                            </div>
+                            
+                            <div class="col-span-2">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase">Tiendas (Múltiple Selección)</label>
+                                <select id="audit-stores" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none focus:ring-2 focus:ring-blue-600 h-24"></select>
+                                <p class="text-[9px] text-gray-400 mt-1">Usa Ctrl (Windows) o Cmd (Mac) para seleccionar varias.</p>
+                            </div>
+
+                            <div class="col-span-2">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase">Categorías (Múltiple Selección)</label>
+                                <select id="audit-cats" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none focus:ring-2 focus:ring-blue-600 h-24"></select>
+                            </div>
                         </div>
-                        <button onclick="downloadAuditCSV()" class="w-full bg-blue-600 text-white font-black py-4 rounded-xl text-xs uppercase hover:bg-blue-700 active:scale-95 transition-all shadow-md">Descargar CSV Filtrado</button>
+
+                        <button onclick="generateAuditReport()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl text-xs uppercase hover:bg-slate-800 active:scale-95 transition-all shadow-md">Generar Análisis Visual</button>
+                    </div>
+
+                    <div id="audit-results-container" class="hidden bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+                        <h3 class="font-black text-slate-800 uppercase text-xs mb-4">Resultados de Auditoría</h3>
+                        <canvas id="auditChart" class="w-full h-64 mb-6"></canvas>
+                        
+                        <div class="border-t border-gray-100 pt-4 text-center">
+                            <button onclick="downloadAuditCSV()" class="text-[10px] font-bold text-blue-500 uppercase tracking-widest hover:text-blue-700 underline">Exportar Datos Crudos (.CSV)</button>
+                        </div>
                     </div>
                 </section>
 
@@ -139,6 +166,7 @@
         let dashData = null; 
         let cache = { cat: 'TODOS', sub: 'TODOS' };
         let inputState = {};
+        let auditChartInstance = null; // Instancia global para destruir gráficos viejos
 
         function parseFechaAmigable(dateStr) {
             if(!dateStr) return "";
@@ -151,6 +179,13 @@
 
         window.onload = async () => {
             document.getElementById('input-date').valueAsDate = new Date();
+            // Por defecto, filtros de auditoría a últimos 7 días
+            let today = new Date();
+            let lastWeek = new Date();
+            lastWeek.setDate(today.getDate() - 7);
+            document.getElementById('audit-end').valueAsDate = today;
+            document.getElementById('audit-start').valueAsDate = lastWeek;
+
             await loadMasterData();
         };
 
@@ -244,7 +279,27 @@
                 }
             }
             nav.innerHTML = tabs;
+            
+            // Auto-poblar los filtros de Auditoría si no es tienda
+            if(user.rol !== 'STORE') populateAuditFilters();
+            
             renderDashboard();
+        }
+
+        function populateAuditFilters() {
+            const storeSel = document.getElementById('audit-stores');
+            const catSel = document.getElementById('audit-cats');
+            
+            // Filtro de Tiendas: Mostrar todas si es ADMIN, o solo las de su zona si es AREA_MANAGER
+            let allowedStores = master.tiendas;
+            if (user.rol === 'AREA_MANAGER') {
+                allowedStores = master.tiendas.filter(t => t.zona === user.zonas);
+            }
+            storeSel.innerHTML = allowedStores.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
+            
+            // Filtro de Categorías
+            const uniqueCats = [...new Set(master.prods.map(p => p.cat))].sort();
+            catSel.innerHTML = uniqueCats.map(c => `<option value="${c}">${c}</option>`).join('');
         }
 
         function renderDashboard() {
@@ -280,12 +335,17 @@
                 
                 let storeHTML = '';
                 
+                // RENDERING TAREAS PENDIENTES (NUEVO ALGORITMO)
                 if(dashData && dashData.listaPendientes && dashData.listaPendientes.length > 0) {
                     storeHTML += `
                     <div class="bg-red-50 border border-red-100 rounded-[2rem] p-6 shadow-sm">
-                        <h4 class="font-black text-red-700 text-sm mb-3 flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> Días pendientes de registro</h4>
-                        <ul class="text-xs text-red-600 space-y-2 font-bold pl-2">
-                            ${dashData.listaPendientes.map(d => `<li class="flex items-center gap-2"><div class="w-1.5 h-1.5 bg-red-400 rounded-full"></div> ${parseFechaAmigable(d)}</li>`).join('')}
+                        <h4 class="font-black text-red-700 text-sm mb-3 flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> Registro Incompleto</h4>
+                        <ul class="text-xs text-red-600 font-bold space-y-3">
+                            ${dashData.listaPendientes.map(d => `
+                                <li class="flex flex-col">
+                                    <div class="flex items-center gap-2 text-slate-800"><div class="w-1.5 h-1.5 bg-red-400 rounded-full"></div> <span>${parseFechaAmigable(d.f)}</span></div>
+                                    <span class="text-[9px] uppercase tracking-widest ml-3.5 text-red-500">${d.motivo}</span>
+                                </li>`).join('')}
                         </ul>
                     </div>`;
                 } else {
@@ -341,8 +401,7 @@
                 
                 if(dashData && dashData.listaPendientes && dashData.listaPendientes.length > 0) {
                     amHTML += `<div class="space-y-4 mb-6">` + dashData.listaPendientes.map(t => {
-                        let fDates = t.dias.map(d => parseFechaAmigable(d));
-                        let fDatesStr = JSON.stringify(fDates).replace(/"/g, '&quot;');
+                        let fDatesStr = JSON.stringify(t.dias).replace(/"/g, '&quot;');
                         return `
                         <div class="border border-red-100 rounded-2xl overflow-hidden">
                             <div class="bg-red-50 p-4 flex justify-between items-center">
@@ -350,8 +409,12 @@
                                 <button onclick="copySingleStore('${t.tienda}', ${fDatesStr})" class="text-[10px] bg-red-200 text-red-800 px-3 py-1.5 rounded-lg font-black uppercase tracking-wider hover:bg-red-300 transition-colors active:scale-95">Copiar Faltas</button>
                             </div>
                             <div class="p-4 bg-white">
-                                <ul class="text-xs text-red-600 font-bold space-y-2 pl-2">
-                                    ${fDates.map(df => `<li class="flex items-center gap-2"><div class="w-1.5 h-1.5 bg-red-400 rounded-full"></div> ${df}</li>`).join('')}
+                                <ul class="text-xs text-red-600 font-bold space-y-3 pl-2">
+                                    ${t.dias.map(df => `
+                                    <li class="flex flex-col">
+                                        <div class="flex items-center gap-2 text-slate-800"><div class="w-1.5 h-1.5 bg-red-400 rounded-full"></div> <span>${parseFechaAmigable(df.f)}</span></div>
+                                        <span class="text-[9px] uppercase tracking-widest ml-3.5 text-red-500">${df.motivo}</span>
+                                    </li>`).join('')}
                                 </ul>
                             </div>
                         </div>`;
@@ -370,8 +433,8 @@
         }
 
         function copySingleStore(tienda, diasArray) {
-            let txt = `⚠️ *AVISO TIENDA: ${tienda}* ⚠️\nPor favor, actualizad los datos de producción y merma de los siguientes días:\n\n`;
-            diasArray.forEach(d => txt += `👉 ${d}\n`);
+            let txt = `⚠️ *AVISO TIENDA: ${tienda}* ⚠️\nPor favor, actualizad los datos en el sistema:\n\n`;
+            diasArray.forEach(d => txt += `👉 ${parseFechaAmigable(d.f)} (${d.motivo})\n`);
             navigator.clipboard.writeText(txt);
             alert(`Aviso de ${tienda} copiado al portapapeles.`);
         }
@@ -379,8 +442,7 @@
         function copyAllToWhatsApp() {
             let txt = `⚠️ *INFORME DE TAREAS PENDIENTES - ${dashData.zonaNombre}* ⚠️\n\n`;
             dashData.listaPendientes.forEach(t => {
-                let dFormateados = t.dias.map(d => parseFechaAmigable(d));
-                txt += `🏪 *${t.tienda}*\nFaltan datos de:\n${dFormateados.map(d=>`  - ${d}`).join('\n')}\n\n`;
+                txt += `🏪 *${t.tienda}*\nFaltan datos de:\n${t.dias.map(d=>`  - ${parseFechaAmigable(d.f)} (${d.motivo})`).join('\n')}\n\n`;
             });
             navigator.clipboard.writeText(txt);
             alert("Informe global de zona copiado al portapapeles.");
@@ -439,6 +501,11 @@
             document.querySelectorAll('.tab-item').forEach(t => { t.classList.replace('tab-active', 'tab-inactive'); t.classList.remove('border-blue-600', 'text-blue-600'); });
             document.getElementById('tab-'+id).classList.replace('tab-inactive', 'tab-active');
             if(id === 'input') renderCats();
+            
+            // Si el usuario entra en auditoría, limpiar gráficas viejas si las hay
+            if(id === 'audit' && auditChartInstance) {
+                document.getElementById('audit-results-container').classList.add('hidden');
+            }
         }
 
         async function processSave() {
@@ -477,44 +544,98 @@
             loader.classList.add('hidden');
         }
 
-        // --- MÓDULO DE AUDITORÍA: EXPORTACIÓN CSV ---
-        async function downloadAuditCSV() {
+        // --- SISTEMA DE AUDITORÍA AVANZADA ---
+        function getFilterParams() {
             const start = document.getElementById('audit-start').value;
             const end = document.getElementById('audit-end').value;
+            
+            const storeSel = document.getElementById('audit-stores');
+            const tiendas = Array.from(storeSel.selectedOptions).map(opt => opt.value);
+            
+            const catSel = document.getElementById('audit-cats');
+            const categorias = Array.from(catSel.selectedOptions).map(opt => opt.value);
+            
+            return { startDate: start, endDate: end, tiendas: tiendas, categorias: categorias, rol: user.rol, zonas: user.zonas };
+        }
 
-            if (!start || !end) {
-                alert("Selecciona la fecha de inicio y de fin para exportar el reporte.");
-                return;
-            }
-            if (start > end) {
-                alert("La fecha de inicio no puede ser posterior a la fecha de fin.");
-                return;
-            }
+        async function generateAuditReport() {
+            const params = getFilterParams();
+            if (!params.startDate || !params.endDate) return alert("Selecciona un rango de fechas.");
 
             const loader = document.getElementById('loading');
-            document.getElementById('loading-text').innerText = "Generando CSV...";
+            document.getElementById('loading-text').innerText = "Calculando análisis...";
             loader.classList.remove('hidden');
 
             try {
-                const r = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'getAuditData',
-                        params: { startDate: start, endDate: end, rol: user.rol, zonas: user.zonas }
-                    })
-                });
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getAuditData', params: params }) });
                 const d = await r.json();
 
-                if (d.status === 'success' && d.data.csvData.length > 0) {
-                    const data = d.data.csvData;
+                if (d.status === 'success' && d.data.chartData.length > 0) {
+                    renderChart(d.data.chartData);
+                    document.getElementById('audit-results-container').classList.remove('hidden');
+                } else {
+                    alert("No se han encontrado registros de Producción/Merma con los filtros seleccionados.");
+                    document.getElementById('audit-results-container').classList.add('hidden');
+                }
+            } catch (e) { alert("Error al generar el gráfico."); }
+            loader.classList.add('hidden');
+        }
+
+        function renderChart(data) {
+            // Agrupar datos por tienda para el gráfico comparativo
+            let grouped = {};
+            data.forEach(row => {
+                if(!grouped[row.TIENDA]) grouped[row.TIENDA] = { p: 0, m: 0 };
+                grouped[row.TIENDA].p += row.PROD_TOTAL;
+                grouped[row.TIENDA].m += row.MERMA;
+            });
+
+            const labels = Object.keys(grouped);
+            const dataProd = labels.map(l => grouped[l].p);
+            const dataMerma = labels.map(l => grouped[l].m);
+
+            if (auditChartInstance) auditChartInstance.destroy();
+
+            const ctx = document.getElementById('auditChart').getContext('2d');
+            auditChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Producción Total', data: dataProd, backgroundColor: '#3b82f6', borderRadius: 4 },
+                        { label: 'Merma Total', data: dataMerma, backgroundColor: '#ef4444', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        async function downloadAuditCSV() {
+            const params = getFilterParams();
+            if (!params.startDate || !params.endDate) return alert("Rango de fechas inválido.");
+
+            const loader = document.getElementById('loading');
+            document.getElementById('loading-text').innerText = "Preparando CSV...";
+            loader.classList.remove('hidden');
+
+            try {
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getAuditData', params: params }) });
+                const d = await r.json();
+
+                if (d.status === 'success' && d.data.chartData.length > 0) {
+                    const data = d.data.chartData;
                     const headers = Object.keys(data[0]);
                     const csvRows = [];
                     
                     csvRows.push(headers.join(','));
-                    
                     for (const row of data) {
-                        const values = headers.map(header => {
-                            const val = row[header] === null || row[header] === undefined ? "" : row[header];
+                        const values = headers.map(h => {
+                            const val = row[h] === null || row[h] === undefined ? "" : row[h];
                             return `"${String(val).replace(/"/g, '""')}"`;
                         });
                         csvRows.push(values.join(','));
@@ -525,16 +646,12 @@
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement("a");
                     link.setAttribute("href", url);
-                    link.setAttribute("download", `AUDITORIA_LIO_${start}_AL_${end}.csv`);
+                    link.setAttribute("download", `AUDITORIA_${params.startDate}_AL_${params.endDate}.csv`);
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                } else {
-                    alert("No hay datos registrados en el rango de fechas seleccionado para tu zona.");
-                }
-            } catch (e) {
-                alert("Fallo al generar el archivo. Verifica tu conexión.");
-            }
+                } else { alert("No hay datos para exportar."); }
+            } catch (e) { alert("Fallo en la exportación."); }
             loader.classList.add('hidden');
         }
     </script>
