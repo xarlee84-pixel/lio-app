@@ -2,166 +2,144 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIO APP v2.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LIO APP - Sistema de Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .btn-step { @apply transition-all duration-200 transform active:scale-95; }
-        .selected-pill { @apply bg-blue-700 text-white shadow-md; }
-        .unselected-pill { @apply bg-gray-100 text-gray-500 hover:bg-gray-200; }
+        .pill-selected { @apply bg-blue-600 text-white shadow-md scale-105; }
+        .pill-default { @apply bg-gray-100 text-gray-500 hover:bg-gray-200; }
+        .tab-active { @apply border-blue-600 text-blue-600 font-black; }
+        .tab-inactive { @apply border-transparent text-gray-400 font-bold; }
     </style>
 </head>
-<body class="bg-gray-50 font-sans text-gray-900">
+<body class="bg-gray-50 text-slate-900 font-sans antialiased">
 
-    <div id="loading-overlay" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-center justify-center text-white font-bold">CARGANDO...</div>
+    <div id="loading" class="hidden fixed inset-0 bg-white/80 z-[100] flex flex-col items-center justify-center">
+        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="font-black text-blue-900 uppercase tracking-widest text-xs">Procesando...</p>
+    </div>
 
-    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-900 to-black">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md">
-            <h1 class="text-4xl font-black text-center mb-2 text-blue-900 italic">LIO</h1>
-            <p class="text-center text-gray-400 text-xs font-bold uppercase tracking-widest mb-8">Management System</p>
-            
-            <div class="space-y-5">
-                <div>
-                    <label class="text-[10px] font-black text-gray-400 uppercase ml-2">Tipo de Perfil</label>
-                    <select id="user-type" onchange="toggleLoginUI()" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-600 outline-none font-bold">
-                        <option value="store">TIENDA (PIN)</option>
-                        <option value="admin">MANAGEMENT (ZONA/ADMIN)</option>
-                    </select>
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-6 bg-slate-900">
+        <div class="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-md">
+            <div class="text-center mb-8">
+                <h1 class="text-5xl font-black text-slate-900 italic tracking-tighter">LIO</h1>
+                <div class="h-1 w-12 bg-blue-600 mx-auto mt-2 rounded-full"></div>
+            </div>
+
+            <div class="space-y-4">
+                <select id="user-type" onchange="toggleLoginUI()" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold text-gray-700 outline-none focus:ring-blue-600 transition-all">
+                    <option value="store">ACCESO TIENDA</option>
+                    <option value="admin">ACCESO MANAGEMENT</option>
+                </select>
+
+                <div id="group-store" class="space-y-4">
+                    <select id="store-select" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold text-gray-700 outline-none"></select>
+                    <input type="password" id="store-pin" inputmode="numeric" placeholder="PIN TIENDA" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 text-center text-3xl font-black tracking-[0.5em] outline-none focus:ring-blue-600">
                 </div>
 
-                <div id="group-store">
-                    <label class="text-[10px] font-black text-gray-400 uppercase ml-2">Seleccionar Punto de Venta</label>
-                    <select id="store-select" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-600 outline-none font-bold"></select>
-                    <label class="text-[10px] font-black text-gray-400 uppercase ml-2 mt-4 block">PIN de Acceso</label>
-                    <input type="password" id="store-pin" inputmode="numeric" placeholder="****" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-600 outline-none text-center text-3xl tracking-[1em]">
+                <div id="group-admin" class="hidden space-y-4">
+                    <input type="text" id="admin-user" placeholder="USUARIO" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none">
+                    <input type="password" id="admin-pass" placeholder="CONTRASEÑA" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none">
                 </div>
 
-                <div id="group-admin" class="hidden">
-                    <label class="text-[10px] font-black text-gray-400 uppercase ml-2">Usuario</label>
-                    <input type="text" id="admin-user" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-1 ring-gray-200 mb-4">
-                    <label class="text-[10px] font-black text-gray-400 uppercase ml-2">Contraseña</label>
-                    <input type="password" id="admin-pass" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-1 ring-gray-200">
-                </div>
-
-                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-blue-700 transition-all btn-step">ENTRAR</button>
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-blue-700 active:scale-95 transition-all text-sm uppercase tracking-widest">Entrar al Sistema</button>
             </div>
         </div>
     </div>
 
     <div id="main-app" class="hidden min-h-screen flex flex-col">
-        <header class="bg-white p-4 border-b flex justify-between items-center shadow-sm sticky top-0 z-40">
+        
+        <header class="bg-white p-4 border-b flex justify-between items-center sticky top-0 z-50 shadow-sm">
             <div>
-                <p id="role-display" class="text-[10px] font-black text-blue-600 uppercase leading-none"></p>
-                <h2 id="user-display" class="font-black text-xl text-gray-800 uppercase italic"></h2>
+                <p id="role-display" class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1"></p>
+                <h2 id="user-display" class="font-black text-lg text-slate-800 uppercase italic leading-none"></h2>
             </div>
-            <button onclick="location.reload()" class="bg-gray-100 p-3 rounded-2xl text-gray-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg></button>
+            <button onclick="location.reload()" class="bg-gray-50 p-3 rounded-2xl text-gray-400 hover:text-red-500 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            </button>
         </header>
 
-        <nav class="bg-white border-b flex text-center font-black text-[10px] uppercase tracking-tighter">
-            <button onclick="changeTab('dash')" id="btn-tab-dash" class="flex-1 p-4 border-b-4 border-blue-600 text-blue-600">Dashboard</button>
-            <button onclick="changeTab('input')" id="btn-tab-input" class="flex-1 p-4 border-b-4 border-transparent text-gray-400">Registro</button>
-            <button onclick="changeTab('audit')" id="btn-tab-audit" class="flex-1 p-4 border-b-4 border-transparent text-gray-400 hidden">Auditoría</button>
-        </nav>
+        <nav id="app-nav" class="bg-white border-b flex justify-around font-black text-[10px] uppercase tracking-wider sticky top-[73px] z-40"></nav>
 
-        <main class="flex-1 p-4 overflow-y-auto">
+        <main class="flex-1 p-4 overflow-y-auto max-w-4xl mx-auto w-full">
             
-            <section id="sec-dash" class="space-y-6">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase">Estado Merma</p>
-                        <p class="text-3xl font-black text-green-500">8.2%</p>
+            <div id="content-area">
+                
+                <section id="sec-dash" class="app-section space-y-6">
+                    <div id="dash-widgets" class="grid grid-cols-2 gap-4"></div>
+                    <div id="dash-main-content" class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100"></div>
+                </section>
+
+                <section id="sec-input" class="app-section hidden space-y-6 pb-32">
+                    <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex gap-2">
+                        <input type="date" id="input-date" class="flex-1 font-bold text-slate-700 outline-none">
+                        <select id="input-type" onchange="updateInputView()" class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-black text-xs border-none outline-none">
+                            <option value="prod">PRODUCCIÓN</option>
+                            <option value="merma">MERMA</option>
+                        </select>
                     </div>
-                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase">Pendientes</p>
-                        <p class="text-3xl font-black text-orange-500">0</p>
+
+                    <div id="area-turno" class="bg-white p-4 rounded-3xl border border-blue-100">
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-3 ml-2">Seleccionar Turno</p>
+                        <select id="input-turno" class="w-full font-bold text-slate-800 outline-none">
+                            <option value="Obrador">OBRADOR (Obligatorio)</option>
+                            <option value="Mediodía">REPOSICIÓN MEDIODÍA</option>
+                            <option value="Tarde">REPOSICIÓN TARDE</option>
+                        </select>
                     </div>
-                </div>
 
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                    <h3 class="font-black text-gray-800 uppercase mb-4 text-sm">Resumen Diario</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
-                            <thead>
-                                <tr class="text-gray-400 border-b">
-                                    <th class="pb-2">PRODUCTO</th>
-                                    <th class="pb-2 text-center">PROD</th>
-                                    <th class="pb-2 text-center">MERMA</th>
-                                    <th class="pb-2 text-right">%</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dash-table-body" class="divide-y divide-gray-50">
-                                </tbody>
-                        </table>
+                    <div class="space-y-4">
+                        <div id="pill-cats" class="flex gap-2 overflow-x-auto no-scrollbar pb-2"></div>
+                        <div id="pill-subs" class="flex gap-2 overflow-x-auto no-scrollbar pb-2 hidden"></div>
                     </div>
-                </div>
-            </section>
 
-            <section id="sec-input" class="hidden space-y-6">
-                <div class="bg-white p-5 rounded-3xl shadow-md border-b-4 border-blue-600 flex gap-4">
-                    <input type="date" id="input-date" class="flex-1 font-bold text-gray-700 outline-none">
-                    <select id="input-type" onchange="updateTurnoUI()" class="font-black text-blue-600 bg-blue-50 px-4 rounded-xl outline-none">
-                        <option value="prod">PRODUCCIÓN</option>
-                        <option value="merma">MERMA</option>
-                    </select>
-                </div>
+                    <div id="prod-grid" class="space-y-3"></div>
 
-                <div id="step-turno">
-                    <p class="text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">1. Seleccionar Turno</p>
-                    <select id="input-turno" class="w-full p-4 bg-white rounded-2xl shadow-sm border-none font-bold text-gray-700">
-                        <option value="Obrador">OBRADOR (Principal)</option>
-                        <option value="Mediodía">MEDIODÍA</option>
-                        <option value="Tarde">TARDE</option>
-                    </select>
-                </div>
+                    <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent z-50">
+                        <button onclick="processSave()" class="w-full max-w-4xl mx-auto block bg-slate-900 text-white font-black py-5 rounded-3xl shadow-2xl active:scale-95 transition-all text-sm uppercase tracking-widest">Confirmar Envío de Datos</button>
+                    </div>
+                </section>
 
-                <div id="step-category">
-                    <p class="text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">2. Categoría</p>
-                    <div id="cat-list" class="flex gap-2 overflow-x-auto no-scrollbar pb-2"></div>
-                </div>
+                <section id="sec-audit" class="app-section hidden">
+                    <div class="bg-white p-8 rounded-[2rem] text-center text-gray-400 font-bold">MÓDULO DE AUDITORÍA OPERATIVA (CSV/Gráficos)</div>
+                </section>
+                <section id="sec-admin" class="app-section hidden">
+                    <div class="bg-white p-8 rounded-[2rem] text-center text-gray-400 font-bold">PANEL DE ADMINISTRACIÓN (Tiendas/Productos/PINs)</div>
+                </section>
 
-                <div id="step-subcategory" class="hidden">
-                    <p class="text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">3. Subcategoría</p>
-                    <div id="subcat-list" class="flex gap-2 overflow-x-auto no-scrollbar pb-2"></div>
-                </div>
-
-                <div id="step-products" class="hidden space-y-3 pb-32">
-                    <p class="text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">4. Cantidades</p>
-                    <div id="prod-list" class="space-y-3"></div>
-                </div>
-
-                <div class="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white to-transparent z-40">
-                    <button onclick="saveData()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-2xl btn-step">CONFIRMAR Y GUARDAR</button>
-                </div>
-            </section>
-
+            </div>
         </main>
     </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby86Uyfci6i_hyunbHhVlM2XsTwpo6AtxYedAOZX8gJ6xIIn392pUUR6hxzH4hbJ3nrCA/exec";
-        let masterData = null;
-        let currentUser = null;
-        let selCat = null;
-        let selSub = null;
+        let master = null;
+        let user = null;
+        let cache = { cat: null, sub: null };
 
+        // --- INICIO Y CARGA ---
         window.onload = async () => {
             document.getElementById('input-date').valueAsDate = new Date();
-            // Carga silenciosa de datos iniciales
-            try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getInitialData' }) });
-                const json = await res.json();
-                if(json.status === 'success') {
-                    masterData = {
-                        productos: json.data.productos.slice(1).map(r => ({id: r[0], nom: r[1], cat: r[2], sub: r[3], active: r[4]})),
-                        tiendas: json.data.tiendas.slice(1).map(r => ({id: r[0], nom: r[1], pin: r[3]}))
-                    };
-                    populateStores();
-                }
-            } catch (e) { console.error("Error pre-carga", e); }
+            await loadMasterData();
         };
+
+        async function loadMasterData() {
+            try {
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getInitialData' }) });
+                const d = await r.json();
+                if(d.status === 'success') {
+                    master = {
+                        prods: d.data.productos.slice(1).map(x => ({id: x[0], nom: x[1], cat: x[2], sub: x[3], act: x[4]})),
+                        tiendas: d.data.tiendas.slice(1).map(x => ({id: x[0], nom: x[1], zona: x[2], pin: x[3]}))
+                    };
+                    const sel = document.getElementById('store-select');
+                    sel.innerHTML = master.tiendas.map(t => `<option value="${t.id}">${t.nom} (${t.id})</option>`).join('');
+                }
+            } catch (e) { alert("Error de conexión crítica."); }
+        }
 
         function toggleLoginUI() {
             const isStore = document.getElementById('user-type').value === 'store';
@@ -169,150 +147,171 @@
             document.getElementById('group-admin').classList.toggle('hidden', isStore);
         }
 
-        function populateStores() {
-            const select = document.getElementById('store-select');
-            select.innerHTML = masterData.tiendas.map(t => `<option value="${t.id}">${t.nom} (${t.id})</option>`).join('');
-        }
-
+        // --- GESTIÓN DE LOGIN Y ROLES ---
         async function handleLogin() {
+            document.getElementById('loading').classList.remove('hidden');
             const type = document.getElementById('user-type').value;
-            const overlay = document.getElementById('loading-overlay');
-            overlay.classList.remove('hidden');
-
-            let params = { type };
+            let p = { type };
             if (type === 'store') {
-                params.id = document.getElementById('store-select').value;
-                params.pin = document.getElementById('store-pin').value;
+                p.id = document.getElementById('store-select').value;
+                p.pin = document.getElementById('store-pin').value;
             } else {
-                params.user = document.getElementById('admin-user').value;
-                params.pass = document.getElementById('admin-pass').value;
+                p.user = document.getElementById('admin-user').value;
+                p.pass = document.getElementById('admin-pass').value;
             }
 
-            try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', params }) });
-                const json = await res.json();
-                overlay.classList.add('hidden');
+            const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', params: p }) });
+            const d = await r.json();
+            document.getElementById('loading').classList.add('hidden');
 
-                if(json.status === 'success') {
-                    currentUser = json.data;
-                    initApp();
-                } else {
-                    alert("Credenciales incorrectas");
-                }
-            } catch (e) { alert("Error de comunicación. Revisa tu conexión."); overlay.classList.add('hidden'); }
+            if(d.status === 'success') {
+                user = d.data;
+                initAppStructure();
+            } else { alert("Credenciales Incorrectas"); }
         }
 
-        function initApp() {
+        function initAppStructure() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('user-display').innerText = currentUser.nombre || currentUser.id;
-            document.getElementById('role-display').innerText = currentUser.rol;
+            document.getElementById('user-display').innerText = user.nombre || user.id;
+            document.getElementById('role-display').innerText = user.rol;
+
+            // Construir Nav según Rol (IDTF)
+            const nav = document.getElementById('app-nav');
+            let tabs = `<button onclick="showSec('dash')" id="tab-dash" class="tab-item flex-1 p-4 border-b-4 tab-active">Inicio</button>`;
             
-            if(currentUser.rol !== 'STORE') {
-                document.getElementById('btn-tab-audit').classList.remove('hidden');
+            if(user.rol === 'STORE') {
+                tabs += `<button onclick="showSec('input')" id="tab-input" class="tab-item flex-1 p-4 border-b-4 tab-inactive">Registro</button>`;
+            } else {
+                tabs += `<button onclick="showSec('audit')" id="tab-audit" class="tab-item flex-1 p-4 border-b-4 tab-inactive">Auditoría</button>`;
+                if(user.rol === 'ADMIN') {
+                    tabs += `<button onclick="showSec('admin')" id="tab-admin" class="tab-item flex-1 p-4 border-b-4 tab-inactive">Sistema</button>`;
+                }
             }
-            renderCategories();
+            nav.innerHTML = tabs;
+            renderDashboard();
         }
 
-        // --- LÓGICA DE REGISTRO PASO A PASO ---
-        function renderCategories() {
-            const cats = [...new Set(masterData.productos.map(p => p.cat))];
-            document.getElementById('cat-list').innerHTML = cats.map(c => `
-                <button onclick="selectCategory('${c}')" id="cat-${c}" class="btn-step px-6 py-3 rounded-2xl font-black text-xs uppercase whitespace-nowrap ${selCat === c ? 'selected-pill' : 'unselected-pill'}">${c}</button>
-            `).join('');
+        // --- DASHBOARD (LÓGICA POR ROL) ---
+        function renderDashboard() {
+            const widgets = document.getElementById('dash-widgets');
+            const main = document.getElementById('dash-main-content');
+
+            if(user.rol === 'STORE') {
+                widgets.innerHTML = `
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border-b-4 border-green-500"><p class="text-[10px] font-bold text-gray-400 uppercase">Eficiencia</p><p class="text-3xl font-black">--%</p></div>
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border-b-4 border-orange-500"><p class="text-[10px] font-bold text-gray-400 uppercase">Alertas</p><p class="text-3xl font-black">0</p></div>
+                `;
+                main.innerHTML = `<h3 class="font-black text-xs uppercase text-gray-400 mb-4">Resumen de Hoy</h3><p class="text-sm text-gray-500">No hay datos introducidos hoy aún.</p>`;
+            } else {
+                widgets.innerHTML = `
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border-b-4 border-blue-600 col-span-2 text-center">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase">Tiendas Bajo Supervisión</p>
+                        <p class="text-3xl font-black">ZONA: ${user.zonas || 'TOTAL'}</p>
+                    </div>
+                `;
+                main.innerHTML = `<h3 class="font-black text-xs uppercase text-gray-400 mb-4">Estado de Tiendas</h3><div class="space-y-2"><p class="text-sm">Cargando reporte de zona...</p></div>`;
+            }
         }
 
-        function selectCategory(c) {
-            selCat = c;
-            selSub = null;
-            renderCategories();
-            document.getElementById('step-subcategory').classList.remove('hidden');
-            document.getElementById('step-products').classList.add('hidden');
-            renderSubcategories();
+        // --- SISTEMA DE REGISTRO (IDTF: CATEGORÍA -> SUBCAT -> PRODUCTO) ---
+        function renderCats() {
+            const cats = [...new Set(master.prods.map(p => p.cat))];
+            const div = document.getElementById('pill-cats');
+            div.innerHTML = cats.map(c => `<button onclick="selCat('${c}')" class="px-6 py-3 rounded-2xl font-black text-[10px] uppercase whitespace-nowrap ${cache.cat === c ? 'pill-selected' : 'pill-default'}">${c}</button>`).join('');
+            if(cache.cat) renderSubs();
         }
 
-        function renderSubcategories() {
-            const subs = [...new Set(masterData.productos.filter(p => p.cat === selCat).map(p => p.sub))];
-            document.getElementById('subcat-list').innerHTML = subs.map(s => `
-                <button onclick="selectSubcategory('${s}')" id="sub-${s}" class="btn-step px-6 py-3 rounded-2xl font-black text-[10px] uppercase whitespace-nowrap ${selSub === s ? 'selected-pill' : 'unselected-pill'}">${s}</button>
-            `).join('');
+        function selCat(c) {
+            cache.cat = c; cache.sub = null;
+            renderCats();
+            document.getElementById('pill-subs').classList.remove('hidden');
+            document.getElementById('prod-grid').innerHTML = '';
+            renderSubs();
         }
 
-        function selectSubcategory(s) {
-            selSub = s;
-            renderSubcategories();
-            document.getElementById('step-products').classList.remove('hidden');
-            renderProducts();
+        function renderSubs() {
+            const subs = [...new Set(master.prods.filter(p => p.cat === cache.cat).map(p => p.sub))];
+            const div = document.getElementById('pill-subs');
+            div.innerHTML = subs.map(s => `<button onclick="selSub('${s}')" class="px-5 py-2 rounded-xl font-bold text-[10px] uppercase whitespace-nowrap ${cache.sub === s ? 'pill-selected' : 'pill-default'}">${s}</button>`).join('');
+            if(cache.sub) renderProds();
         }
 
-        function renderProducts() {
-            const prods = masterData.productos.filter(p => p.cat === selCat && p.sub === selSub && (p.active === true || p.active === "TRUE"));
-            document.getElementById('prod-list').innerHTML = prods.map(p => `
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex justify-between items-center">
-                    <div>
-                        <p class="font-black text-lg text-gray-800 leading-tight">${p.nom}</p>
-                        <p class="text-[10px] font-bold text-gray-400 uppercase italic">${p.sub}</p>
+        function selSub(s) {
+            cache.sub = s;
+            renderSubs();
+            renderProds();
+        }
+
+        function renderProds() {
+            const list = master.prods.filter(p => p.cat === cache.cat && p.sub === cache.sub && (p.act === true || p.act === "TRUE"));
+            const div = document.getElementById('prod-grid');
+            div.innerHTML = list.map(p => `
+                <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-100 flex justify-between items-center transition-all hover:border-blue-200">
+                    <div class="flex-1">
+                        <p class="font-black text-slate-800 leading-tight uppercase text-sm">${p.nom}</p>
+                        <p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">${p.sub} | ID: ${p.id}</p>
                     </div>
                     <div class="flex items-center gap-4">
-                        <button onclick="adj('${p.id}', -1)" class="w-12 h-12 bg-gray-50 rounded-2xl font-black text-2xl text-gray-400 border border-gray-100">-</button>
-                        <input type="number" id="val-${p.id}" value="0" class="w-12 text-center font-black text-2xl text-blue-600 bg-transparent outline-none">
-                        <button onclick="adj('${p.id}', 1)" class="w-12 h-12 bg-gray-50 rounded-2xl font-black text-2xl text-gray-400 border border-gray-100">+</button>
+                        <button onclick="val('${p.id}',-1)" class="w-10 h-10 bg-gray-50 rounded-xl font-black text-xl text-gray-400 border border-gray-100">-</button>
+                        <input type="number" id="v-${p.id}" value="0" class="w-12 text-center font-black text-xl text-blue-600 bg-transparent outline-none">
+                        <button onclick="val('${p.id}',1)" class="w-10 h-10 bg-gray-50 rounded-xl font-black text-xl text-gray-400 border border-gray-100">+</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        function adj(id, delta) {
-            const el = document.getElementById('val-'+id);
-            el.value = Math.max(0, parseInt(el.value) + delta);
+        function val(id, d) {
+            const i = document.getElementById('v-'+id);
+            i.value = Math.max(0, parseInt(i.value) + d);
         }
 
-        function updateTurnoUI() {
+        function updateInputView() {
             const isMerma = document.getElementById('input-type').value === 'merma';
-            document.getElementById('step-turno').classList.toggle('hidden', isMerma);
+            document.getElementById('area-turno').classList.toggle('hidden', isMerma);
         }
 
-        function changeTab(tab) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById('sec-'+tab).classList.remove('hidden');
-            
-            document.querySelectorAll('nav button').forEach(b => {
-                b.classList.remove('border-blue-600', 'text-blue-600');
-                b.classList.add('border-transparent', 'text-gray-400');
+        function showSec(id) {
+            document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('sec-'+id).classList.remove('hidden');
+            document.querySelectorAll('.tab-item').forEach(t => {
+                t.classList.replace('tab-active', 'tab-inactive');
+                t.classList.remove('border-blue-600', 'text-blue-600');
             });
-            document.getElementById('btn-tab-'+tab).classList.add('border-blue-600', 'text-blue-600');
+            const active = document.getElementById('tab-'+id);
+            active.classList.replace('tab-inactive', 'tab-active');
+            if(id === 'input') renderCats();
         }
 
-        async function saveData() {
-            const items = masterData.productos.map(p => {
-                const v = parseInt(document.getElementById('val-'+p.id)?.value || 0);
-                return { prodId: p.id, val: v };
-            }).filter(i => i.val > 0);
+        async function processSave() {
+            const items = master.prods.map(p => ({
+                id: p.id,
+                v: parseInt(document.getElementById('v-'+p.id)?.value || 0)
+            })).filter(x => x.v > 0);
 
-            if(items.length === 0) return alert("Introduce cantidades");
-
-            const overlay = document.getElementById('loading-overlay');
-            overlay.classList.remove('hidden');
-
+            if(items.length === 0) return alert("Introduce cantidades.");
+            
+            document.getElementById('loading').classList.remove('hidden');
             const payload = {
                 action: 'saveDaily',
                 params: {
                     fecha: document.getElementById('input-date').value,
                     type: document.getElementById('input-type').value,
                     turno: document.getElementById('input-turno').value,
-                    tiendaId: currentUser.id,
-                    items
+                    tiendaId: user.id,
+                    items: items.map(x => ({prodId: x.id, val: x.v}))
                 }
             };
 
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-            const json = await res.json();
-            overlay.classList.add('hidden');
-
-            if(json.status === 'success') {
-                alert("DATOS GUARDADOS CON ÉXITO");
-                location.reload();
-            }
+            try {
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const d = await r.json();
+                if(d.status === 'success') {
+                    alert("¡DATOS GUARDADOS CORRECTAMENTE!");
+                    location.reload();
+                }
+            } catch (e) { alert("Error al guardar."); }
+            document.getElementById('loading').classList.add('hidden');
         }
     </script>
 </body>
