@@ -17,6 +17,10 @@
         .tab-active { @apply border-blue-600 text-blue-600 font-black; }
         .tab-inactive { @apply border-transparent text-gray-400 font-bold; }
         .fs-chart { position: fixed !important; top: 0; left: 0; width: 100vw !important; height: 100vh !important; background: white; z-index: 1000; padding: 20px; display: flex; flex-direction: column; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #f1f5f9; }
+        th { background-color: #f8fafc; font-weight: 900; font-size: 10px; text-transform: uppercase; color: #64748b; }
+        td { font-size: 12px; font-weight: bold; color: #334155; }
     </style>
 </head>
 <body class="bg-gray-50 text-slate-900 font-sans antialiased">
@@ -34,6 +38,17 @@
             <div class="flex gap-3">
                 <button onclick="document.getElementById('modal-cierre').classList.add('hidden')" class="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-xl uppercase text-[10px]">Cancelar</button>
                 <button onclick="confirmCierre()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg uppercase text-[10px]">Confirmar PIN</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-admin-crud" class="hidden fixed inset-0 bg-slate-900/90 z-[3000] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] p-8 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 id="admin-crud-title" class="font-black text-slate-800 mb-6 text-lg uppercase italic text-center">Formulario</h3>
+            <div id="admin-crud-form" class="space-y-4 mb-6"></div>
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('modal-admin-crud').classList.add('hidden')" class="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-xl uppercase text-[10px]">Cancelar</button>
+                <button onclick="saveAdminForm()" class="flex-1 bg-blue-600 text-white font-black py-4 rounded-xl shadow-lg uppercase text-[10px]">Guardar</button>
             </div>
         </div>
     </div>
@@ -67,7 +82,7 @@
             </div>
             <button onclick="location.reload()" class="bg-gray-50 p-3 rounded-2xl text-gray-400 hover:text-red-600 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg></button>
         </header>
-        <nav id="app-nav" class="bg-white border-b flex justify-around font-black text-[9px] uppercase tracking-widest sticky top-[89px] z-40 shadow-sm"></nav>
+        <nav id="app-nav" class="bg-white border-b flex justify-around font-black text-[9px] uppercase tracking-widest sticky top-[89px] z-40 shadow-sm overflow-x-auto no-scrollbar"></nav>
 
         <main class="flex-1 p-4 overflow-y-auto max-w-4xl mx-auto w-full pb-32">
             <div id="content-area">
@@ -93,7 +108,7 @@
 
                 <section id="sec-audit" class="app-section hidden space-y-6">
                     <div class="bg-white p-6 rounded-[2rem] border shadow-sm">
-                        <h3 class="font-black text-slate-800 uppercase text-[10px] mb-4 tracking-widest">Motor de Auditoría</h3>
+                        <h3 class="font-black text-slate-800 uppercase text-[10px] mb-4 tracking-widest">Filtros de Análisis</h3>
                         <div class="grid grid-cols-2 gap-4 mb-6">
                             <div><label class="text-[9px] font-bold text-gray-400 uppercase">Desde</label><input type="date" id="audit-start" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border"></div>
                             <div><label class="text-[9px] font-bold text-gray-400 uppercase">Hasta</label><input type="date" id="audit-end" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border"></div>
@@ -102,34 +117,61 @@
                                 <select id="audit-stores" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border h-24"></select>
                             </div>
                             <div class="col-span-2">
-                                <label class="text-[9px] font-bold text-gray-400 uppercase">Productos (Agrupados por Categoría)</label>
+                                <label class="text-[9px] font-bold text-gray-400 uppercase">Productos</label>
                                 <select id="audit-products" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border h-28"></select>
                             </div>
                         </div>
                         <div class="flex gap-2">
-                           <button onclick="generateAuditReport()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-xl text-[10px] uppercase shadow-lg">Analizar Periodo</button>
+                           <button onclick="generateAuditReport()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-xl text-[10px] uppercase shadow-lg">Analizar / Buscar</button>
                            <button onclick="exportAuditCSV()" class="bg-green-600 text-white font-black px-6 rounded-xl text-[10px] uppercase shadow-lg">Excel</button>
                         </div>
                     </div>
+                    
                     <div id="audit-results-container" class="hidden space-y-6">
-                        <div class="grid grid-cols-3 gap-3 text-center">
-                            <div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[8px] font-black text-gray-400 uppercase">P.</p><p id="kpi-prod" class="text-lg font-black text-blue-600">0</p></div>
-                            <div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[8px] font-black text-gray-400 uppercase">M.</p><p id="kpi-merma" class="text-lg font-black text-red-500">0</p></div>
-                            <div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[8px] font-black text-gray-400 uppercase">%</p><p id="kpi-porc" class="text-lg font-black text-slate-800">0%</p></div>
+                        <div id="manager-audit-view" class="space-y-6">
+                            <div class="grid grid-cols-3 gap-3 text-center">
+                                <div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[8px] font-black text-gray-400 uppercase">P.</p><p id="kpi-prod" class="text-lg font-black text-blue-600">0</p></div>
+                                <div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[8px] font-black text-gray-400 uppercase">M.</p><p id="kpi-merma" class="text-lg font-black text-red-500">0</p></div>
+                                <div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[8px] font-black text-gray-400 uppercase">%</p><p id="kpi-porc" class="text-lg font-black text-slate-800">0%</p></div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-white p-6 rounded-[2rem] border shadow-sm relative"><button onclick="toggleFS(this.parentElement)" class="absolute top-4 right-4 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5" stroke-width="2"></path></svg></button><h3 class="font-black text-[9px] text-gray-400 uppercase mb-4 text-center">Prod vs Merma</h3><div class="h-64 w-full"><canvas id="auditChartStore"></canvas></div></div>
+                                <div class="bg-white p-6 rounded-[2rem] border shadow-sm relative"><button onclick="toggleFS(this.parentElement)" class="absolute top-4 right-4 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5" stroke-width="2"></path></svg></button><h3 class="font-black text-[9px] text-gray-400 uppercase mb-4 text-center">Desglose Turnos</h3><div class="h-64 w-full"><canvas id="auditChartTurnos"></canvas></div></div>
+                                <div class="bg-white p-6 rounded-[2rem] border shadow-sm relative"><button onclick="toggleFS(this.parentElement)" class="absolute top-4 right-4 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5" stroke-width="2"></path></svg></button><h3 class="font-black text-[9px] text-gray-400 uppercase mb-4 text-center">Top 10 Merma</h3><div class="h-64 w-full"><canvas id="auditChartProd"></canvas></div></div>
+                                <div class="bg-white p-6 rounded-[2rem] border shadow-sm relative"><button onclick="toggleFS(this.parentElement)" class="absolute top-4 right-4 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5" stroke-width="2"></path></svg></button><h3 class="font-black text-[9px] text-gray-400 uppercase mb-4 text-center">Tendencia</h3><div class="h-64 w-full"><canvas id="auditChartTrend"></canvas></div></div>
+                            </div>
+                            <div class="bg-white p-6 rounded-[2rem] border shadow-sm"><h3 class="font-black text-slate-800 uppercase text-[10px] mb-4 text-center tracking-widest">Matriz de Eficiencia</h3><div class="overflow-x-auto" id="pivot-container"></div></div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white p-6 rounded-[2rem] border shadow-sm relative"><button onclick="toggleFS(this.parentElement)" class="absolute top-4 right-4 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5" stroke-width="2"></path></svg></button><h3 class="font-black text-[9px] text-gray-400 uppercase mb-4 text-center">Prod vs Merma</h3><div class="h-64 w-full"><canvas id="auditChartStore"></canvas></div></div>
-                            <div class="bg-white p-6 rounded-[2rem] border shadow-sm relative"><button onclick="toggleFS(this.parentElement)" class="absolute top-4 right-4 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5" stroke-width="2"></path></svg></button><h3 class="font-black text-[9px] text-gray-400 uppercase mb-4 text-center">Desglose Turnos</h3><div class="h-64 w-full"><canvas id="auditChartTurnos"></canvas></div></div>
-                            <div class="bg-white p-6 rounded-[2rem] border shadow-sm relative"><button onclick="toggleFS(this.parentElement)" class="absolute top-4 right-4 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5" stroke-width="2"></path></svg></button><h3 class="font-black text-[9px] text-gray-400 uppercase mb-4 text-center">Top 10 Merma</h3><div class="h-64 w-full"><canvas id="auditChartProd"></canvas></div></div>
-                            <div class="bg-white p-6 rounded-[2rem] border shadow-sm relative"><button onclick="toggleFS(this.parentElement)" class="absolute top-4 right-4 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5" stroke-width="2"></path></svg></button><h3 class="font-black text-[9px] text-gray-400 uppercase mb-4 text-center">Tendencia</h3><div class="h-64 w-full"><canvas id="auditChartTrend"></canvas></div></div>
+
+                        <div id="admin-audit-view" class="hidden bg-white p-6 rounded-[2rem] border shadow-sm">
+                            <h3 class="font-black text-slate-800 uppercase text-[10px] mb-4 tracking-widest text-center">Registros Base de Datos</h3>
+                            <div class="overflow-x-auto max-h-[60vh]"><table id="admin-raw-table" class="w-full whitespace-nowrap"></table></div>
                         </div>
-                        <div class="bg-white p-6 rounded-[2rem] border shadow-sm"><h3 class="font-black text-slate-800 uppercase text-[10px] mb-4 text-center tracking-widest">Matriz de Eficiencia</h3><div class="overflow-x-auto" id="pivot-container"></div></div>
                     </div>
                 </section>
 
                 <section id="sec-crm" class="app-section hidden space-y-6">
                     <div id="crm-actions"></div>
                     <div id="crm-list" class="space-y-4"></div>
+                </section>
+
+                <section id="sec-admin-masters" class="app-section hidden space-y-6">
+                    <div class="flex gap-2 bg-white p-2 rounded-2xl border shadow-sm overflow-x-auto no-scrollbar">
+                        <button onclick="loadAdminTable('MAESTRO_TIENDAS')" class="flex-1 py-3 px-4 font-black text-[10px] rounded-xl bg-gray-100 hover:bg-slate-200 uppercase whitespace-nowrap">Tiendas</button>
+                        <button onclick="loadAdminTable('USUARIOS_SISTEMA')" class="flex-1 py-3 px-4 font-black text-[10px] rounded-xl bg-gray-100 hover:bg-slate-200 uppercase whitespace-nowrap">Usuarios</button>
+                        <button onclick="loadAdminTable('MAESTRO_PRODUCTOS')" class="flex-1 py-3 px-4 font-black text-[10px] rounded-xl bg-gray-100 hover:bg-slate-200 uppercase whitespace-nowrap">Productos</button>
+                        <button onclick="loadAdminTable('ZONAS')" class="flex-1 py-3 px-4 font-black text-[10px] rounded-xl bg-gray-100 hover:bg-slate-200 uppercase whitespace-nowrap">Zonas</button>
+                    </div>
+                    <div class="bg-white p-6 rounded-[2rem] border shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 id="admin-table-title" class="font-black text-slate-800 uppercase text-[12px] tracking-widest">Selecciona Maestro</h3>
+                            <div class="flex gap-2">
+                                <button onclick="openAdminModal()" class="bg-blue-600 text-white p-3 rounded-xl shadow-md"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg></button>
+                                <button onclick="exportAdminMaster()" class="bg-green-600 text-white p-3 rounded-xl shadow-md"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg></button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto max-h-[60vh] border rounded-xl"><table id="admin-table-content"></table></div>
+                    </div>
                 </section>
 
             </div>
@@ -141,26 +183,20 @@
         let master = null, user = null, dashData = null, crmCache = [], inputState = {};
         let cacheNav = { cat: 'TODOS', sub: 'TODOS' };
         let charts = {}, currentCierreMes = null;
+        
+        // Variables Admin
+        let adminData = null, currentAdminTable = null;
 
         function fmtDate(dStr) { if(!dStr) return ""; const p = dStr.split("-"); return `${p[2]}/${p[1]}`; }
         function fmtMonthYear(yM) { if(!yM) return ""; const p = yM.split("-"), m = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]; return `${m[parseInt(p[1])-1]} ${p[0]}`; }
 
-        // Mapeo de 3 Colores (Verde, Naranja, Rojo)
         function getColText(val) {
-            let v = parseFloat(val) || 0;
-            let uv = parseFloat(master?.config?.UMBRAL_VERDE || 10);
-            let ur = parseFloat(master?.config?.UMBRAL_ROJO || 20);
-            if (v >= ur) return 'text-red-500';
-            if (v >= uv) return 'text-orange-500';
-            return 'text-green-600';
+            let v = parseFloat(val) || 0, uv = parseFloat(master?.config?.UMBRAL_VERDE || 10), ur = parseFloat(master?.config?.UMBRAL_ROJO || 20);
+            if (v >= ur) return 'text-red-500'; if (v >= uv) return 'text-orange-500'; return 'text-green-600';
         }
         function getColBg(val) {
-            let v = parseFloat(val) || 0;
-            let uv = parseFloat(master?.config?.UMBRAL_VERDE || 10);
-            let ur = parseFloat(master?.config?.UMBRAL_ROJO || 20);
-            if (v >= ur) return 'text-red-500 bg-red-50';
-            if (v >= uv) return 'text-orange-500 bg-orange-50';
-            return 'text-green-600 bg-green-50';
+            let v = parseFloat(val) || 0, uv = parseFloat(master?.config?.UMBRAL_VERDE || 10), ur = parseFloat(master?.config?.UMBRAL_ROJO || 20);
+            if (v >= ur) return 'text-red-500 bg-red-50'; if (v >= uv) return 'text-orange-500 bg-orange-50'; return 'text-green-600 bg-green-50';
         }
 
         window.onload = async () => {
@@ -178,11 +214,9 @@
                     let hoy = new Date().getTime();
                     master = {
                         prods: d.data.productos.slice(1).filter(x => x[0]).map((x, i) => {
-                            let act = x[4] !== false; // Columna Activo
-                            // Verificación de FECHA_BAJA (Busca si hay alguna fecha válida configurada en las columnas finales)
+                            let act = x[4] !== false;
                             let dDate = new Date(x[4]); if(isNaN(dDate)) dDate = new Date(x[5]);
                             if(!isNaN(dDate) && hoy > dDate.getTime()) act = false;
-                            
                             return { id: String(x[0]), uid: 'ui_'+i, nom: String(x[1]), cat: String(x[2] || 'S/C'), sub: String(x[3] || 'S/S'), act: act };
                         }),
                         tiendas: d.data.tiendas.slice(1).filter(x => x[0]).map(x => ({ id: String(x[0]), nom: String(x[1]), zona: String(x[2]), pin: String(x[3]) })),
@@ -190,7 +224,7 @@
                     };
                     document.getElementById('store-select').innerHTML = master.tiendas.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
                 }
-            } catch (e) { alert("Error de enlace. Por favor recarga."); }
+            } catch (e) {}
         }
 
         function toggleLoginUI() {
@@ -208,8 +242,8 @@
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', params: p }) }), d = await r.json();
                 if(d.status === 'success') {
                     user = d.data; await fetchDashboard(); initAppStructure();
-                } else alert("Credenciales incorrectas o PIN inválido."); 
-            } catch (e) { alert("Fallo de comunicación con el servidor."); } l.classList.add('hidden');
+                } else alert("Credenciales incorrectas."); 
+            } catch (e) { alert("Error de red."); } l.classList.add('hidden');
         }
 
         async function fetchDashboard() {
@@ -223,14 +257,19 @@
             document.getElementById('role-display').innerText = user.rol.replace(/_/g, ' '); 
             document.getElementById('user-display').innerText = "Hola, " + (user.nombre || user.id);
             
-            let tabs = `<button onclick="showSec('dash')" id="tab-dash" class="tab-item flex-1 p-4 border-b-4 tab-active transition-colors">Inicio</button>`;
-            
+            let tabs = '';
             if(user.rol === 'STORE') {
-                tabs += `<button onclick="showSec('input')" id="tab-input" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Registro</button>`;
-                tabs += `<button onclick="showSec('audit')" id="tab-audit" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Auditoría</button>`;
+                tabs += `<button onclick="showSec('dash')" id="tab-dash" class="tab-item px-4 py-4 border-b-4 tab-active whitespace-nowrap transition-colors">Inicio</button>`;
+                tabs += `<button onclick="showSec('input')" id="tab-input" class="tab-item px-4 py-4 border-b-4 tab-inactive whitespace-nowrap transition-colors">Registro</button>`;
+                tabs += `<button onclick="showSec('audit')" id="tab-audit" class="tab-item px-4 py-4 border-b-4 tab-inactive whitespace-nowrap transition-colors">Auditoría</button>`;
             } else if (user.rol === 'AREA_MANAGER') {
-                tabs += `<button onclick="showSec('audit')" id="tab-audit" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Auditoría</button>`;
-                tabs += `<button onclick="showSec('crm')" id="tab-crm" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Gestión</button>`;
+                tabs += `<button onclick="showSec('dash')" id="tab-dash" class="tab-item px-4 py-4 border-b-4 tab-active whitespace-nowrap transition-colors">Inicio</button>`;
+                tabs += `<button onclick="showSec('audit')" id="tab-audit" class="tab-item px-4 py-4 border-b-4 tab-inactive whitespace-nowrap transition-colors">Auditoría</button>`;
+                tabs += `<button onclick="showSec('crm')" id="tab-crm" class="tab-item px-4 py-4 border-b-4 tab-inactive whitespace-nowrap transition-colors">Gestión</button>`;
+            } else if (user.rol === 'ADMIN') {
+                tabs += `<button onclick="showSec('dash')" id="tab-dash" class="tab-item px-4 py-4 border-b-4 tab-active whitespace-nowrap transition-colors">Config</button>`;
+                tabs += `<button onclick="showSec('admin-masters')" id="tab-admin-masters" class="tab-item px-4 py-4 border-b-4 tab-inactive whitespace-nowrap transition-colors">Maestros</button>`;
+                tabs += `<button onclick="showSec('audit')" id="tab-audit" class="tab-item px-4 py-4 border-b-4 tab-inactive whitespace-nowrap transition-colors">Datos (DB)</button>`;
             }
             
             document.getElementById('app-nav').innerHTML = tabs;
@@ -243,9 +282,11 @@
             if (user.rol === 'STORE') {
                 document.getElementById('audit-stores-container').classList.add('hidden');
             } else {
-                let userZonas = String(user.zonas).split(',').map(z => z.trim());
                 let st = master.tiendas; 
-                if (user.rol === 'AREA_MANAGER') st = master.tiendas.filter(t => userZonas.includes(t.zona));
+                if (user.rol === 'AREA_MANAGER') {
+                    let userZonas = String(user.zonas).split(',').map(z => z.trim());
+                    st = master.tiendas.filter(t => userZonas.includes(t.zona));
+                }
                 sSel.innerHTML = st.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
                 document.getElementById('audit-stores-container').classList.remove('hidden');
             }
@@ -255,15 +296,12 @@
             let pHTML = '';
             cats.forEach(c => {
                 pHTML += `<optgroup label="${c}">`;
-                master.prods.filter(p=>p.act && p.cat===c).sort((a,b)=>a.nom.localeCompare(b.nom)).forEach(p => {
-                    pHTML += `<option value="${p.id}">${p.nom}</option>`;
-                });
+                master.prods.filter(p=>p.act && p.cat===c).sort((a,b)=>a.nom.localeCompare(b.nom)).forEach(p => { pHTML += `<option value="${p.id}">${p.nom}</option>`; });
                 pHTML += `</optgroup>`;
             });
             pSel.innerHTML = pHTML;
         }
 
-        // --- SISTEMA DE COPIADO / AVISOS ---
         function formatStoreMessage(t) {
             let msg = `⚠️ *AVISO TIENDA: ${t.nombre.toUpperCase()}* ⚠️\nPor favor, actualizad los datos en el sistema:\n\n`;
             let mf = t.mesesFaltantes || t.mesesPendientes;
@@ -273,18 +311,15 @@
             return msg;
         }
 
-        function copyToClipboard(txt) { navigator.clipboard.writeText(txt); alert("Aviso copiado al portapapeles."); }
+        function copyToClipboard(txt) { navigator.clipboard.writeText(txt); alert("Copiado al portapapeles."); }
         function copySpecificStore(id) { let t = (crmCache.length > 0 ? crmCache : dashData.listaPendientes).find(x => x.id == id); if(t) copyToClipboard(formatStoreMessage(t)); }
         function copyAllReminders() {
             let list = crmCache.length > 0 ? crmCache : dashData.listaPendientes;
             let full = `*RESUMEN PENDIENTES*\n\n`;
-            list.filter(t => (t.dias?.length > 0 || t.tareasPendientes?.length > 0 || t.mesesFaltantes?.length > 0 || t.mesesPendientes?.length > 0)).forEach(t => { 
-                full += formatStoreMessage(t) + "\n-----------\n\n"; 
-            });
+            list.filter(t => (t.dias?.length > 0 || t.tareasPendientes?.length > 0 || t.mesesFaltantes?.length > 0 || t.mesesPendientes?.length > 0)).forEach(t => { full += formatStoreMessage(t) + "\n-----------\n\n"; });
             copyToClipboard(full);
         }
 
-        // --- PANEL DE CONFIGURACIÓN ADMIN ---
         async function saveAdminConfig() {
             const l = document.getElementById('loading'); l.classList.remove('hidden'); document.getElementById('loading-text').innerText = "Guardando...";
             const p = {
@@ -296,11 +331,9 @@
             try {
                 await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveConfig', params: p }) });
                 alert("Configuración guardada. Recarga la app para aplicar los cambios.");
-            } catch (e) { alert("Error al guardar la configuración."); }
-            l.classList.add('hidden');
+            } catch (e) { alert("Error al guardar."); } l.classList.add('hidden');
         }
 
-        // --- RENDER DASHBOARD ---
         function renderDashboard() {
             const w = document.getElementById('dash-widgets'), m = document.getElementById('dash-main-content'), actions = document.getElementById('dash-manager-actions');
             
@@ -327,17 +360,13 @@
             if(user.rol === 'STORE') {
                 actions.classList.add('hidden');
                 w.innerHTML = `<div class="bg-white p-5 rounded-3xl border shadow-sm text-center"><p class="text-[9px] text-gray-400 uppercase font-bold">Efic. Acumulada</p><p class="text-3xl font-black ${getColText(dashData.eficiencia)}">${dashData.eficiencia}%</p></div><div class="bg-white p-5 rounded-3xl border shadow-sm text-center"><p class="text-[9px] text-gray-400 uppercase font-bold">Alertas</p><p class="text-3xl font-black ${dashData.pendientes>0?'text-red-500':'text-green-500'}">${dashData.pendientes}</p></div>`;
-                
                 let html = '';
                 if(dashData.mesesPendientesCierre && dashData.mesesPendientesCierre.length > 0) {
                     dashData.mesesPendientesCierre.forEach((mObj, idx) => { 
                         html += `<div class="bg-red-600 p-6 rounded-[2rem] shadow-lg mb-6 text-center text-white"><h4 class="font-black text-lg mb-1 uppercase italic">Cierre Obligatorio</h4><p class="text-[10px] font-bold text-red-100 mb-4">Mes de ${fmtMonthYear(mObj.mes)}</p><button onclick="promptCierre(${idx})" class="bg-white text-red-600 font-black py-3 px-8 rounded-xl uppercase text-[9px] shadow-md tracking-widest">Revisar y Cerrar</button></div>`; 
                     });
                 }
-                if(dashData.pendientes > 0) {
-                    html += `<div class="bg-red-50 p-6 rounded-[2rem] mb-6 border border-red-100"><p class="text-[10px] font-black text-red-700 uppercase mb-3 text-center tracking-widest">Tareas Diarias Pendientes</p><ul class="text-[11px] text-red-600 font-bold space-y-2">${dashData.listaPendientes.map(d=>`<li>• 📅 ${d.label} (${d.motivo})</li>`).join('')}</ul></div>`;
-                }
-                
+                if(dashData.pendientes > 0) html += `<div class="bg-red-50 p-6 rounded-[2rem] mb-6 border border-red-100"><p class="text-[10px] font-black text-red-700 uppercase mb-3 text-center tracking-widest">Tareas Diarias Pendientes</p><ul class="text-[11px] text-red-600 font-bold space-y-2">${dashData.listaPendientes.map(d=>`<li>• 📅 ${d.label} (${d.motivo})</li>`).join('')}</ul></div>`;
                 html += `<div class="bg-white p-6 rounded-[2rem] border shadow-sm"><h3 class="font-black text-[9px] text-gray-400 mb-4 uppercase text-center tracking-widest">Resumen de Hoy</h3>` + (dashData.resumenHoy.length > 0 ? `<table class="w-full text-left text-[11px] font-bold"><thead><tr class="text-gray-400 border-b"><th class="pb-2">Producto</th><th class="pb-2 text-center">Prod</th><th class="pb-2 text-center">Merma</th></tr></thead><tbody>${dashData.resumenHoy.map(r => `<tr><td class="py-3 uppercase">${r.nom}</td><td class="py-3 text-center text-blue-600">${r.prod}</td><td class="py-3 text-center text-red-500">${r.merma}</td></tr>`).join('')}</tbody></table>` : '<p class="text-[10px] text-gray-400 uppercase font-bold text-center py-4 italic">No hay registros de hoy.</p>') + `</div>`;
                 m.innerHTML = html;
             } else {
@@ -353,90 +382,22 @@
             }
         }
 
-        // --- RENDER GESTIÓN (CRM) ---
-        async function loadCRMData() {
-            const list = document.getElementById('crm-list'); 
-            list.innerHTML = '<div class="text-center py-12 text-[10px] font-black uppercase text-gray-300 italic tracking-widest">Cargando métricas...</div>';
-            try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getManagerCRM', params: { rol: user.rol, zonas: user.zonas } }) }), d = await r.json();
-                if(d.status === 'success') {
-                    crmCache = d.data;
-                    document.getElementById('crm-actions').innerHTML = `<button onclick="copyAllReminders()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg mb-6">Copiar Todos los Avisos</button>`;
-                    renderCRMList(d.data);
-                }
-            } catch (e) { list.innerHTML = '<p class="text-center text-red-500 font-bold text-xs">Error al cargar datos CRM.</p>'; }
-        }
-
-        function renderCRMList(tiendas) {
-            document.getElementById('crm-list').innerHTML = tiendas.map(t => {
-                let mFaltantesHTML = t.mesesPendientes.map(m=>`<li>🔥 Cierre: ${fmtMonthYear(m.mes)}</li>`).join('');
-                let dFaltantesHTML = t.tareasPendientes.map(d=>`<li>• 📅 ${d.label} (${d.motivo})</li>`).join('');
-                let listaPendientes = (mFaltantesHTML + dFaltantesHTML) || '<li class="text-green-600">Al día.</li>';
-
-                return `
-                <div class="bg-white border rounded-[2rem] overflow-hidden shadow-sm">
-                    <div class="p-5 cursor-pointer flex justify-between items-center bg-gray-50/50" onclick="this.nextElementSibling.classList.toggle('hidden')">
-                        <p class="font-black text-xs uppercase italic">${t.nombre}</p>
-                        <div class="flex items-center gap-3"><span class="text-[10px] font-black ${getColText(t.eficiencia)}">${t.eficiencia}%</span><svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="3"></path></svg></div>
-                    </div>
-                    <div class="hidden p-6 border-t bg-white space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
-                                <p class="text-[8px] font-black text-blue-800 uppercase mb-3 tracking-widest">Top 5 Merma</p>
-                                <ul class="text-[10px] font-bold text-blue-900 space-y-2 uppercase">${t.topMerma.map(p=>`<li>${p.nom}: <span class="text-red-500 font-black">${p.merma}</span></li>`).join('')}</ul>
-                            </div>
-                            <div class="bg-red-50 p-4 rounded-2xl border border-red-100 relative">
-                                <button onclick="copySpecificStore('${t.id}')" class="absolute top-2 right-2 text-red-400 p-2 active:scale-90 transition-all"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2" stroke-width="2.5"></path></svg></button>
-                                <p class="text-[8px] font-black text-red-800 uppercase mb-3 tracking-widest">Pendientes</p>
-                                <ul class="text-[10px] font-bold text-red-600 space-y-1">${listaPendientes}</ul>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-2xl border shadow-inner">
-                            <input type="text" id="pin-${t.id}" value="${t.pin}" class="flex-1 bg-transparent font-black text-center text-blue-600 text-sm outline-none tracking-[0.3em] pl-4">
-                            <button onclick="navigator.clipboard.writeText(document.getElementById('pin-${t.id}').value);alert('PIN Copiado');" class="bg-white p-3 rounded-xl border flex items-center justify-center h-10 w-10 shadow-sm active:bg-blue-50 transition-colors">
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-width="2"></path></svg>
-                            </button>
-                            <button onclick="saveNewPIN('${t.id}')" class="bg-blue-600 text-white font-black px-4 h-10 rounded-xl text-[9px] uppercase tracking-widest shadow-md">Guardar</button>
-                        </div>
-                    </div>
-                </div>`;
-            }).join('');
-        }
-
-        async function saveNewPIN(tId) {
-            let nP = document.getElementById(`pin-${tId}`).value; if(!nP) return;
-            const l = document.getElementById('loading'); l.classList.remove('hidden'); document.getElementById('loading-text').innerText = "Guardando...";
-            try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStorePin', params: { tiendaId: tId, newPin: nP } }) }); alert("PIN Actualizado correctamente."); } catch(e) {} l.classList.add('hidden');
-        }
-
-        // --- SISTEMA DE CIERRE DE MES EXHAUSTIVO ---
         function promptCierre(idx) { 
-            let mObj = dashData.mesesPendientesCierre[idx];
-            currentCierreMes = mObj.mes; 
-            
+            let mObj = dashData.mesesPendientesCierre[idx]; currentCierreMes = mObj.mes; 
             let detHTML = mObj.detalles.map(d => `<li class="border-b border-gray-100 py-1">• 📅 ${fmtDate(d.dia)}: <span class="text-red-600">${d.motivo}</span></li>`).join('');
-            
             let msg = `<p class="font-black text-[12px] uppercase text-slate-800 mb-2">${fmtMonthYear(mObj.mes)}</p>`;
-            if (mObj.detalles.length > 0) {
-                msg += `<p class="text-[10px] text-red-500 font-bold mb-2">⚠️ Se detectaron ${mObj.detalles.length} días incompletos en el mes:</p>
-                        <ul class="text-[9px] text-left mt-2 bg-gray-50 p-3 rounded-xl max-h-32 overflow-y-auto border border-gray-200">${detHTML}</ul>
-                        <p class="text-[9px] text-gray-400 mt-3 font-bold">Si firmas, el mes quedará bloqueado con estos fallos registrados.</p>`;
-            } else {
-                msg += `<p class="text-[10px] text-green-600 font-bold mb-2">✓ Todos los días registrados correctamente.</p>`;
-            }
-            
-            document.getElementById('modal-cierre-msg').innerHTML = msg; 
-            document.getElementById('cierre-pin').value = ''; 
-            document.getElementById('modal-cierre').classList.remove('hidden'); 
+            if (mObj.detalles.length > 0) msg += `<p class="text-[10px] text-red-500 font-bold mb-2">⚠️ ${mObj.detalles.length} días incompletos:</p><ul class="text-[9px] text-left mt-2 bg-gray-50 p-3 rounded-xl max-h-32 overflow-y-auto border border-gray-200">${detHTML}</ul><p class="text-[9px] text-gray-400 mt-3 font-bold">Si firmas, el mes quedará bloqueado con estos fallos.</p>`;
+            else msg += `<p class="text-[10px] text-green-600 font-bold mb-2">✓ Todos los días registrados correctamente.</p>`;
+            document.getElementById('modal-cierre-msg').innerHTML = msg; document.getElementById('cierre-pin').value = ''; document.getElementById('modal-cierre').classList.remove('hidden'); 
         }
 
         async function confirmCierre() {
             const p = document.getElementById('cierre-pin').value; if(!p) return;
-            const l = document.getElementById('loading'); l.classList.remove('hidden'); document.getElementById('modal-cierre').classList.add('hidden'); document.getElementById('loading-text').innerText = "Firmando...";
+            const l = document.getElementById('loading'); l.classList.remove('hidden'); document.getElementById('modal-cierre').classList.add('hidden');
             try {
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'closeMonth', params: { tiendaId: user.id, mes: currentCierreMes, pin: p } }) }), d = await r.json();
-                if(d.status === 'success') { alert("Mes cerrado con éxito."); await fetchDashboard(); renderDashboard(); } else alert("PIN Incorrecto.");
-            } catch (e) { alert("Error de comunicación."); } l.classList.add('hidden');
+                if(d.status === 'success') { alert("Mes cerrado."); await fetchDashboard(); renderDashboard(); } else alert("PIN Incorrecto.");
+            } catch (e) { alert("Error."); } l.classList.add('hidden');
         }
 
         function showSec(id) { 
@@ -444,23 +405,21 @@
             document.getElementById('sec-'+id).classList.remove('hidden'); 
             document.querySelectorAll('.tab-item').forEach(t => t.classList.replace('tab-active', 'tab-inactive')); 
             document.getElementById('tab-'+id).classList.replace('tab-inactive', 'tab-active'); 
-            if(id === 'input') renderCats(); if(id === 'crm') loadCRMData(); 
+            if(id === 'input') renderCats(); 
+            if(id === 'crm') loadCRMData(); 
+            if(id === 'admin-masters' && user.rol === 'ADMIN') loadAdminData();
         }
 
-        // --- MOTOR DE REGISTRO ---
         function renderCats() {
-            const act = master.prods.filter(p => p.act);
-            const cats = ["TODOS", ...new Set(act.map(p => p.cat))].sort();
+            const act = master.prods.filter(p => p.act), cats = ["TODOS", ...new Set(act.map(p => p.cat))].sort();
             document.getElementById('pill-cats').innerHTML = cats.map(c => `<button onclick="selCat('${c}')" class="px-6 py-3 rounded-xl font-black text-[10px] uppercase whitespace-nowrap ${cacheNav.cat===c?'pill-selected':'pill-default'}">${c}</button>`).join('');
             if(cacheNav.cat) renderSubs();
         }
         function selCat(c) { cacheNav.cat = c; cacheNav.sub = 'TODOS'; renderCats(); renderSubs(); }
         function renderSubs() {
-            const act = master.prods.filter(p => p.act && (cacheNav.cat === 'TODOS' || p.cat === cacheNav.cat));
-            const subs = ["TODOS", ...new Set(act.map(p => p.sub))].sort();
+            const act = master.prods.filter(p => p.act && (cacheNav.cat === 'TODOS' || p.cat === cacheNav.cat)), subs = ["TODOS", ...new Set(act.map(p => p.sub))].sort();
             document.getElementById('pill-subs').innerHTML = subs.map(s => `<button onclick="selSub('${s}')" class="px-5 py-2 rounded-xl font-bold text-[9px] uppercase whitespace-nowrap ${cacheNav.sub===s?'pill-selected':'pill-default'}">${s}</button>`).join('');
-            document.getElementById('pill-subs').classList.remove('hidden');
-            renderProds();
+            document.getElementById('pill-subs').classList.remove('hidden'); renderProds();
         }
         function selSub(s) { cacheNav.sub = s; renderSubs(); }
         function renderProds() {
@@ -471,64 +430,58 @@
         function updateInputView() { document.getElementById('area-turno').classList.toggle('hidden', document.getElementById('input-type').value==='merma'); }
 
         async function processSave() {
-            const items = master.prods.map(p => ({ id: p.id, v: inputState[p.uid]||0 })).filter(x => x.v>0); if(!items.length) return alert("No has introducido ningún dato.");
+            const items = master.prods.map(p => ({ id: p.id, v: inputState[p.uid]||0 })).filter(x => x.v>0); if(!items.length) return alert("Sin datos.");
             const l = document.getElementById('loading'); l.classList.remove('hidden'); document.getElementById('loading-text').innerText = "Guardando...";
             try {
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveDaily', params: { fecha: document.getElementById('input-date').value, type: document.getElementById('input-type').value, turno: document.getElementById('input-turno').value, tiendaId: user.id, items: items.map(x=>({prodId:x.id, val:x.v})) } }) }), d = await r.json();
-                if(d.status === 'success') { alert("Datos registrados correctamente."); inputState = {}; await fetchDashboard(); renderDashboard(); showSec('dash'); }
-                else if (d.status === 'locked') { alert("Este mes ya está cerrado y no admite modificaciones."); }
-            } catch(e) { alert("Error en el registro."); } l.classList.add('hidden');
+                if(d.status === 'success') { alert("OK."); inputState = {}; await fetchDashboard(); renderDashboard(); showSec('dash'); }
+                else if (d.status === 'locked') { alert("Este mes ya está cerrado."); }
+            } catch(e) {} l.classList.add('hidden');
         }
 
-        // --- MOTOR DE AUDITORÍA AVANZADA ---
         async function generateAuditReport() {
             const l = document.getElementById('loading'); l.classList.remove('hidden'); document.getElementById('loading-text').innerText = "Analizando...";
             const p = { startDate: document.getElementById('audit-start').value, endDate: document.getElementById('audit-end').value, rol: user.rol, userId: user.id, zonas: user.zonas };
-            const sSel = document.getElementById('audit-stores'); 
+            const sSel = document.getElementById('audit-stores'), pSel = document.getElementById('audit-products');
             if(sSel && sSel.selectedOptions.length > 0) p.tiendas = Array.from(sSel.selectedOptions).map(o => o.value);
-            
-            const pSel = document.getElementById('audit-products');
             if(pSel && pSel.selectedOptions.length > 0) p.productos = Array.from(pSel.selectedOptions).map(o => o.value);
-            
             try {
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getAuditData', params: p }) }), d = await r.json();
                 if(d.status === 'success') { 
-                    renderAudit(d.data.chartData); 
                     document.getElementById('audit-results-container').classList.remove('hidden'); 
+                    if (user.rol === 'ADMIN') renderRawAuditTable(d.data.chartData);
+                    else renderAudit(d.data.chartData); 
                 }
-            } catch (e) { alert("Error al generar análisis."); } l.classList.add('hidden');
+            } catch (e) {} l.classList.add('hidden');
+        }
+
+        function renderRawAuditTable(data) {
+            document.getElementById('manager-audit-view').classList.add('hidden');
+            document.getElementById('admin-audit-view').classList.remove('hidden');
+            if(!data || data.length === 0) { document.getElementById('admin-raw-table').innerHTML = "<tr><td>Sin datos</td></tr>"; return; }
+            const headers = Object.keys(data[0]);
+            let html = `<thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+            data.forEach(r => { html += `<tr>${headers.map(h => `<td>${r[h]}</td>`).join('')}</tr>`; });
+            html += `</tbody>`;
+            document.getElementById('admin-raw-table').innerHTML = html;
         }
 
         function renderAudit(data) {
+            document.getElementById('manager-audit-view').classList.remove('hidden');
+            document.getElementById('admin-audit-view').classList.add('hidden');
             let sP=0, sM=0, byT={}, byP={}, byD={};
             data.forEach(r => {
                 sP += r.PROD_TOTAL; sM += r.MERMA;
                 if(!byT[r.TIENDA]) byT[r.TIENDA]={p:0,m:0}; byT[r.TIENDA].p+=r.PROD_TOTAL; byT[r.TIENDA].m+=r.MERMA;
                 if(!byP[r.PRODUCTO]) byP[r.PRODUCTO]={cat:r.CATEGORIA,p:0,m:0,d:{}}; byP[r.PRODUCTO].p+=r.PROD_TOTAL; byP[r.PRODUCTO].m+=r.MERMA;
-                if(!byD[r.FECHA]) byD[r.FECHA]={p:0,m:0,o:0,m1:0,t:0}; 
-                byD[r.FECHA].p+=r.PROD_TOTAL; byD[r.FECHA].m+=r.MERMA; byD[r.FECHA].o+=r.PROD_OBRADOR; byD[r.FECHA].m1+=r.PROD_MEDIODIA; byD[r.FECHA].t+=r.PROD_TARDE;
-                if(!byP[r.PRODUCTO].d[r.FECHA]) byP[r.PRODUCTO].d[r.FECHA]={p:0,m:0}; 
-                byP[r.PRODUCTO].d[r.FECHA].p+=r.PROD_TOTAL; byP[r.PRODUCTO].d[r.FECHA].m+=r.MERMA;
+                if(!byD[r.FECHA]) byD[r.FECHA]={p:0,m:0,o:0,m1:0,t:0}; byD[r.FECHA].p+=r.PROD_TOTAL; byD[r.FECHA].m+=r.MERMA; byD[r.FECHA].o+=r.PROD_OBRADOR; byD[r.FECHA].m1+=r.PROD_MEDIODIA; byD[r.FECHA].t+=r.PROD_TARDE;
+                if(!byP[r.PRODUCTO].d[r.FECHA]) byP[r.PRODUCTO].d[r.FECHA]={p:0,m:0}; byP[r.PRODUCTO].d[r.FECHA].p+=r.PROD_TOTAL; byP[r.PRODUCTO].d[r.FECHA].m+=r.MERMA;
             });
-
-            document.getElementById('kpi-prod').innerText = sP.toLocaleString(); 
-            document.getElementById('kpi-merma').innerText = sM.toLocaleString(); 
-            document.getElementById('kpi-porc').innerText = sP>0?((sM/sP)*100).toFixed(1)+'%':'0%';
-
-            if(charts.store) charts.store.destroy(); 
-            charts.store = new Chart(document.getElementById('auditChartStore').getContext('2d'), { type:'bar', data:{labels:Object.keys(byT), datasets:[{label:'Prod',data:Object.keys(byT).map(k=>byT[k].p),backgroundColor:'#3b82f6'},{label:'Merma',data:Object.keys(byT).map(k=>byT[k].m),backgroundColor:'#ef4444'}]}, options:{responsive:true,maintainAspectRatio:false} });
-            
-            if(charts.turnos) charts.turnos.destroy(); 
-            let dk = Object.keys(byD).sort(); 
-            charts.turnos = new Chart(document.getElementById('auditChartTurnos').getContext('2d'), { type:'bar', data:{labels:dk.map(k=>fmtDate(k)), datasets:[{label:'Obrador',data:dk.map(k=>byD[k].o),backgroundColor:'#93c5fd',stack:'P'},{label:'Mediodía',data:dk.map(k=>byD[k].m1),backgroundColor:'#3b82f6',stack:'P'},{label:'Tarde',data:dk.map(k=>byD[k].t),backgroundColor:'#1e3a8a',stack:'P'},{label:'Merma',data:dk.map(k=>byD[k].m),backgroundColor:'#ef4444',stack:'M'}]}, options:{responsive:true,maintainAspectRatio:false} });
-            
-            if(charts.prod) charts.prod.destroy(); 
-            let topP = Object.keys(byP).map(k=>({n:k,m:byP[k].m})).sort((a,b)=>b.m-a.m).slice(0,10); 
-            charts.prod = new Chart(document.getElementById('auditChartProd').getContext('2d'), { type:'bar', data:{labels:topP.map(x=>x.n),datasets:[{label:'Merma',data:topP.map(x=>x.m),backgroundColor:'#ef4444'}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false} });
-            
-            if(charts.trend) charts.trend.destroy(); 
-            charts.trend = new Chart(document.getElementById('auditChartTrend').getContext('2d'), { type:'line', data:{labels:dk.map(k=>fmtDate(k)),datasets:[{label:'% Merma',data:dk.map(k=>byD[k].p>0?((byD[k].m/byD[k].p)*100).toFixed(1):0),borderColor:'#334155',tension:0.4,fill:true,backgroundColor:'rgba(51,65,85,0.05)'}]}, options:{responsive:true,maintainAspectRatio:false} });
-
+            document.getElementById('kpi-prod').innerText = sP.toLocaleString(); document.getElementById('kpi-merma').innerText = sM.toLocaleString(); document.getElementById('kpi-porc').innerText = sP>0?((sM/sP)*100).toFixed(1)+'%':'0%';
+            if(charts.store) charts.store.destroy(); charts.store = new Chart(document.getElementById('auditChartStore').getContext('2d'), { type:'bar', data:{labels:Object.keys(byT), datasets:[{label:'Prod',data:Object.keys(byT).map(k=>byT[k].p),backgroundColor:'#3b82f6'},{label:'Merma',data:Object.keys(byT).map(k=>byT[k].m),backgroundColor:'#ef4444'}]}, options:{responsive:true,maintainAspectRatio:false} });
+            if(charts.turnos) charts.turnos.destroy(); let dk = Object.keys(byD).sort(); charts.turnos = new Chart(document.getElementById('auditChartTurnos').getContext('2d'), { type:'bar', data:{labels:dk.map(k=>fmtDate(k)), datasets:[{label:'Obrador',data:dk.map(k=>byD[k].o),backgroundColor:'#93c5fd',stack:'P'},{label:'Mediodía',data:dk.map(k=>byD[k].m1),backgroundColor:'#3b82f6',stack:'P'},{label:'Tarde',data:dk.map(k=>byD[k].t),backgroundColor:'#1e3a8a',stack:'P'},{label:'Merma',data:dk.map(k=>byD[k].m),backgroundColor:'#ef4444',stack:'M'}]}, options:{responsive:true,maintainAspectRatio:false} });
+            if(charts.prod) charts.prod.destroy(); let topP = Object.keys(byP).map(k=>({n:k,m:byP[k].m})).sort((a,b)=>b.m-a.m).slice(0,10); charts.prod = new Chart(document.getElementById('auditChartProd').getContext('2d'), { type:'bar', data:{labels:topP.map(x=>x.n),datasets:[{label:'Merma',data:topP.map(x=>x.m),backgroundColor:'#ef4444'}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false} });
+            if(charts.trend) charts.trend.destroy(); charts.trend = new Chart(document.getElementById('auditChartTrend').getContext('2d'), { type:'line', data:{labels:dk.map(k=>fmtDate(k)),datasets:[{label:'% Merma',data:dk.map(k=>byD[k].p>0?((byD[k].m/byD[k].p)*100).toFixed(1):0),borderColor:'#334155',tension:0.4,fill:true,backgroundColor:'rgba(51,65,85,0.05)'}]}, options:{responsive:true,maintainAspectRatio:false} });
             let ths = dk.map(d=>`<th class="p-2 border bg-gray-50 whitespace-nowrap">${fmtDate(d)}</th>`).join('');
             let trs = Object.keys(byP).sort().map(p => {
                 let cat = byP[p].cat, cells = dk.map(d => {
@@ -543,39 +496,138 @@
         function toggleFS(el) { el.classList.toggle('fs-chart'); }
 
         async function exportAuditCSV() {
-            const l = document.getElementById('loading'); l.classList.remove('hidden'); document.getElementById('loading-text').innerText = "Generando Excel...";
             const p = { startDate: document.getElementById('audit-start').value, endDate: document.getElementById('audit-end').value, rol: user.rol, userId: user.id, zonas: user.zonas };
-            const sSel = document.getElementById('audit-stores'); 
+            const sSel = document.getElementById('audit-stores'), pSel = document.getElementById('audit-products');
             if(sSel && sSel.selectedOptions.length > 0) p.tiendas = Array.from(sSel.selectedOptions).map(o => o.value);
-            
-            const pSel = document.getElementById('audit-products');
             if(pSel && pSel.selectedOptions.length > 0) p.productos = Array.from(pSel.selectedOptions).map(o => o.value);
-            
             try {
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getAuditData', params: p }) }), d = await r.json();
                 if (d.status === 'success' && d.data.chartData.length > 0) {
-                    const data = d.data.chartData;
-                    const headers = Object.keys(data[0]);
-                    const csvRows = [headers.join(',')];
-                    
-                    for (const row of data) {
-                        const values = headers.map(h => {
-                            const val = row[h] === null || row[h] === undefined ? "" : row[h];
-                            return `"${String(val).replace(/"/g, '""')}"`;
-                        });
-                        csvRows.push(values.join(','));
-                    }
-                    
+                    const data = d.data.chartData, headers = Object.keys(data[0]), csvRows = [headers.join(',')];
+                    for (const row of data) { csvRows.push(headers.map(h => `"${String(row[h]===null?'':row[h]).replace(/"/g, '""')}"`).join(',')); }
                     const blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement("a");
-                    link.setAttribute("href", url);
-                    link.setAttribute("download", `AUDITORIA_LIO_${p.startDate}_AL_${p.endDate}.csv`);
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                } else { alert("No hay datos para exportar."); }
-            } catch (e) { alert("Fallo en la exportación."); } l.classList.add('hidden');
+                    const link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(blob)); link.setAttribute("download", `AUDITORIA_LIO.csv`);
+                    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                } else alert("No hay datos.");
+            } catch (e) {}
+        }
+
+        async function loadCRMData() {
+            const list = document.getElementById('crm-list'); list.innerHTML = '<div class="text-center py-12 text-[10px] font-black text-gray-300">Cargando...</div>';
+            try {
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getManagerCRM', params: { rol: user.rol, zonas: user.zonas } }) }), d = await r.json();
+                if(d.status === 'success') { crmCache = d.data; document.getElementById('crm-actions').innerHTML = `<button onclick="copyAllReminders()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-black text-[10px] uppercase shadow-lg mb-6">Copiar Avisos</button>`; renderCRMList(d.data); }
+            } catch (e) {}
+        }
+
+        function renderCRMList(tiendas) {
+            document.getElementById('crm-list').innerHTML = tiendas.map(t => {
+                let mF = t.mesesPendientes.map(m=>`<li>🔥 Cierre: ${fmtMonthYear(m.mes)}</li>`).join(''), dF = t.tareasPendientes.map(d=>`<li>• 📅 ${d.label} (${d.motivo})</li>`).join('');
+                return `
+                <div class="bg-white border rounded-[2rem] overflow-hidden shadow-sm">
+                    <div class="p-5 cursor-pointer flex justify-between items-center bg-gray-50/50" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                        <p class="font-black text-xs uppercase italic">${t.nombre}</p><div class="flex items-center gap-3"><span class="text-[10px] font-black ${getColText(t.eficiencia)}">${t.eficiencia}%</span><svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="3"></path></svg></div>
+                    </div>
+                    <div class="hidden p-6 border-t bg-white space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100"><p class="text-[8px] font-black text-blue-800 uppercase mb-3">Top 5 Merma</p><ul class="text-[10px] font-bold text-blue-900 uppercase">${t.topMerma.map(p=>`<li>${p.nom}: <span class="text-red-500 font-black">${p.merma}</span></li>`).join('')}</ul></div>
+                            <div class="bg-red-50 p-4 rounded-2xl border border-red-100 relative"><button onclick="copySpecificStore('${t.id}')" class="absolute top-2 right-2 text-red-400 p-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2" stroke-width="2.5"></path></svg></button><p class="text-[8px] font-black text-red-800 uppercase mb-3">Pendientes</p><ul class="text-[10px] font-bold text-red-600">${(mF+dF)||'<li class="text-green-600">Al día.</li>'}</ul></div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // --- SISTEMA CRUD ADMIN ---
+        async function loadAdminData() {
+            const l = document.getElementById('loading'); l.classList.remove('hidden'); document.getElementById('loading-text').innerText = "Cargando DB...";
+            try {
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getAdminData' }) }), d = await r.json();
+                if(d.status === 'success') { adminData = d.data; loadAdminTable('MAESTRO_TIENDAS'); }
+            } catch (e) { alert("Error DB."); } l.classList.add('hidden');
+        }
+
+        function loadAdminTable(table) {
+            currentAdminTable = table; document.getElementById('admin-table-title').innerText = table.replace(/_/g, ' ');
+            const data = adminData[table.toLowerCase().split('_')[1]] || adminData[table.toLowerCase()]; // mapeo simple
+            if(!data || data.length === 0) { document.getElementById('admin-table-content').innerHTML = "<tr><td>Vacío</td></tr>"; return; }
+            
+            const headers = data[0]; const rows = data.slice(1);
+            let html = `<thead><tr><th>Acción</th>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+            rows.forEach(r => {
+                if(!r[0]) return; // Evitar filas vacías
+                let btnWp = '';
+                if(table === 'MAESTRO_TIENDAS') btnWp = `<button onclick="copyWhatsApp('TIENDA', '${r[0]}', '${r[3]}')" class="text-green-500 mx-1" title="Copiar Wp"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg></button>`;
+                if(table === 'USUARIOS_SISTEMA') btnWp = `<button onclick="copyWhatsApp('USER', '${r[0]}', '${r[1]}')" class="text-green-500 mx-1" title="Copiar Wp"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg></button>`;
+                
+                html += `<tr>
+                    <td class="flex items-center">
+                        <button onclick="openAdminModal('${r[0]}')" class="text-blue-500 mr-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+                        <button onclick="delAdminRecord('${r[0]}')" class="text-red-500 mr-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        ${btnWp}
+                    </td>
+                    ${r.map(v=>`<td>${v instanceof Date ? Utilities_formatDateFix(v) : v}</td>`).join('')}
+                </tr>`;
+            });
+            html += `</tbody>`; document.getElementById('admin-table-content').innerHTML = html;
+        }
+
+        function Utilities_formatDateFix(d) { try { return d.toISOString().split('T')[0]; } catch(e){ return String(d); } }
+
+        function copyWhatsApp(type, id, pass) {
+            let msg = '';
+            if(type === 'TIENDA') msg = `⚠️ *CREDENCIALES LIO APP* ⚠️\nAcceso Tienda: ${id}\nPIN: ${pass}\nGuarda este mensaje.`;
+            if(type === 'USER') msg = `⚠️ *CREDENCIALES LIO APP* ⚠️\nAcceso Management\nUsuario: ${id}\nPass: ${pass}\nGuarda este mensaje.`;
+            navigator.clipboard.writeText(msg); alert("Credenciales copiadas para WhatsApp.");
+        }
+
+        function openAdminModal(id = null) {
+            document.getElementById('admin-crud-title').innerText = id ? "EDITAR REGISTRO" : "NUEVO REGISTRO";
+            const data = adminData[currentAdminTable.toLowerCase().split('_')[1]] || adminData[currentAdminTable.toLowerCase()];
+            const headers = data[0]; let row = id ? data.slice(1).find(r => String(r[0]) === String(id)) : [];
+            
+            let html = '';
+            headers.forEach((h, i) => {
+                let val = row[i] !== undefined ? row[i] : '';
+                if(val instanceof Date) val = Utilities_formatDateFix(val);
+                let inputType = h.includes('FECHA') ? 'date' : 'text';
+                let readonly = (i===0 && id) ? 'readonly class="w-full p-4 bg-gray-200 rounded-xl font-bold text-sm outline-none border"' : 'class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-blue-600 ring-2 ring-transparent"';
+                html += `<div><label class="text-[9px] font-bold text-gray-400 uppercase ml-2">${h}</label><input type="${inputType}" id="crud-input-${i}" value="${val}" ${readonly}></div>`;
+            });
+            html += `<input type="hidden" id="crud-id" value="${id||''}">`;
+            document.getElementById('admin-crud-form').innerHTML = html;
+            document.getElementById('modal-admin-crud').classList.remove('hidden');
+        }
+
+        async function saveAdminForm() {
+            const data = adminData[currentAdminTable.toLowerCase().split('_')[1]] || adminData[currentAdminTable.toLowerCase()];
+            const headers = data[0]; let rowToSave = [];
+            headers.forEach((h, i) => { rowToSave.push(document.getElementById(`crud-input-${i}`).value); });
+            const id = document.getElementById('crud-id').value;
+            
+            const l = document.getElementById('loading'); l.classList.remove('hidden'); document.getElementById('modal-admin-crud').classList.add('hidden');
+            try {
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveAdminRecord', params: { table: currentAdminTable, id: id, row: rowToSave } }) });
+                await loadAdminData();
+            } catch (e) { alert("Error al guardar."); } l.classList.add('hidden');
+        }
+
+        async function delAdminRecord(id) {
+            if(!confirm("¿Borrar definitivamente? Cuidado con los históricos.")) return;
+            const l = document.getElementById('loading'); l.classList.remove('hidden');
+            try {
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteAdminRecord', params: { table: currentAdminTable, id: id } }) });
+                await loadAdminData();
+            } catch (e) { alert("Error al borrar."); } l.classList.add('hidden');
+        }
+
+        function exportAdminMaster() {
+            const data = adminData[currentAdminTable.toLowerCase().split('_')[1]] || adminData[currentAdminTable.toLowerCase()];
+            if(!data || data.length === 0) return alert("Sin datos.");
+            const csvRows = data.map(row => row.map(val => `"${String(val===null?'':val).replace(/"/g, '""')}"`).join(','));
+            const blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(blob)); link.setAttribute("download", `MAESTRO_${currentAdminTable}.csv`);
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
     </script>
 </body>
