@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LIO APP - Gestión Integral</title>
+    <title>LIO APP - Gestión</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -20,27 +20,15 @@
 <body class="bg-gray-50 text-slate-900 font-sans antialiased">
 
     <div id="loading" class="hidden fixed inset-0 bg-white/90 z-[2000] flex flex-col items-center justify-center backdrop-blur-sm">
-        <div class="w-16 h-16 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4 shadow-lg"></div>
+        <div class="w-16 h-16 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
         <p class="font-black text-blue-900 uppercase tracking-widest text-[10px]" id="loading-text">Conectando...</p>
-    </div>
-
-    <div id="modal-cierre" class="hidden fixed inset-0 bg-slate-900/90 z-[3000] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl text-center">
-            <h3 class="font-black text-red-600 mb-2 text-xl uppercase italic">Bloqueo de Mes</h3>
-            <p class="text-[10px] text-gray-500 font-bold mb-6 uppercase tracking-wider" id="modal-cierre-msg"></p>
-            <input type="password" id="cierre-pin" inputmode="numeric" placeholder="PIN TIENDA" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 text-center text-2xl font-black tracking-[0.5em] mb-6 outline-none focus:ring-red-500">
-            <div class="flex gap-3">
-                <button onclick="document.getElementById('modal-cierre').classList.add('hidden')" class="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-xl uppercase text-[10px] tracking-widest">Cerrar</button>
-                <button onclick="confirmCierre()" class="flex-1 bg-red-600 text-white font-black py-4 rounded-xl shadow-lg uppercase text-[10px] tracking-widest">Firmar</button>
-            </div>
-        </div>
     </div>
 
     <div id="login-screen" class="min-h-screen flex items-center justify-center p-6 bg-slate-900">
         <div class="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-md">
             <div class="text-center mb-8"><h1 class="text-5xl font-black text-slate-900 italic tracking-tighter">LIO</h1><div class="h-1 w-12 bg-blue-600 mx-auto mt-2 rounded-full"></div></div>
             <div class="space-y-4">
-                <select id="user-type" onchange="toggleLoginUI()" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold text-gray-700 outline-none focus:ring-blue-600">
+                <select id="user-type" onchange="toggleLoginUI()" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold text-gray-700 outline-none">
                     <option value="store">ACCESO TIENDA</option><option value="admin">ACCESO MANAGEMENT</option>
                 </select>
                 <div id="group-store" class="space-y-4">
@@ -48,50 +36,53 @@
                     <input type="password" id="store-pin" inputmode="numeric" placeholder="PIN" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 text-center text-3xl font-black tracking-[0.5em] outline-none">
                 </div>
                 <div id="group-admin" class="hidden space-y-4">
-                    <input type="text" id="admin-user" placeholder="USUARIO" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none text-center uppercase tracking-widest">
-                    <input type="password" id="admin-pass" placeholder="PASSWORD" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none text-center tracking-widest">
+                    <input type="text" id="admin-user" placeholder="USUARIO" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none text-center uppercase">
+                    <input type="password" id="admin-pass" placeholder="PASSWORD" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none text-center">
                 </div>
-                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-blue-700 active:scale-95 transition-all text-xs uppercase tracking-widest mt-4">Entrar al Sistema</button>
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl active:scale-95 transition-all text-xs uppercase tracking-widest mt-4">Entrar</button>
             </div>
         </div>
     </div>
 
     <div id="main-app" class="hidden min-h-screen flex flex-col">
         <header class="bg-white p-6 border-b flex justify-between items-center sticky top-0 z-50 shadow-sm">
-            <div><p id="role-display" class="text-[9px] font-black text-blue-600 uppercase tracking-[0.2em] mb-1"></p><h2 id="user-display" class="font-black text-xl text-slate-800 italic leading-none"></h2></div>
-            <button onclick="location.reload()" class="bg-red-50 p-3 rounded-2xl text-red-400 hover:text-red-600 transition-colors shadow-sm"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg></button>
+            <div><p id="role-display" class="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1"></p><h2 id="user-display" class="font-black text-xl text-slate-800 italic leading-none"></h2></div>
+            <button onclick="location.reload()" class="bg-gray-50 p-3 rounded-2xl text-gray-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg></button>
         </header>
         <nav id="app-nav" class="bg-white border-b flex justify-around font-black text-[9px] uppercase tracking-widest sticky top-[89px] z-40 shadow-sm"></nav>
 
         <main class="flex-1 p-4 overflow-y-auto max-w-4xl mx-auto w-full pb-32">
             <div id="content-area">
-                <section id="sec-dash" class="app-section space-y-6"><div id="dash-widgets" class="grid grid-cols-2 gap-4"></div><div id="dash-main-content" class="space-y-6"></div></section>
+                <section id="sec-dash" class="app-section space-y-6">
+                    <div id="dash-manager-actions" class="hidden"></div>
+                    <div id="dash-widgets" class="grid grid-cols-2 gap-4"></div>
+                    <div id="dash-main-content" class="space-y-6"></div>
+                </section>
                 
                 <section id="sec-input" class="app-section hidden space-y-6">
-                    <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex gap-2"><input type="date" id="input-date" class="flex-1 font-bold text-slate-700 outline-none bg-transparent uppercase text-xs"><select id="input-type" onchange="updateInputView()" class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-black text-[10px] border-none outline-none"><option value="prod">PRODUCCIÓN</option><option value="merma">MERMA</option></select></div>
-                    <div id="area-turno" class="bg-white p-4 rounded-3xl border border-blue-100"><p class="text-[9px] font-black text-gray-400 uppercase mb-3 ml-2">Turno de Trabajo</p><select id="input-turno" class="w-full font-bold text-slate-800 outline-none bg-transparent text-sm"><option value="Obrador">OBRADOR</option><option value="Mediodía">MEDIODÍA</option><option value="Tarde">TARDE</option></select></div>
-                    <div class="space-y-4"><div id="pill-cats" class="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1"></div><div id="pill-subs" class="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1 hidden"></div></div>
+                    <div class="bg-white p-4 rounded-3xl border flex gap-2"><input type="date" id="input-date" class="flex-1 font-bold outline-none uppercase text-xs"><select id="input-type" onchange="updateInputView()" class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-black text-[10px]"><option value="prod">PRODUCCIÓN</option><option value="merma">MERMA</option></select></div>
+                    <div id="area-turno" class="bg-white p-4 rounded-3xl border"><p class="text-[9px] font-black text-gray-400 uppercase mb-3 ml-2">Turno</p><select id="input-turno" class="w-full font-bold outline-none bg-transparent text-sm"><option value="Obrador">OBRADOR</option><option value="Mediodía">MEDIODÍA</option><option value="Tarde">TARDE</option></select></div>
                     <div id="prod-grid" class="space-y-3"></div>
-                    <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent z-50 pointer-events-none"><button onclick="processSave()" class="w-full max-w-4xl mx-auto block bg-slate-900 text-white font-black py-5 rounded-3xl shadow-2xl active:scale-95 transition-all text-xs uppercase tracking-widest pointer-events-auto">Confirmar Datos</button></div>
+                    <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent pointer-events-none"><button onclick="processSave()" class="w-full max-w-4xl mx-auto block bg-slate-900 text-white font-black py-5 rounded-3xl shadow-2xl active:scale-95 transition-all text-xs uppercase tracking-widest pointer-events-auto">Confirmar Registro</button></div>
                 </section>
 
                 <section id="sec-audit" class="app-section hidden space-y-6">
-                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
-                        <h3 class="font-black text-slate-800 uppercase text-[10px] mb-4 tracking-widest">Motor de Filtros</h3>
+                    <div class="bg-white p-6 rounded-[2rem] border shadow-sm">
+                        <h3 class="font-black text-slate-800 uppercase text-[10px] mb-4">Auditoría</h3>
                         <div class="grid grid-cols-2 gap-4 mb-6">
-                            <div><label class="text-[9px] font-bold text-gray-400 uppercase">Desde</label><input type="date" id="audit-start" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none"></div><div><label class="text-[9px] font-bold text-gray-400 uppercase">Hasta</label><input type="date" id="audit-end" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none"></div>
+                            <div><label class="text-[9px] font-bold text-gray-400 uppercase">Desde</label><input type="date" id="audit-start" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none"></div>
+                            <div><label class="text-[9px] font-bold text-gray-400 uppercase">Hasta</label><input type="date" id="audit-end" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none"></div>
                         </div>
-                        <button onclick="generateAuditReport()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl text-[10px] uppercase shadow-lg active:scale-95 transition-all">Ejecutar Análisis</button>
+                        <button onclick="generateAuditReport()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl text-[10px] uppercase">Ejecutar</button>
                     </div>
                     <div id="audit-results-container" class="hidden space-y-6">
-                        <div class="grid grid-cols-3 gap-3"><div class="bg-white p-4 rounded-2xl shadow-sm text-center border"><p class="text-[8px] font-black text-gray-400 uppercase mb-1">Producción</p><p id="kpi-prod" class="text-lg font-black text-blue-600">0</p></div><div class="bg-white p-4 rounded-2xl shadow-sm text-center border"><p class="text-[8px] font-black text-gray-400 uppercase mb-1">Merma</p><p id="kpi-merma" class="text-lg font-black text-red-500">0</p></div><div class="bg-white p-4 rounded-2xl shadow-sm text-center border"><p class="text-[8px] font-black text-gray-400 uppercase mb-1">% Efic.</p><p id="kpi-porc" class="text-lg font-black text-slate-800">0%</p></div></div>
-                        <div class="bg-white p-6 rounded-[2rem] shadow-sm relative border"><h3 class="font-black text-slate-800 uppercase text-[9px] mb-4 tracking-widest text-center">Producción vs Merma</h3><div class="h-64 w-full"><canvas id="auditChartStore"></canvas></div></div>
-                        <div class="bg-white p-6 rounded-[2rem] shadow-sm border"><h3 class="font-black text-slate-800 uppercase text-[9px] mb-4 tracking-widest text-center">Detalle por Artículo</h3><div class="overflow-x-auto" id="pivot-container"></div></div>
+                        <div class="grid grid-cols-3 gap-3 text-center"><div class="bg-white p-4 rounded-2xl border"><p class="text-[8px] font-black text-gray-400 uppercase">P.</p><p id="kpi-prod" class="text-lg font-black text-blue-600">0</p></div><div class="bg-white p-4 rounded-2xl border"><p class="text-[8px] font-black text-gray-400 uppercase">M.</p><p id="kpi-merma" class="text-lg font-black text-red-500">0</p></div><div class="bg-white p-4 rounded-2xl border"><p class="text-[8px] font-black text-gray-400 uppercase">%</p><p id="kpi-porc" class="text-lg font-black text-slate-800">0%</p></div></div>
+                        <div class="bg-white p-6 rounded-[2rem] border"><div class="h-64 w-full"><canvas id="auditChartStore"></canvas></div></div>
                     </div>
                 </section>
 
                 <section id="sec-crm" class="app-section hidden space-y-6">
-                    <div id="crm-actions" class="flex gap-2"></div>
+                    <div id="crm-actions"></div>
                     <div id="crm-list" class="space-y-4"></div>
                 </section>
             </div>
@@ -100,17 +91,10 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby86Uyfci6i_hyunbHhVlM2XsTwpo6AtxYedAOZX8gJ6xIIn392pUUR6hxzH4hbJ3nrCA/exec";
-        let master = null, user = null, dashData = null, cache = { cat: 'TODOS', sub: 'TODOS' }, inputState = {}, charts = { store: null }, currentCierreMes = null;
-        let crmTiendasCache = [];
-
-        function fmtDate(dStr) { if(!dStr) return ""; const p = dStr.split("-"); return `${p[2]}/${p[1]}`; }
-        function fmtFullDate(dStr) { if(!dStr) return ""; const p = dStr.split("-"), d = new Date(p[0], p[1]-1, p[2]), dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"], meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]; return `${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]}`; }
-        function fmtMonthYear(yM) { if(!yM) return ""; const p = yM.split("-"), m = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]; return `${m[parseInt(p[1])-1]} ${p[0]}`; }
+        let master = null, user = null, dashData = null, crmCache = [], inputState = {};
 
         window.onload = async () => {
             document.getElementById('input-date').valueAsDate = new Date();
-            let t = new Date(), lw = new Date(); lw.setDate(t.getDate() - 7);
-            document.getElementById('audit-end').valueAsDate = t; document.getElementById('audit-start').valueAsDate = lw;
             await loadMasterData();
         };
 
@@ -120,32 +104,26 @@
                 const d = await r.json();
                 if(d.status === 'success') {
                     master = {
-                        prods: d.data.productos.slice(1).filter(x => x[0]).map((x, i) => ({ id: String(x[0]), uid: 'ui_'+i, nom: String(x[1]), cat: String(x[2]||'SC'), sub: String(x[3]||'SC'), act: x[4] !== false })),
+                        prods: d.data.productos.slice(1).filter(x => x[0]).map((x, i) => ({ id: String(x[0]), uid: 'ui_'+i, nom: String(x[1]), cat: String(x[2]), act: x[4] !== false })),
                         tiendas: d.data.tiendas.slice(1).filter(x => x[0]).map(x => ({ id: String(x[0]), nom: String(x[1]), zona: String(x[2]), pin: String(x[3]) })),
                         config: d.data.config
                     };
                     document.getElementById('store-select').innerHTML = master.tiendas.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
                 }
-            } catch (e) { alert("Error de enlace."); }
-        }
-
-        function toggleLoginUI() {
-            const isS = document.getElementById('user-type').value === 'store';
-            document.getElementById('group-store').classList.toggle('hidden', !isS); document.getElementById('group-admin').classList.toggle('hidden', isS);
+            } catch (e) {}
         }
 
         async function handleLogin() {
-            const l = document.getElementById('loading'); document.getElementById('loading-text').innerText = "Autenticando..."; l.classList.remove('hidden');
+            const l = document.getElementById('loading'); l.classList.remove('hidden');
             const type = document.getElementById('user-type').value; let p = { type };
             if (type === 'store') { p.id = document.getElementById('store-select').value; p.pin = document.getElementById('store-pin').value; } 
             else { p.user = document.getElementById('admin-user').value; p.pass = document.getElementById('admin-pass').value; }
             try {
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', params: p }) }), d = await r.json();
                 if(d.status === 'success') {
-                    user = d.data; document.getElementById('loading-text').innerText = "Cargando métricas...";
-                    await fetchDashboard(); initAppStructure();
-                } else alert("Credenciales incorrectas."); 
-            } catch (e) { alert("Error de servidor."); } l.classList.add('hidden');
+                    user = d.data; await fetchDashboard(); initAppStructure();
+                } else alert("Error."); 
+            } catch (e) {} l.classList.add('hidden');
         }
 
         async function fetchDashboard() {
@@ -170,162 +148,120 @@
         }
 
         function renderDashboard() {
-            const w = document.getElementById('dash-widgets'), m = document.getElementById('dash-main-content');
+            const w = document.getElementById('dash-widgets'), m = document.getElementById('dash-main-content'), actions = document.getElementById('dash-manager-actions');
             if(user.rol === 'STORE') {
-                w.innerHTML = `<div class="bg-white p-5 rounded-3xl border shadow-sm"><p class="text-[9px] text-gray-400 uppercase font-bold">Efic. Global</p><p class="text-3xl font-black text-blue-600">${dashData.eficiencia}%</p></div><div class="bg-white p-5 rounded-3xl border shadow-sm"><p class="text-[9px] text-gray-400 uppercase font-bold">Alertas</p><p class="text-3xl font-black ${dashData.pendientes>0?'text-red-500':'text-green-500'}">${dashData.pendientes}</p></div>`;
-                let html = '';
-                if(dashData.mesesPendientesCierre && dashData.mesesPendientesCierre.length > 0) dashData.mesesPendientesCierre.forEach(mes => { html += `<div class="bg-red-600 p-6 rounded-[2rem] shadow-lg mb-6 text-center text-white"><h4 class="font-black text-lg mb-1 uppercase tracking-tighter italic">Cierre Obligatorio</h4><p class="text-[10px] font-bold text-red-200 mb-4">Mes de ${fmtMonthYear(mes)} sin bloquear.</p><button onclick="promptCierre('${mes}')" class="bg-white text-red-600 font-black py-3 px-8 rounded-xl uppercase text-[9px] tracking-widest shadow-md">Cerrar Ahora</button></div>`; });
-                if(dashData.pendientes > 0) html += `<div class="bg-red-50 p-6 rounded-[2rem] mb-6 border border-red-100"><h4 class="font-black text-red-700 text-[10px] mb-3 uppercase tracking-widest">Tareas Pendientes</h4><ul class="text-[10px] text-red-600 font-bold space-y-2">${dashData.listaPendientes.map(d => `<li>• ${fmtFullDate(d.f)}</li>`).join('')}</ul></div>`;
-                html += `<div class="bg-white p-6 rounded-[2rem] shadow-sm border"><h3 class="font-black text-[9px] text-gray-400 mb-4 uppercase tracking-widest">Resumen de Hoy</h3>` + (dashData.resumenHoy.length > 0 ? `<table class="w-full text-left text-[10px] font-bold"><thead><tr class="text-gray-400 border-b"><th class="pb-2">Producto</th><th class="pb-2 text-center">Prod</th><th class="pb-2 text-center">Merma</th></tr></thead><tbody>${dashData.resumenHoy.map(r => `<tr><td class="py-3">${r.nom}</td><td class="py-3 text-center text-blue-600">${r.prod}</td><td class="py-3 text-center text-red-500">${r.merma}</td></tr>`).join('')}</tbody></table>` : '<p class="text-[10px] text-gray-400 uppercase font-bold text-center py-4 italic">Sin datos registrados hoy.</p>') + `</div>`;
-                m.innerHTML = html;
+                w.innerHTML = `<div class="bg-white p-5 rounded-3xl border"><p class="text-[9px] text-gray-400 uppercase font-bold">Eficiencia</p><p class="text-3xl font-black text-blue-600">${dashData.eficiencia}%</p></div><div class="bg-white p-5 rounded-3xl border"><p class="text-[9px] text-gray-400 uppercase font-bold">Alertas</p><p class="text-3xl font-black ${dashData.pendientes>0?'text-red-500':'text-green-500'}">${dashData.pendientes}</p></div>`;
+                m.innerHTML = dashData.listaPendientes.length > 0 ? `<div class="bg-red-50 p-6 rounded-[2rem] border border-red-100"><p class="text-[10px] font-black text-red-700 uppercase mb-3">Pendientes</p><ul class="text-[10px] text-red-600 font-bold space-y-2">${dashData.listaPendientes.map(d=>`<li>• ${d.label}</li>`).join('')}</ul></div>` : '<p class="text-center py-10 font-black text-gray-400 text-[10px] uppercase">¡Todo al día!</p>';
             } else {
-                w.innerHTML = `<div class="bg-white p-5 rounded-3xl col-span-2 flex justify-between border shadow-sm"><div><p class="text-[9px] text-gray-400 uppercase font-bold">Zona Asignada</p><p class="text-xl font-black italic uppercase">${dashData.zonaNombre}</p></div><div class="text-right"><p class="text-[9px] text-gray-400 uppercase font-bold">Total Alertas</p><p class="text-3xl font-black ${dashData.pendientes>0?'text-red-500':'text-green-500'}">${dashData.pendientes}</p></div></div>`;
-                let html = '';
-                if(dashData.ranking.length > 0) html += `<div class="bg-white p-6 rounded-[2rem] mb-6 border shadow-sm"><h3 class="font-black text-[9px] text-gray-400 mb-4 uppercase tracking-widest">Ranking Merma por Tienda</h3><div class="space-y-2">${dashData.ranking.map((t,i) => `<div class="flex justify-between p-3 bg-gray-50 rounded-xl"><div class="flex gap-3 text-[10px] font-bold uppercase"><span>${i+1}.</span> ${t.tienda}</div><div class="font-black text-xs ${t.eficiencia>15?'text-red-500':'text-green-600'}">${t.eficiencia}%</div></div>`).join('')}</div></div>`;
-                if(dashData.pendientes > 0) html += `<div class="bg-white p-6 rounded-[2rem] border shadow-sm"><h3 class="font-black text-[9px] text-gray-400 mb-4 uppercase tracking-widest">Alerta de Inactividad</h3><div class="space-y-4">` + dashData.listaPendientes.map(t => {
-                    let ls = "";
-                    if(t.mesesFaltantes.length>0) ls += t.mesesFaltantes.map(mf => `<li class="text-red-800">🔥 FALTA CIERRE: ${fmtMonthYear(mf)}</li>`).join('');
-                    if(t.dias.length>0) ls += t.dias.map(d=>`<li>• ${fmtFullDate(d.f)}</li>`).join('');
-                    return `<div class="border border-red-100 rounded-2xl"><div class="bg-red-50 p-4 font-black text-[10px] text-red-900 uppercase tracking-widest">${t.tienda}</div><div class="p-4"><ul class="text-[10px] text-red-600 font-bold space-y-2">${ls}</ul></div></div>`;
-                }).join('') + `</div></div>`;
-                m.innerHTML = html;
+                actions.classList.remove('hidden');
+                actions.innerHTML = `<button onclick="copyAllTasks()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg mb-6">Copiar Resumen de Zona</button>`;
+                w.innerHTML = `<div class="bg-white p-5 rounded-3xl col-span-2 flex justify-between border shadow-sm"><div><p class="text-[9px] text-gray-400 uppercase font-bold">Zona</p><p class="text-xl font-black uppercase italic">${dashData.zonaNombre}</p></div><div class="text-right"><p class="text-[9px] text-gray-400 uppercase font-bold">Alertas</p><p class="text-3xl font-black text-red-500">${dashData.pendientes}</p></div></div>`;
+                m.innerHTML = `<div class="bg-white p-6 rounded-[2rem] border shadow-sm"><h3 class="font-black text-[9px] text-gray-400 mb-4 uppercase tracking-widest">Alertas Activas</h3><div class="space-y-4">` + dashData.listaPendientes.map(t => `
+                    <div class="border border-red-100 rounded-2xl relative">
+                        <div class="bg-red-50 p-4 font-black text-[10px] text-red-900 uppercase pr-12">${t.tienda}</div>
+                        <button onclick="copySpecificStore('${t.id}')" class="absolute top-3 right-3 p-2 bg-white rounded-lg shadow-sm border border-red-100 text-red-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-width="2.5"></path></svg></button>
+                        <div class="p-4"><ul class="text-[10px] text-red-600 font-bold space-y-1">${t.mesesFaltantes.map(m=>`<li>🔥 FALTA MES: ${fmtMonthYear(m)}</li>`).join('')}${t.dias.map(d=>`<li>• ${d.label}</li>`).join('')}</ul></div>
+                    </div>`).join('') + `</div></div>`;
             }
-        }
-
-        function copyStoreTasks(tId) {
-            const t = crmTiendasCache.find(x => x.id == tId);
-            if(!t) return;
-            let str = `*PENDIENTES ${t.nombre.toUpperCase()}*\n`;
-            if(t.mesesPendientes.length > 0) str += `MESES SIN CERRAR: ${t.mesesPendientes.map(m=>fmtMonthYear(m)).join(', ')}\n`;
-            if(t.tareasPendientes.length > 0) str += `DÍAS SIN REGISTRO: ${t.tareasPendientes.map(d=>fmtDate(d.f)).join(', ')}`;
-            navigator.clipboard.writeText(str); alert("Copiado al portapapeles.");
-        }
-
-        function copyAllTasks() {
-            let str = `*RESUMEN PENDIENTES ZONA ${user.zonas.toUpperCase()}*\n\n`;
-            crmTiendasCache.filter(t => t.mesesPendientes.length > 0 || t.tareasPendientes.length > 0).forEach(t => {
-                str += `• *${t.nombre.toUpperCase()}*\n`;
-                if(t.mesesPendientes.length > 0) str += `  Falta Meses: ${t.mesesPendientes.map(m=>fmtMonthYear(m)).join(', ')}\n`;
-                if(t.tareasPendientes.length > 0) str += `  Falta Días: ${t.tareasPendientes.map(d=>fmtDate(d.f)).join(', ')}\n`;
-                str += `\n`;
-            });
-            navigator.clipboard.writeText(str); alert("Resumen de zona copiado.");
         }
 
         async function loadCRMData() {
-            const l = document.getElementById('crm-list'); l.innerHTML = '<div class="text-center py-12 text-[10px] font-black uppercase text-gray-400 italic">Analizando tiendas...</div>';
+            const list = document.getElementById('crm-list'); list.innerHTML = '<div class="text-center py-12 text-[10px] font-black uppercase text-gray-400 italic">Cargando métricas...</div>';
             try {
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getManagerCRM', params: { rol: user.rol, zonas: user.zonas } }) }), d = await r.json();
                 if(d.status === 'success') {
-                    crmTiendasCache = d.data;
-                    document.getElementById('crm-actions').innerHTML = `<button onclick="copyAllTasks()" class="flex-1 bg-slate-900 text-white p-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg mb-4">Copiar Todo el Resumen</button>`;
+                    crmCache = d.data;
+                    document.getElementById('crm-actions').innerHTML = `<button onclick="copyAllTasks()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg mb-6">Copiar Resumen de Zona</button>`;
                     renderCRMList(d.data);
                 }
-            } catch (e) { l.innerHTML = "Error."; }
+            } catch (e) {}
         }
 
         function renderCRMList(tiendas) {
-            let hoy = new Date();
-            let startP = (master.config.FECHA_INICIO_SISTEMA || "2026-01-01").split("-").map(Number);
-            let startV = startP[0] * 12 + (startP[1] - 1);
-            let mesesEval = [];
-            for(let i=1; i<=4; i++) {
-                let d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
-                if((d.getFullYear() * 12 + d.getMonth()) >= startV) mesesEval.push(d.getFullYear() + "-" + (d.getMonth()+1).toString().padStart(2, '0'));
-            }
-
-            document.getElementById('crm-list').innerHTML = tiendas.map(t => {
-                let sema = mesesEval.map(mStr => {
-                    let ok = t.cierresHistoricos.some(c => c.mes === mStr);
-                    return `<div class="flex flex-col items-center"><div class="w-6 h-6 rounded-full flex items-center justify-center text-[8px] mb-1 ${ok?'bg-green-100 text-green-600':'bg-red-100 text-red-600'}">${ok?'✓':'×'}</div><span class="text-[7px] font-bold text-gray-400 uppercase">${fmtMonthYear(mStr).substring(0,3)}</span></div>`;
-                }).join('');
-
-                let lstT = t.tareasPendientes.length > 0 ? t.tareasPendientes.map(d => `<li>• ${fmtFullDate(d.f)}</li>`).join('') : '<li class="text-green-600">Al día.</li>';
-                let lstM = t.mesesPendientes.length > 0 ? t.mesesPendientes.map(m => `<li class="text-red-800">🔥 FALTA CIERRE: ${fmtMonthYear(m)}</li>`).join('') : "";
-
-                return `
-                <div class="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
+            document.getElementById('crm-list').innerHTML = tiendas.map(t => `
+                <div class="bg-white border rounded-3xl overflow-hidden shadow-sm">
                     <div class="p-5 cursor-pointer flex justify-between items-center bg-gray-50/50" onclick="this.nextElementSibling.classList.toggle('hidden')">
-                        <div class="flex items-center gap-3"><p class="font-black text-sm uppercase italic">${t.nombre}</p></div>
-                        <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="3"></path></svg>
+                        <div class="flex items-center gap-3"><p class="font-black text-xs uppercase italic">${t.nombre}</p></div>
+                        <div class="flex items-center gap-3"><span class="text-[10px] font-black ${parseFloat(t.eficiencia)>15?'text-red-500':'text-green-600'}">${t.eficiencia}%</span><svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="3"></path></svg></div>
                     </div>
-                    <div class="hidden p-6 border-t border-gray-50 bg-white space-y-6">
-                        <div>
-                            <p class="text-[8px] font-black text-gray-400 uppercase mb-3 tracking-[0.2em]">Credencial Acceso (PIN)</p>
-                            <div class="flex gap-2 items-center bg-gray-50 p-2 rounded-2xl border border-gray-100">
-                                <input type="text" id="pin-${t.id}" value="${t.pin}" class="flex-1 bg-transparent font-black text-center text-blue-600 text-base outline-none tracking-[0.3em] pl-4">
-                                <button onclick="navigator.clipboard.writeText(document.getElementById('pin-${t.id}').value);alert('PIN Copiado');" class="bg-white p-3 rounded-xl shadow-sm hover:bg-blue-50 transition-colors flex items-center justify-center border h-10 w-10">
-                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-width="2"></path></svg>
-                                </button>
-                                <button onclick="saveNewPIN('${t.id}')" class="bg-blue-600 text-white font-black px-6 h-10 rounded-xl text-[9px] uppercase tracking-widest shadow-md">Guardar</button>
+                    <div class="hidden p-6 border-t space-y-6">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                                <p class="text-[8px] font-black text-blue-800 uppercase mb-2">Top 5 Merma (unidades)</p>
+                                <ul class="text-[9px] font-bold text-blue-900 space-y-1">${t.topMerma.map(p=>`<li>${p.nom}: <span class="text-red-500">${p.merma}</span></li>`).join('')}</ul>
+                            </div>
+                            <div class="bg-red-50 p-4 rounded-2xl border border-red-100 relative">
+                                <button onclick="copySpecificStore('${t.id}')" class="absolute top-2 right-2 text-red-400"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2" stroke-width="2.5"></path></svg></button>
+                                <p class="text-[8px] font-black text-red-800 uppercase mb-2">Pendientes</p>
+                                <ul class="text-[9px] font-bold text-red-600 space-y-1">${t.mesesPendientes.map(m=>`<li>🔥 Cierre: ${fmtMonthYear(m)}</li>`).join('')}${t.tareasPendientes.map(d=>`<li>• ${fmtDate(d.f)}</li>`).join('')}</ul>
                             </div>
                         </div>
-                        <div class="p-4 bg-red-50 rounded-2xl border border-red-100 relative">
-                            <button onclick="copyStoreTasks('${t.id}')" class="absolute top-4 right-4 text-red-400 hover:text-red-700"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2" stroke-width="2.5"></path></svg></button>
-                            <p class="text-[8px] font-black text-red-800 uppercase mb-2">Tareas Pendientes</p>
-                            <ul class="text-[9px] font-bold text-red-600 space-y-1">${lstM}${lstT}</ul>
-                        </div>
-                        <div class="bg-gray-50 p-4 rounded-2xl">
-                            <p class="text-[8px] font-black text-gray-400 uppercase mb-3 text-center tracking-widest">Estado Histórico Cierres</p>
-                            <div class="flex justify-around">${sema}</div>
+                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-2xl border">
+                            <input type="text" id="pin-${t.id}" value="${t.pin}" class="flex-1 bg-transparent font-black text-center text-blue-600 text-sm outline-none tracking-widest pl-4">
+                            <button onclick="navigator.clipboard.writeText(document.getElementById('pin-${t.id}').value);alert('Copiado');" class="bg-white p-3 rounded-xl border flex items-center justify-center h-10 w-10">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-width="2"></path></svg>
+                            </button>
+                            <button onclick="saveNewPIN('${t.id}')" class="bg-blue-600 text-white font-black px-4 h-10 rounded-xl text-[9px] uppercase">Guardar</button>
                         </div>
                     </div>
-                </div>`;
-            }).join('');
+                </div>`).join('');
+        }
+
+        function formatStoreMessage(t) {
+            let msg = `⚠️ *AVISO TIENDA: ${t.nombre.toUpperCase()}* ⚠️\nPor favor, actualizad los datos en el sistema:\n\n`;
+            if(t.mesesPendientes && t.mesesPendientes.length > 0) msg += `🔥 Meses por cerrar: ${t.mesesPendientes.map(m=>fmtMonthYear(m)).join(', ')}\n\n`;
+            t.tareasPendientes.forEach(d => { msg += `📅 ${d.label} (${d.motivo})\n`; });
+            return msg;
+        }
+
+        function copySpecificStore(id) {
+            let t = (crmCache.length > 0 ? crmCache : dashData.listaPendientes).find(x => x.id == id);
+            if(!t) return;
+            // Si viene del Dashboard, hay que asegurar que tiene el nombre correcto (dashData lo llama 'tienda')
+            if(!t.nombre) t.nombre = t.tienda; 
+            if(!t.tareasPendientes) t.tareasPendientes = t.dias;
+            if(!t.mesesPendientes) t.mesesPendientes = t.mesesFaltantes;
+            navigator.clipboard.writeText(formatStoreMessage(t)); alert("Aviso copiado.");
+        }
+
+        function copyAllTasks() {
+            let fullMsg = `*RESUMEN PENDIENTES ZONA ${user.zonas.toUpperCase()}*\n\n`;
+            let target = crmCache.length > 0 ? crmCache : dashData.listaPendientes;
+            target.filter(t => (t.tareasPendientes?.length || t.dias?.length) > 0).forEach(t => {
+                if(!t.nombre) t.nombre = t.tienda; if(!t.tareasPendientes) t.tareasPendientes = t.dias;
+                if(!t.mesesPendientes) t.mesesPendientes = t.mesesFaltantes;
+                fullMsg += formatStoreMessage(t) + `\n-------------------\n\n`;
+            });
+            navigator.clipboard.writeText(fullMsg); alert("Resumen de zona copiado.");
         }
 
         async function saveNewPIN(tId) {
             let nP = document.getElementById(`pin-${tId}`).value; if(!nP) return;
             const l = document.getElementById('loading'); l.classList.remove('hidden');
-            try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStorePin', params: { tiendaId: tId, newPin: nP, rol: user.rol } }) }); alert("PIN actualizado."); } catch(e) {} l.classList.add('hidden');
+            try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStorePin', params: { tiendaId: tId, newPin: nP, rol: user.rol } }) }); alert("OK"); } catch(e) {} l.classList.add('hidden');
         }
 
-        function promptCierre(mes) { currentCierreMes = mes; document.getElementById('modal-cierre-msg').innerText = "Bloqueando mes: " + fmtMonthYear(mes); document.getElementById('cierre-pin').value = ''; document.getElementById('modal-cierre').classList.remove('hidden'); }
-        async function confirmCierre() {
-            const p = document.getElementById('cierre-pin').value; if(!p) return;
-            const l = document.getElementById('loading'); l.classList.remove('hidden'); document.getElementById('modal-cierre').classList.add('hidden');
-            try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'closeMonth', params: { tiendaId: user.id, mes: currentCierreMes, pin: p } }) }), d = await r.json();
-                if(d.status === 'success') { alert("Mes bloqueado."); await fetchDashboard(); renderDashboard(); } else alert("PIN Incorrecto.");
-            } catch (e) { alert("Error."); } l.classList.add('hidden');
+        function showSec(id) { 
+            document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden')); 
+            document.getElementById('sec-'+id).classList.remove('hidden'); 
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.replace('tab-active', 'tab-inactive')); 
+            document.getElementById('tab-'+id).classList.replace('tab-inactive', 'tab-active'); 
+            if(id === 'input') renderProds(); if(id === 'crm') loadCRMData(); 
         }
 
-        async function generateAuditReport() {
-            const p = { startDate: document.getElementById('audit-start').value, endDate: document.getElementById('audit-end').value, rol: user.rol, zonas: user.zonas };
-            if(!p.startDate) return alert("Selecciona fecha.");
-            const l = document.getElementById('loading'); l.classList.remove('hidden');
-            try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getAuditData', params: p }) }), d = await r.json();
-                if(d.status === 'success') { renderAudit(d.data.chartData); document.getElementById('audit-results-container').classList.remove('hidden'); }
-            } catch (e) { alert("Error."); } l.classList.add('hidden');
-        }
-
-        function renderAudit(data) {
-            let sP=0, sM=0, byT={};
-            data.forEach(r => { sP+=r.PROD_TOTAL; sM+=r.MERMA; if(!byT[r.TIENDA]) byT[r.TIENDA]={p:0,m:0}; byT[r.TIENDA].p+=r.PROD_TOTAL; byT[r.TIENDA].m+=r.MERMA; });
-            document.getElementById('kpi-prod').innerText = sP.toLocaleString(); document.getElementById('kpi-merma').innerText = sM.toLocaleString(); document.getElementById('kpi-porc').innerText = sP>0?((sM/sP)*100).toFixed(1)+'%':'0%';
-            if(charts.store) charts.store.destroy(); charts.store = new Chart(document.getElementById('auditChartStore').getContext('2d'), { type:'bar', data:{labels:Object.keys(byT), datasets:[{label:'Prod',data:Object.keys(byT).map(k=>byT[k].p),backgroundColor:'#3b82f6'},{label:'Merma',data:Object.keys(byT).map(k=>byT[k].m),backgroundColor:'#ef4444'}]}, options:{responsive:true,maintainAspectRatio:false} });
-            document.getElementById('pivot-container').innerHTML = `<table class="w-full text-[9px] font-bold"><thead class="bg-gray-100"><tr><th class="p-2 border">Día</th><th class="p-2 border">Tienda</th><th class="p-2 border">Producto</th><th class="p-2 border text-center">P.</th><th class="p-2 border text-center">M.</th></tr></thead><tbody>${data.map(r => `<tr><td class="p-2 border-b">${fmtDate(r.FECHA)}</td><td class="p-2 border-b">${r.TIENDA}</td><td class="p-2 border-b uppercase">${r.PRODUCTO}</td><td class="p-2 border-b text-center text-blue-600">${r.PROD_TOTAL}</td><td class="p-2 border-b text-center text-red-500">${r.MERMA}</td></tr>`).join('')}</tbody></table>`;
-        }
-
-        function showSec(id) { document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden')); document.getElementById('sec-'+id).classList.remove('hidden'); document.querySelectorAll('.tab-item').forEach(t => { t.classList.replace('tab-active', 'tab-inactive'); }); document.getElementById('tab-'+id).classList.replace('tab-inactive', 'tab-active'); if(id === 'input') renderCats(); if(id === 'crm') loadCRMData(); }
-        function renderCats() { const act = master.prods.filter(p => p.act), cats = ["TODOS", ...new Set(act.map(p => p.cat))].sort(); document.getElementById('pill-cats').innerHTML = cats.map(c => `<button onclick="selCat('${c}')" class="px-6 py-3 rounded-xl font-black text-[10px] uppercase ${cache.cat===c?'pill-selected':'pill-default'}">${c}</button>`).join(''); if(cache.cat) renderSubs(); }
-        function selCat(c) { cache.cat = c; cache.sub = 'TODOS'; renderCats(); renderSubs(); }
-        function renderSubs() { const act = master.prods.filter(p => p.act && (cache.cat==='TODOS'||p.cat===cache.cat)), subs = ["TODOS", ...new Set(act.map(p => p.sub))].sort(); document.getElementById('pill-subs').innerHTML = subs.map(s => `<button onclick="selSub('${s}')" class="px-5 py-2 rounded-xl font-bold text-[9px] uppercase ${cache.sub===s?'pill-selected':'pill-default'}">${s}</button>`).join(''); document.getElementById('pill-subs').classList.remove('hidden'); renderProds(); }
-        function selSub(s) { cache.sub = s; renderSubs(); }
         function renderProds() {
-            const lst = master.prods.filter(p => p.act && (cache.cat==='TODOS'||p.cat===cache.cat) && (cache.sub==='TODOS'||p.sub===cache.sub));
-            document.getElementById('prod-grid').innerHTML = lst.map(p => `<div class="bg-white p-5 rounded-[2rem] shadow-sm flex justify-between items-center border"><div class="flex-1 pr-2"><p class="font-black text-xs uppercase">${p.nom}</p></div><div class="flex gap-3"><button onclick="val('${p.uid}',-1)" class="w-8 h-8 bg-gray-100 rounded-lg font-black">-</button><input type="number" id="v-${p.uid}" value="${inputState[p.uid]||0}" oninput="inputState['${p.uid}']=parseInt(this.value)||0" class="w-8 text-center font-black text-blue-600 bg-transparent outline-none"><button onclick="val('${p.uid}',1)" class="w-8 h-8 bg-gray-100 rounded-lg font-black">+</button></div></div>`).join('');
+            document.getElementById('prod-grid').innerHTML = master.prods.filter(p => p.act).map(p => `<div class="bg-white p-5 rounded-[2rem] shadow-sm flex justify-between items-center border"><div class="flex-1 pr-2"><p class="font-black text-xs uppercase">${p.nom}</p></div><div class="flex gap-3"><button onclick="val('${p.uid}',-1)" class="w-8 h-8 bg-gray-100 rounded-lg font-black">-</button><input type="number" id="v-${p.uid}" value="${inputState[p.uid]||0}" oninput="inputState['${p.uid}']=parseInt(this.value)||0" class="w-8 text-center font-black text-blue-600 bg-transparent outline-none"><button onclick="val('${p.uid}',1)" class="w-8 h-8 bg-gray-100 rounded-lg font-black">+</button></div></div>`).join('');
         }
         function val(uid, d) { let i = document.getElementById('v-'+uid), n = Math.max(0, parseInt(i.value||0)+d); i.value = n; inputState[uid] = n; }
         function updateInputView() { document.getElementById('area-turno').classList.toggle('hidden', document.getElementById('input-type').value==='merma'); }
+
         async function processSave() {
-            const itms = master.prods.map(p => ({ id: p.id, v: inputState[p.uid]||0 })).filter(x => x.v>0); if(!itms.length) return alert("Introduce datos.");
+            const items = master.prods.map(p => ({ id: p.id, v: inputState[p.uid]||0 })).filter(x => x.v>0); if(!items.length) return alert("Sin datos.");
             const l = document.getElementById('loading'); l.classList.remove('hidden');
             try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveDaily', params: { fecha: document.getElementById('input-date').value, type: document.getElementById('input-type').value, turno: document.getElementById('input-turno').value, tiendaId: user.id, items: itms.map(x=>({prodId:x.id, val:x.v})) } }) }), d = await r.json();
-                if(d.status === 'success') { alert("Guardado"); inputState = {}; await fetchDashboard(); renderDashboard(); showSec('dash'); }
-            } catch(e) { alert("Error."); } l.classList.add('hidden');
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveDaily', params: { fecha: document.getElementById('input-date').value, type: document.getElementById('input-type').value, turno: document.getElementById('input-turno').value, tiendaId: user.id, items: items.map(x=>({prodId:x.id, val:x.v})) } }) }), d = await r.json();
+                if(d.status === 'success') { alert("Hecho"); inputState = {}; await fetchDashboard(); renderDashboard(); showSec('dash'); }
+            } catch(e) {} l.classList.add('hidden');
         }
     </script>
 </body>
