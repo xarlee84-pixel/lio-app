@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LIO APP - Control Integral</title>
+    <title>LIO APP - Gestión</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -20,19 +20,19 @@
 </head>
 <body class="bg-gray-50 text-slate-900 font-sans antialiased">
 
-    <div id="loading" class="hidden fixed inset-0 bg-white/90 z-[2000] flex flex-col items-center justify-center backdrop-blur-sm transition-all">
-        <div class="w-16 h-16 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4 shadow-lg"></div>
-        <p class="font-black text-blue-900 uppercase tracking-widest text-sm drop-shadow-sm" id="loading-text">Conectando...</p>
+    <div id="loading" class="hidden fixed inset-0 bg-white/90 z-[2000] flex flex-col items-center justify-center backdrop-blur-sm">
+        <div class="w-16 h-16 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+        <p class="font-black text-blue-900 uppercase tracking-widest text-xs" id="loading-text">Conectando...</p>
     </div>
 
     <div id="modal-cierre" class="hidden fixed inset-0 bg-slate-900/90 z-[3000] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl">
+        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl text-center">
             <h3 class="font-black text-red-600 mb-2 text-xl uppercase">Cierre de Mes</h3>
-            <p class="text-xs text-gray-500 font-bold mb-6" id="modal-cierre-msg"></p>
+            <p class="text-[10px] text-gray-500 font-bold mb-6" id="modal-cierre-msg"></p>
             <input type="password" id="cierre-pin" inputmode="numeric" placeholder="PIN TIENDA" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 text-center text-2xl font-black tracking-[0.5em] mb-6 outline-none focus:ring-red-500">
             <div class="flex gap-3">
-                <button onclick="document.getElementById('modal-cierre').classList.add('hidden')" class="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-xl uppercase text-xs hover:bg-gray-200 transition-colors">Cancelar</button>
-                <button onclick="confirmCierre()" class="flex-1 bg-red-600 text-white font-black py-4 rounded-xl shadow-lg uppercase text-xs hover:bg-red-700 active:scale-95 transition-all">Firmar Bloqueo</button>
+                <button onclick="document.getElementById('modal-cierre').classList.add('hidden')" class="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-xl uppercase text-[10px]">Cancelar</button>
+                <button onclick="confirmCierre()" class="flex-1 bg-red-600 text-white font-black py-4 rounded-xl shadow-lg uppercase text-[10px]">Firmar</button>
             </div>
         </div>
     </div>
@@ -49,69 +49,57 @@
                     <input type="password" id="store-pin" inputmode="numeric" placeholder="PIN" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 text-center text-3xl font-black tracking-[0.5em] outline-none focus:ring-blue-600">
                 </div>
                 <div id="group-admin" class="hidden space-y-4">
-                    <input type="text" id="admin-user" placeholder="USUARIO" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none text-center">
+                    <input type="text" id="admin-user" placeholder="USUARIO" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none text-center uppercase">
                     <input type="password" id="admin-pass" placeholder="CONTRASEÑA" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none text-center tracking-widest">
                 </div>
-                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-blue-700 active:scale-95 transition-all text-sm uppercase tracking-widest mt-4">Entrar</button>
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl active:scale-95 transition-all text-xs uppercase tracking-widest mt-4">Entrar</button>
             </div>
         </div>
     </div>
 
     <div id="main-app" class="hidden min-h-screen flex flex-col">
         <header class="bg-white p-4 border-b flex justify-between items-center sticky top-0 z-50 shadow-sm">
-            <div><p id="role-display" class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1"></p><h2 id="user-display" class="font-black text-lg text-slate-800 uppercase italic leading-none"></h2></div>
+            <div><p id="role-display" class="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1"></p><h2 id="user-display" class="font-black text-lg text-slate-800 italic leading-none"></h2></div>
             <button onclick="location.reload()" class="bg-gray-50 p-3 rounded-2xl text-gray-400 hover:text-red-500 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg></button>
         </header>
-        <nav id="app-nav" class="bg-white border-b flex justify-around font-black text-[10px] uppercase tracking-wider sticky top-[73px] z-40 shadow-sm"></nav>
+        <nav id="app-nav" class="bg-white border-b flex justify-around font-black text-[9px] uppercase tracking-wider sticky top-[73px] z-40 shadow-sm"></nav>
 
         <main class="flex-1 p-4 overflow-y-auto max-w-4xl mx-auto w-full pb-32">
             <div id="content-area">
                 <section id="sec-dash" class="app-section space-y-6"><div id="dash-widgets" class="grid grid-cols-2 gap-4"></div><div id="dash-main-content" class="space-y-6"></div></section>
-                
                 <section id="sec-input" class="app-section hidden space-y-6">
-                    <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex gap-2"><input type="date" id="input-date" class="flex-1 font-bold text-slate-700 outline-none bg-transparent"><select id="input-type" onchange="updateInputView()" class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-black text-xs border-none outline-none"><option value="prod">PRODUCCIÓN</option><option value="merma">MERMA</option></select></div>
+                    <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex gap-2"><input type="date" id="input-date" class="flex-1 font-bold text-slate-700 outline-none bg-transparent"><select id="input-type" onchange="updateInputView()" class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-black text-[10px] border-none outline-none"><option value="prod">PRODUCCIÓN</option><option value="merma">MERMA</option></select></div>
                     <div id="area-turno" class="bg-white p-4 rounded-3xl border border-blue-100"><p class="text-[10px] font-black text-gray-400 uppercase mb-3 ml-2">Seleccionar Turno</p><select id="input-turno" class="w-full font-bold text-slate-800 outline-none bg-transparent"><option value="Obrador">OBRADOR</option><option value="Mediodía">MEDIODÍA</option><option value="Tarde">TARDE</option></select></div>
                     <div class="space-y-4"><div id="pill-cats" class="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1"></div><div id="pill-subs" class="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1 hidden"></div></div>
                     <div id="prod-grid" class="space-y-3"></div>
-                    <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent z-50 pointer-events-none"><button onclick="processSave()" class="w-full max-w-4xl mx-auto block bg-slate-900 text-white font-black py-5 rounded-3xl shadow-2xl active:scale-95 transition-all text-sm uppercase tracking-widest pointer-events-auto">Confirmar Envío</button></div>
+                    <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent z-50 pointer-events-none"><button onclick="processSave()" class="w-full max-w-4xl mx-auto block bg-slate-900 text-white font-black py-5 rounded-3xl shadow-2xl active:scale-95 transition-all text-xs uppercase tracking-widest pointer-events-auto">Confirmar Envío</button></div>
                 </section>
-
                 <section id="sec-audit" class="app-section hidden space-y-6">
                     <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
-                        <h3 class="font-black text-slate-800 uppercase text-sm mb-4">Motor de Filtros</h3>
+                        <h3 class="font-black text-slate-800 uppercase text-xs mb-4">Motor de Filtros</h3>
                         <div class="grid grid-cols-2 gap-4 mb-6">
-                            <div><label class="text-[10px] font-bold text-gray-400 uppercase">Desde</label><input type="date" id="audit-start" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none focus:ring-2 focus:ring-blue-600"></div><div><label class="text-[10px] font-bold text-gray-400 uppercase">Hasta</label><input type="date" id="audit-end" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none focus:ring-2 focus:ring-blue-600"></div>
-                            <div class="col-span-2"><label class="text-[10px] font-bold text-gray-400 uppercase">Tiendas</label><select id="audit-stores" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none h-20"></select></div>
-                            <div class="col-span-1"><label class="text-[10px] font-bold text-gray-400 uppercase">Categorías</label><select id="audit-cats" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none h-20"></select></div><div class="col-span-1"><label class="text-[10px] font-bold text-gray-400 uppercase">Productos</label><select id="audit-prods" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none h-20"></select></div>
+                            <div><label class="text-[9px] font-bold text-gray-400 uppercase">Desde</label><input type="date" id="audit-start" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none"></div><div><label class="text-[9px] font-bold text-gray-400 uppercase">Hasta</label><input type="date" id="audit-end" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none"></div>
+                            <div class="col-span-2"><label class="text-[9px] font-bold text-gray-400 uppercase">Tiendas</label><select id="audit-stores" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-xs outline-none h-20"></select></div>
                         </div>
-                        <button onclick="generateAuditReport()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl text-xs uppercase hover:bg-slate-800 active:scale-95 transition-all shadow-md">Generar Análisis</button>
+                        <button onclick="generateAuditReport()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl text-[10px] uppercase shadow-md">Generar Análisis</button>
                     </div>
                     <div id="audit-results-container" class="hidden space-y-6">
-                        <div class="grid grid-cols-3 gap-3"><div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center"><p class="text-[9px] font-bold text-gray-400 uppercase">Prod. Total</p><p id="kpi-prod" class="text-xl font-black text-blue-600">0</p></div><div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center"><p class="text-[9px] font-bold text-gray-400 uppercase">Merma Total</p><p id="kpi-merma" class="text-xl font-black text-red-500">0</p></div><div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center"><p class="text-[9px] font-bold text-gray-400 uppercase">% Global</p><p id="kpi-porc" class="text-xl font-black text-slate-800">0%</p></div></div>
-                        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 relative" id="cont-chart1"><button onclick="toggleFS('cont-chart1')" class="absolute top-4 right-4 text-gray-400 hover:text-slate-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button><h3 class="font-black text-slate-800 uppercase text-xs mb-1">Comparativa General</h3><div class="h-64 w-full"><canvas id="auditChartStore"></canvas></div></div>
-                        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 relative" id="cont-chart2"><button onclick="toggleFS('cont-chart2')" class="absolute top-4 right-4 text-gray-400 hover:text-slate-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button><h3 class="font-black text-slate-800 uppercase text-xs mb-1">Desglose (Turnos)</h3><div class="h-64 w-full"><canvas id="auditChartTurnos"></canvas></div></div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 relative" id="cont-chart3"><button onclick="toggleFS('cont-chart3')" class="absolute top-4 right-4 text-gray-400 hover:text-slate-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button><h3 class="font-black text-slate-800 uppercase text-xs mb-1">Top 10 Fugas</h3><div class="h-64 w-full"><canvas id="auditChartProd"></canvas></div></div><div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 relative" id="cont-chart4"><button onclick="toggleFS('cont-chart4')" class="absolute top-4 right-4 text-gray-400 hover:text-slate-800"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button><h3 class="font-black text-slate-800 uppercase text-xs mb-1">Tendencia Semanal</h3><div class="h-64 w-full"><canvas id="auditChartTrend"></canvas></div></div></div>
-                        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100"><h3 class="font-black text-slate-800 uppercase text-xs mb-1">Desglose Detallado</h3><div class="overflow-x-auto pb-4" id="pivot-container"></div></div>
-                        <div class="text-center pb-8"><button onclick="downloadAuditCSV()" class="text-xs font-bold text-blue-500 uppercase tracking-widest hover:text-blue-700 underline bg-blue-50 px-6 py-3 rounded-xl transition-colors">Exportar (.CSV)</button></div>
+                        <div class="grid grid-cols-3 gap-3"><div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center"><p class="text-[8px] font-bold text-gray-400 uppercase">Prod. Total</p><p id="kpi-prod" class="text-xl font-black text-blue-600">0</p></div><div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center"><p class="text-[8px] font-bold text-gray-400 uppercase">Merma Total</p><p id="kpi-merma" class="text-xl font-black text-red-500">0</p></div><div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-center"><p class="text-[8px] font-bold text-gray-400 uppercase">% Global</p><p id="kpi-porc" class="text-xl font-black text-slate-800">0%</p></div></div>
+                        <div class="bg-white p-6 rounded-[2rem] shadow-sm relative"><h3 class="font-black text-slate-800 uppercase text-[10px] mb-4">Eficiencia por Tienda</h3><div class="h-64 w-full"><canvas id="auditChartStore"></canvas></div></div>
+                        <div class="bg-white p-6 rounded-[2rem] shadow-sm"><h3 class="font-black text-slate-800 uppercase text-[10px] mb-4">Desglose Detallado</h3><div class="overflow-x-auto pb-4" id="pivot-container"></div></div>
                     </div>
                 </section>
-
-                <section id="sec-crm" class="app-section hidden space-y-6">
-                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100"><h3 class="font-black text-slate-800 uppercase text-sm mb-4">Gestión de Tiendas</h3><div id="crm-list" class="space-y-4"></div></div>
-                </section>
-                <section id="sec-admin" class="app-section hidden space-y-6">
-                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100"><h3 class="font-black text-slate-800 uppercase text-sm mb-4">Configuración</h3><p class="text-xs text-gray-500">Accede a Google Sheets para configuraciones avanzadas.</p></div>
-                </section>
+                <section id="sec-crm" class="app-section hidden space-y-6"><div id="crm-list" class="space-y-4"></div></section>
             </div>
         </main>
     </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby86Uyfci6i_hyunbHhVlM2XsTwpo6AtxYedAOZX8gJ6xIIn392pUUR6hxzH4hbJ3nrCA/exec";
-        let master = null, user = null, dashData = null, cache = { cat: 'TODOS', sub: 'TODOS' }, inputState = {}, charts = { store: null, turnos: null, prod: null, trend: null }, currentCierreMes = null;
+        let master = null, user = null, dashData = null, cache = { cat: 'TODOS', sub: 'TODOS' }, inputState = {}, charts = { store: null }, currentCierreMes = null;
 
-        function fmtDate(dStr) { if(!dStr) return ""; const pts = dStr.split("-"); return `${pts[2]}/${pts[1]}`; }
-        function fmtFullDate(dStr) { if(!dStr) return ""; const pts = dStr.split("-"), d = new Date(pts[0], pts[1]-1, pts[2]), dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"], meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]; return `${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]}`; }
+        function fmtDate(dStr) { if(!dStr) return ""; const p = dStr.split("-"); return `${p[2]}/${p[1]}`; }
+        function fmtFullDate(dStr) { if(!dStr) return ""; const p = dStr.split("-"), d = new Date(p[0], p[1]-1, p[2]), dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"], meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]; return `${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]}`; }
         function fmtMonthYear(yM) { if(!yM) return ""; const p = yM.split("-"), m = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]; return `${m[parseInt(p[1])-1]} ${p[0]}`; }
 
         window.onload = async () => {
@@ -127,13 +115,13 @@
                 const d = await r.json();
                 if(d.status === 'success') {
                     master = {
-                        prods: d.data.productos.slice(1).filter(x => x[0] && String(x[1]).trim() !== '').map((x, i) => ({ id: String(x[0]).trim(), uid: 'ui_'+i, nom: String(x[1]).trim(), cat: String(x[2]||'SC').trim(), sub: String(x[3]||'SC').trim(), act: x[4] !== false })),
-                        tiendas: d.data.tiendas.slice(1).filter(x => x[0]).map(x => ({ id: String(x[0]).trim(), nom: String(x[1]).trim(), zona: String(x[2]||'').trim(), pin: String(x[3]||'').trim() })),
+                        prods: d.data.productos.slice(1).filter(x => x[0]).map((x, i) => ({ id: String(x[0]), uid: 'ui_'+i, nom: String(x[1]), cat: String(x[2]||'SC'), sub: String(x[3]||'SC'), act: x[4] !== false })),
+                        tiendas: d.data.tiendas.slice(1).filter(x => x[0]).map(x => ({ id: String(x[0]), nom: String(x[1]), zona: String(x[2]), pin: String(x[3]) })),
                         config: d.data.config
                     };
                     document.getElementById('store-select').innerHTML = master.tiendas.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
                 }
-            } catch (e) { alert("Error crítico descargando base de datos."); }
+            } catch (e) { alert("Error de conexión inicial."); }
         }
 
         function toggleLoginUI() {
@@ -147,32 +135,30 @@
             if (type === 'store') { p.id = document.getElementById('store-select').value; p.pin = document.getElementById('store-pin').value; } 
             else { p.user = document.getElementById('admin-user').value; p.pass = document.getElementById('admin-pass').value; }
             try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', params: p }) });
-                const d = await r.json();
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', params: p }) }), d = await r.json();
                 if(d.status === 'success') {
-                    user = d.data; document.getElementById('loading-text').innerText = "Calculando métricas...";
-                    await fetchDashboard();
-                    initAppStructure();
-                } else alert("Credenciales Incorrectas"); 
-            } catch (e) { alert("ERROR DE SERVIDOR:\n\n" + (e.message || "La hoja de Google Scripts ha devuelto un error en lugar de datos.")); } 
-            l.classList.add('hidden');
+                    user = d.data; document.getElementById('loading-text').innerText = "Cargando métricas...";
+                    await fetchDashboard(); initAppStructure();
+                } else alert("Error de acceso."); 
+            } catch (e) { alert("Fallo de comunicación."); } l.classList.add('hidden');
         }
 
         async function fetchDashboard() {
-            const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getDashboardData', params: { userId: user.id, rol: user.rol, zonas: user.zonas } }) });
-            const d = await r.json(); 
+            const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getDashboardData', params: { userId: user.id, rol: user.rol, zonas: user.zonas } }) }), d = await r.json(); 
             if(d.status === 'success') dashData = d.data;
-            else throw new Error(d.message || "Error calculando el Dashboard");
         }
 
         function initAppStructure() {
             document.getElementById('login-screen').classList.add('hidden'); document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('user-display').innerText = user.nombre || user.id; document.getElementById('role-display').innerText = user.rol;
+            // MODIFICACIÓN: ROL SIN BARRA Y GREETING
+            document.getElementById('role-display').innerText = user.rol.replace(/_/g, ' '); 
+            document.getElementById('user-display').innerText = "Hola, " + (user.nombre || user.id);
+            
             let tabs = `<button onclick="showSec('dash')" id="tab-dash" class="tab-item flex-1 p-4 border-b-4 tab-active transition-colors">Inicio</button>`;
             if(user.rol === 'STORE') {
                 tabs += `<button onclick="showSec('input')" id="tab-input" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Registro</button>`;
                 tabs += `<button onclick="showSec('audit')" id="tab-audit" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Auditoría</button>`;
-            } else if(user.rol === 'AREA_MANAGER' || user.rol === 'ADMIN') {
+            } else {
                 tabs += `<button onclick="showSec('audit')" id="tab-audit" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Auditoría</button>`;
                 tabs += `<button onclick="showSec('crm')" id="tab-crm" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Gestión</button>`;
             }
@@ -181,163 +167,121 @@
         }
 
         function populateAuditFilters() {
-            const storeSel = document.getElementById('audit-stores');
-            if (user.rol === 'STORE') { storeSel.innerHTML = `<option value="${user.id}" selected>${user.nombre}</option>`; storeSel.disabled = true; } 
-            else { let st = master.tiendas; if (user.rol === 'AREA_MANAGER') st = master.tiendas.filter(t => t.zona === user.zonas); storeSel.innerHTML = st.map(t => `<option value="${t.id}">${t.nom}</option>`).join(''); storeSel.disabled = false; }
-            document.getElementById('audit-cats').innerHTML = [...new Set(master.prods.map(p => p.cat))].sort().map(c => `<option value="${c}">${c}</option>`).join('');
-            let catMap = {}, pHtml = ''; master.prods.filter(p => p.act).forEach(p => { if(!catMap[p.cat]) catMap[p.cat] = []; catMap[p.cat].push(p); });
-            Object.keys(catMap).sort().forEach(c => { pHtml += `<optgroup label="${c}">` + catMap[c].sort((a,b)=>a.nom.localeCompare(b.nom)).map(p=>`<option value="${p.id}">${p.nom}</option>`).join('') + `</optgroup>`; });
-            document.getElementById('audit-prods').innerHTML = pHtml;
+            const sSel = document.getElementById('audit-stores');
+            if (user.rol === 'STORE') { sSel.innerHTML = `<option value="${user.id}" selected>${user.nombre}</option>`; sSel.disabled = true; } 
+            else { let st = master.tiendas; if (user.rol === 'AREA_MANAGER') st = master.tiendas.filter(t => t.zona === user.zonas); sSel.innerHTML = st.map(t => `<option value="${t.id}">${t.nom}</option>`).join(''); sSel.disabled = false; }
         }
 
         function renderDashboard() {
             const w = document.getElementById('dash-widgets'), m = document.getElementById('dash-main-content');
-            if(user.rol === 'ADMIN') { w.innerHTML = `<div class="bg-blue-600 p-5 rounded-3xl col-span-2 text-white flex justify-between"><div><p class="text-[10px] font-bold uppercase text-blue-200">Servidor</p><p class="text-2xl font-black">ONLINE</p></div></div>`; m.innerHTML = `<div class="bg-white p-6 rounded-3xl text-center py-12 text-gray-400 font-bold">Modo Administrador</div>`; return; }
-            
             if(user.rol === 'STORE') {
-                w.innerHTML = `<div class="bg-white p-5 rounded-3xl"><p class="text-[10px] text-gray-400 uppercase">Eficiencia</p><p class="text-3xl font-black">${dashData.eficiencia}%</p></div><div class="bg-white p-5 rounded-3xl"><p class="text-[10px] text-gray-400 uppercase">Alertas</p><p class="text-3xl font-black ${dashData.pendientes>0?'text-red-500':'text-green-500'}">${dashData.pendientes}</p></div>`;
+                w.innerHTML = `<div class="bg-white p-5 rounded-3xl"><p class="text-[9px] text-gray-400 uppercase">Eficiencia</p><p class="text-3xl font-black">${dashData.eficiencia}%</p></div><div class="bg-white p-5 rounded-3xl"><p class="text-[9px] text-gray-400 uppercase">Alertas</p><p class="text-3xl font-black ${dashData.pendientes>0?'text-red-500':'text-green-500'}">${dashData.pendientes}</p></div>`;
                 let html = '';
-                if(dashData.mesesPendientesCierre && dashData.mesesPendientesCierre.length > 0) dashData.mesesPendientesCierre.forEach(mes => { html += `<div class="bg-red-600 p-6 rounded-[2rem] shadow-lg mb-6 flex flex-col items-center text-center text-white"><h4 class="font-black text-lg mb-1 uppercase tracking-wider">Cierre Pendiente</h4><p class="text-xs font-bold text-red-200 mb-4">Falta bloquear el mes de ${fmtMonthYear(mes)}.</p><button onclick="promptCierre('${mes}')" class="bg-white text-red-600 font-black py-3 px-8 rounded-xl shadow-md uppercase text-xs hover:scale-105 transition-transform">Cerrar Mes</button></div>`; });
-                if(dashData.pendientes > 0) html += `<div class="bg-red-50 p-6 rounded-[2rem] mb-6"><h4 class="font-black text-red-700 text-sm mb-3">Registros Diarios Pendientes</h4><ul class="text-xs text-red-600 font-bold space-y-3">${dashData.listaPendientes.map(d => `<li>• ${fmtFullDate(d.f)} <span class="text-[9px] uppercase ml-2 text-red-500">(${d.motivo})</span></li>`).join('')}</ul></div>`;
-                else if(!dashData.mesesPendientesCierre || dashData.mesesPendientesCierre.length === 0) html += `<div class="bg-green-50 p-4 rounded-2xl text-green-700 font-bold text-xs text-center mb-6">¡Todo al día!</div>`;
-                
-                html += `<div class="bg-white p-6 rounded-[2rem] shadow-sm"><h3 class="font-black text-xs text-gray-400 mb-4 uppercase">Resumen de Hoy</h3>`;
-                if(dashData.resumenHoy && dashData.resumenHoy.length > 0) html += `<table class="w-full text-left text-xs"><thead><tr class="text-gray-400 border-b"><th class="pb-2">Producto</th><th class="pb-2 text-center">Prod</th><th class="pb-2 text-center">Merma</th><th class="pb-2 text-right">%</th></tr></thead><tbody class="divide-y divide-gray-50">${dashData.resumenHoy.map(r => `<tr><td class="py-3 font-bold text-gray-800">${r.nom}</td><td class="py-3 text-center font-black text-blue-600">${r.prod}</td><td class="py-3 text-center font-black text-red-500">${r.merma}</td><td class="py-3 text-right font-black text-gray-400">${r.porc}%</td></tr>`).join('')}</tbody></table>`;
-                else html += '<p class="text-sm text-gray-500">Sin datos hoy.</p>';
-                m.innerHTML = html + `</div>`;
+                if(dashData.mesesPendientesCierre && dashData.mesesPendientesCierre.length > 0) dashData.mesesPendientesCierre.forEach(mes => { html += `<div class="bg-red-600 p-6 rounded-[2rem] shadow-lg mb-6 flex flex-col items-center text-center text-white"><h4 class="font-black text-lg mb-1 uppercase tracking-wider">Cierre Pendiente</h4><p class="text-xs font-bold text-red-200 mb-4">Falta bloquear el mes de ${fmtMonthYear(mes)}.</p><button onclick="promptCierre('${mes}')" class="bg-white text-red-600 font-black py-3 px-8 rounded-xl uppercase text-[10px]">Cerrar Mes</button></div>`; });
+                if(dashData.pendientes > 0) html += `<div class="bg-red-50 p-6 rounded-[2rem] mb-6"><h4 class="font-black text-red-700 text-xs mb-3">Registros Diarios Pendientes</h4><ul class="text-[10px] text-red-600 font-bold space-y-2">${dashData.listaPendientes.map(d => `<li>• ${fmtFullDate(d.f)}</li>`).join('')}</ul></div>`;
+                html += `<div class="bg-white p-6 rounded-[2rem] shadow-sm"><h3 class="font-black text-[10px] text-gray-400 mb-4 uppercase">Resumen de Hoy</h3>` + (dashData.resumenHoy.length > 0 ? `<table class="w-full text-left text-[10px] font-bold"><thead><tr class="text-gray-400 border-b"><th class="pb-2">Producto</th><th class="pb-2 text-center">Prod</th><th class="pb-2 text-center">Merma</th></tr></thead><tbody>${dashData.resumenHoy.map(r => `<tr><td class="py-3">${r.nom}</td><td class="py-3 text-center text-blue-600">${r.prod}</td><td class="py-3 text-center text-red-500">${r.merma}</td></tr>`).join('')}</tbody></table>` : '<p class="text-xs text-gray-400">Sin datos registrados hoy.</p>') + `</div>`;
+                m.innerHTML = html;
             } else {
-                w.innerHTML = `<div class="bg-white p-5 rounded-3xl col-span-2 flex justify-between"><div><p class="text-[10px] text-gray-400 uppercase">Zona</p><p class="text-xl font-black">${dashData.zonaNombre}</p></div><div class="text-right"><p class="text-[10px] text-gray-400 uppercase">Alertas</p><p class="text-3xl font-black ${dashData.pendientes>0?'text-red-500':'text-green-500'}">${dashData.pendientes}</p></div></div>`;
+                w.innerHTML = `<div class="bg-white p-5 rounded-3xl col-span-2 flex justify-between"><div><p class="text-[9px] text-gray-400 uppercase">Zona</p><p class="text-xl font-black">${dashData.zonaNombre}</p></div><div class="text-right"><p class="text-[9px] text-gray-400 uppercase">Alertas</p><p class="text-3xl font-black ${dashData.pendientes>0?'text-red-500':'text-green-500'}">${dashData.pendientes}</p></div></div>`;
                 let html = '';
-                if(dashData.ranking.length > 0) html += `<div class="bg-white p-6 rounded-[2rem] mb-6"><h3 class="font-black text-xs text-gray-400 mb-4 uppercase">Ranking Merma</h3><div class="space-y-2">${dashData.ranking.map((t,i) => `<div class="flex justify-between p-3 bg-gray-50 rounded-xl"><div class="flex gap-3 font-bold text-xs"><span class="${i===0?'text-yellow-600':''}">${i+1}.</span> ${t.tienda}</div><div class="font-black text-sm ${t.eficiencia>15?'text-red-500':(t.eficiencia>5?'text-orange-400':'text-green-500')}">${t.eficiencia}%</div></div>`).join('')}</div></div>`;
-                if(dashData.pendientes > 0) html += `<div class="bg-white p-6 rounded-[2rem]"><h3 class="font-black text-xs text-gray-400 mb-4 uppercase">Alertas de Zona</h3><div class="space-y-4">` + dashData.listaPendientes.map(t => {
+                if(dashData.ranking.length > 0) html += `<div class="bg-white p-6 rounded-[2rem] mb-6"><h3 class="font-black text-[10px] text-gray-400 mb-4 uppercase">Ranking Merma</h3><div class="space-y-2">${dashData.ranking.map((t,i) => `<div class="flex justify-between p-3 bg-gray-50 rounded-xl"><div class="flex gap-3 text-[10px] font-bold"><span>${i+1}.</span> ${t.tienda}</div><div class="font-black text-xs ${t.eficiencia>15?'text-red-500':'text-green-500'}">${t.eficiencia}%</div></div>`).join('')}</div></div>`;
+                if(dashData.pendientes > 0) html += `<div class="bg-white p-6 rounded-[2rem]"><h3 class="font-black text-[10px] text-gray-400 mb-4 uppercase">Alertas Activas</h3><div class="space-y-4">` + dashData.listaPendientes.map(t => {
                     let ls = "";
-                    if(t.mesesFaltantes && t.mesesFaltantes.length>0) ls += t.mesesFaltantes.map(mf => `<li class="text-red-800">🔥 FALTA CERRAR: ${fmtMonthYear(mf)}</li>`).join('');
-                    if(t.dias && t.dias.length>0) ls += t.dias.map(d=>`<li>• ${fmtFullDate(d.f)} (${d.motivo})</li>`).join('');
-                    return `<div class="border border-red-100 rounded-2xl"><div class="bg-red-50 p-4 font-black text-sm text-red-900">${t.tienda}</div><div class="p-4"><ul class="text-xs text-red-600 font-bold space-y-2">${ls}</ul></div></div>`;
+                    if(t.mesesFaltantes.length>0) ls += t.mesesFaltantes.map(mf => `<li class="text-red-800">🔥 FALTA CERRAR: ${fmtMonthYear(mf)}</li>`).join('');
+                    if(t.dias.length>0) ls += t.dias.map(d=>`<li>• ${fmtFullDate(d.f)}</li>`).join('');
+                    return `<div class="border border-red-100 rounded-2xl"><div class="bg-red-50 p-4 font-black text-[10px] text-red-900 uppercase tracking-widest">${t.tienda}</div><div class="p-4"><ul class="text-[10px] text-red-600 font-bold space-y-2">${ls}</ul></div></div>`;
                 }).join('') + `</div></div>`;
                 m.innerHTML = html;
             }
         }
 
-        function promptCierre(mesYYYYMM) {
-            currentCierreMes = mesYYYYMM; let huecosEnMes = dashData.listaPendientes.filter(d => d.f.startsWith(mesYYYYMM));
-            let msg = `Estás a punto de firmar y bloquear el mes de ${fmtMonthYear(mesYYYYMM)}. Una vez cerrado, no podrás modificar ni añadir datos.`;
-            if(huecosEnMes.length > 0) msg = `⚠️ ATENCIÓN: Faltan ${huecosEnMes.length} días por rellenar en ${fmtMonthYear(mesYYYYMM)}. Si cierras, quedarán en blanco permanentemente. Introduce el PIN para ignorar huecos y forzar cierre.`;
-            document.getElementById('modal-cierre-msg').innerText = msg; document.getElementById('cierre-pin').value = ''; document.getElementById('modal-cierre').classList.remove('hidden');
-        }
-
+        function promptCierre(mes) { currentCierreMes = mes; document.getElementById('modal-cierre-msg').innerText = "Estás bloqueando los datos de " + fmtMonthYear(mes) + "."; document.getElementById('cierre-pin').value = ''; document.getElementById('modal-cierre').classList.remove('hidden'); }
         async function confirmCierre() {
-            const pin = document.getElementById('cierre-pin').value; if(!pin) return alert("Introduce tu PIN.");
-            document.getElementById('modal-cierre').classList.add('hidden');
-            const l = document.getElementById('loading'); document.getElementById('loading-text').innerText = "Bloqueando Mes..."; l.classList.remove('hidden');
+            const p = document.getElementById('cierre-pin').value; if(!p) return;
+            const l = document.getElementById('loading'); l.classList.remove('hidden'); document.getElementById('modal-cierre').classList.add('hidden');
             try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'closeMonth', params: { tiendaId: user.id, mes: currentCierreMes, pin: pin } }) }), d = await r.json();
-                if(d.status === 'success') { alert("Mes cerrado y bloqueado con éxito."); await fetchDashboard(); renderDashboard(); }
-                else if(d.status === 'pin_error') alert("PIN incorrecto."); else alert(d.message);
-            } catch (e) { alert("Error de comunicación."); } l.classList.add('hidden');
-        }
-
-        function showSec(id) {
-            document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden')); document.getElementById('sec-'+id).classList.remove('hidden');
-            document.querySelectorAll('.tab-item').forEach(t => { t.classList.replace('tab-active', 'tab-inactive'); t.classList.remove('border-blue-600', 'text-blue-600'); });
-            document.getElementById('tab-'+id).classList.replace('tab-inactive', 'tab-active');
-            if(id === 'input') renderCats(); if(id === 'audit') document.getElementById('audit-results-container').classList.add('hidden'); if(id === 'crm') loadCRMData();
-        }
-
-        function renderCats() {
-            const act = master.prods.filter(p => p.act), cats = ["TODOS", ...new Set(act.map(p => p.cat))].sort();
-            document.getElementById('pill-cats').innerHTML = cats.map(c => `<button onclick="selCat('${c}')" class="px-6 py-3 rounded-xl font-black text-xs uppercase ${cache.cat===c?'pill-selected':'pill-default'}">${c}</button>`).join('');
-            if(cache.cat) renderSubs();
-        }
-        function selCat(c) { cache.cat = c; cache.sub = 'TODOS'; renderCats(); document.getElementById('pill-subs').classList.remove('hidden'); renderSubs(); }
-        function renderSubs() {
-            const act = master.prods.filter(p => p.act && (cache.cat==='TODOS'||p.cat===cache.cat)), subs = ["TODOS", ...new Set(act.map(p => p.sub))].sort();
-            document.getElementById('pill-subs').innerHTML = subs.map(s => `<button onclick="selSub('${s}')" class="px-5 py-2 rounded-xl font-bold text-[10px] uppercase ${cache.sub===s?'pill-selected':'pill-default'}">${s}</button>`).join('');
-            renderProds();
-        }
-        function selSub(s) { cache.sub = s; renderSubs(); renderProds(); }
-        function renderProds() {
-            const lst = master.prods.filter(p => p.act && (cache.cat==='TODOS'||p.cat===cache.cat) && (cache.sub==='TODOS'||p.sub===cache.sub));
-            const div = document.getElementById('prod-grid');
-            if(!lst.length) return div.innerHTML = '<p class="text-center text-gray-400 py-8 font-bold text-sm">Vacío.</p>';
-            div.innerHTML = lst.map(p => `<div class="bg-white p-5 rounded-[2rem] shadow-sm flex justify-between items-center"><div class="flex-1 pr-2"><p class="font-black text-sm">${p.nom}</p><p class="text-[9px] text-gray-400 uppercase">${p.cat}</p></div><div class="flex gap-3"><button onclick="val('${p.uid}',-1)" class="w-10 h-10 bg-gray-100 rounded-xl font-black text-xl">-</button><input type="number" id="v-${p.uid}" value="${inputState[p.uid]||0}" oninput="updateState('${p.uid}',this.value)" class="w-10 text-center font-black text-xl text-blue-600 bg-transparent outline-none"><button onclick="val('${p.uid}',1)" class="w-10 h-10 bg-gray-100 rounded-xl font-black text-xl">+</button></div></div>`).join('');
-        }
-        function updateState(uid, v) { inputState[uid] = Math.max(0, parseInt(v)||0); }
-        function val(uid, d) { const i = document.getElementById('v-'+uid), n = Math.max(0, parseInt(i.value||0)+d); i.value = n; inputState[uid] = n; }
-        function updateInputView() { document.getElementById('area-turno').classList.toggle('hidden', document.getElementById('input-type').value==='merma'); }
-
-        async function processSave() {
-            const itm = master.prods.map(p => ({ id: p.id, v: inputState[p.uid]||0 })).filter(x => x.v>0); if(!itm.length) return alert("Nada introducido.");
-            const l = document.getElementById('loading'); document.getElementById('loading-text').innerText = "Guardando..."; l.classList.remove('hidden');
-            const p = { action: 'saveDaily', params: { fecha: document.getElementById('input-date').value, type: document.getElementById('input-type').value, turno: document.getElementById('input-turno').value, tiendaId: user.id, items: itm.map(x => ({prodId: x.id, val: x.v})) } };
-            try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) }), d = await r.json();
-                if(d.status === 'success') { alert("OK!"); inputState = {}; await fetchDashboard(); renderDashboard(); showSec('dash'); } else alert(d.message);
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'closeMonth', params: { tiendaId: user.id, mes: currentCierreMes, pin: p } }) }), d = await r.json();
+                if(d.status === 'success') { alert("Mes cerrado."); await fetchDashboard(); renderDashboard(); } else alert("PIN incorrecto.");
             } catch (e) { alert("Error."); } l.classList.add('hidden');
         }
 
         async function loadCRMData() {
-            const list = document.getElementById('crm-list'); list.innerHTML = '<div class="text-center py-8"><div class="animate-spin h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full mx-auto"></div></div>';
+            const l = document.getElementById('crm-list'); l.innerHTML = '<div class="text-center py-8 animate-pulse text-[10px] font-black uppercase text-gray-400">Cargando gestión...</div>';
             try {
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getManagerCRM', params: { rol: user.rol, zonas: user.zonas } }) }), d = await r.json();
-                if(d.status === 'success') renderCRMList(d.data); else list.innerHTML = '<p class="text-red-500">'+d.message+'</p>';
-            } catch (e) { list.innerHTML = '<p class="text-red-500">Error al cargar.</p>'; }
+                if(d.status === 'success') renderCRMList(d.data);
+            } catch (e) { l.innerHTML = "Error de carga."; }
         }
 
-        function copyPINFromInput(tId) { let p = document.getElementById(`pin-${tId}`).value; navigator.clipboard.writeText(p); alert("PIN copiado: " + p); }
+        function renderCRMList(tiendas) {
+            let hoy = new Date();
+            // Lógica de Semáforo que RESPETA la fecha de inicio
+            let startParts = (master.config.FECHA_INICIO_SISTEMA || "2026-01-01").split("-").map(Number);
+            let startVal = startParts[0] * 12 + (startParts[1] - 1);
 
-        function renderCRMList(tiendasCRM) {
-            let hoy = new Date(); let mesesEval = [];
-            for(let i=1; i<=4; i++) { let d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1); mesesEval.push(d.getFullYear() + "-" + (d.getMonth()+1).toString().padStart(2, '0')); }
-            document.getElementById('crm-list').innerHTML = tiendasCRM.map(t => {
-                let semaforoHTML = mesesEval.map(mStr => { let cerrado = t.cierresHistoricos.some(c => c.mes === mStr); return `<div class="flex flex-col items-center"><div class="w-6 h-6 rounded-full flex items-center justify-center text-xs mb-1 ${cerrado?'bg-green-100 text-green-600':'bg-red-100 text-red-600'}">${cerrado?'✓':'×'}</div><span class="text-[8px] uppercase text-gray-500 font-bold">${fmtMonthYear(mStr).substring(0,3)}</span></div>`; }).join('');
-                let lstMeses = t.mesesPendientes && t.mesesPendientes.length > 0 ? t.mesesPendientes.map(m => `<li class="text-red-800">🔥 FALTA CERRAR: ${fmtMonthYear(m)}</li>`).join('') : "";
-                let lstTareas = t.tareasPendientes && t.tareasPendientes.length > 0 ? t.tareasPendientes.map(d => `<li>• ${fmtFullDate(d.f)} (${d.motivo})</li>`).join('') : `<li class="text-green-600">Al día. No hay registros pendientes.</li>`;
-                return `<div class="border border-gray-100 rounded-3xl overflow-hidden shadow-sm"><div class="bg-gray-50 p-4 flex justify-between items-center cursor-pointer" onclick="document.getElementById('crm-det-${t.id}').classList.toggle('hidden')"><p class="font-black text-sm text-slate-800">${t.nombre}</p><div class="flex items-center gap-2">${(t.tareasPendientes.length > 0 || t.mesesPendientes.length > 0) ? '<span class="flex h-3 w-3 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span></span>' : ''}<svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div></div><div id="crm-det-${t.id}" class="hidden bg-white p-5 border-t border-gray-100"><div class="mb-5"><p class="text-[10px] uppercase font-bold text-gray-400 mb-2">Credencial de Acceso (PIN)</p><div class="flex gap-2"><input type="text" id="pin-${t.id}" value="${t.pin}" class="flex-1 p-3 bg-gray-50 rounded-xl font-black tracking-widest text-center text-blue-600 outline-none border border-gray-200 focus:border-blue-400"><button onclick="copyPINFromInput('${t.id}')" class="bg-gray-100 p-3 rounded-xl hover:bg-gray-200" title="Copiar"><svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button><button onclick="saveNewPIN('${t.id}')" class="bg-blue-600 text-white font-black px-4 rounded-xl text-xs uppercase shadow-md active:scale-95">Guardar</button></div></div><div class="mb-5"><p class="text-[10px] uppercase font-bold text-gray-400 mb-2">Estado Operativo (Pendientes)</p><div class="bg-red-50 p-4 rounded-xl"><ul class="text-xs text-red-600 font-bold space-y-2">${lstMeses}${lstTareas}</ul></div></div><div><p class="text-[10px] uppercase font-bold text-gray-400 mb-2">Histórico de Cierres (Últimos 4 meses)</p><div class="flex justify-between bg-gray-50 p-3 rounded-xl border border-gray-100">${semaforoHTML}</div></div></div></div>`;
+            let mesesEval = [];
+            for(let i=1; i<=4; i++) {
+                let d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+                let evalVal = d.getFullYear() * 12 + d.getMonth();
+                if(evalVal >= startVal) mesesEval.push(d.getFullYear() + "-" + (d.getMonth()+1).toString().padStart(2, '0'));
+            }
+
+            document.getElementById('crm-list').innerHTML = tiendas.map(t => {
+                let semaHTML = mesesEval.map(mStr => {
+                    let ok = t.cierresHistoricos.some(c => c.mes === mStr);
+                    return `<div class="flex flex-col items-center"><div class="w-6 h-6 rounded-full flex items-center justify-center text-[8px] mb-1 ${ok?'bg-green-100 text-green-600':'bg-red-100 text-red-600'}">${ok?'✓':'×'}</div><span class="text-[7px] font-bold text-gray-400">${fmtMonthYear(mStr).substring(0,3)}</span></div>`;
+                }).join('');
+
+                let lstT = t.tareasPendientes.length > 0 ? t.tareasPendientes.map(d => `<li>• ${fmtFullDate(d.f)}</li>`).join('') : '<li class="text-green-600">Al día.</li>';
+                let lstM = t.mesesPendientes.length > 0 ? t.mesesPendientes.map(m => `<li class="text-red-800">🔥 FALTA CIERRE: ${fmtMonthYear(m)}</li>`).join('') : "";
+
+                return `<div class="bg-white border border-gray-100 rounded-3xl shadow-sm"><div class="p-4 cursor-pointer flex justify-between items-center" onclick="this.nextElementSibling.classList.toggle('hidden')"><p class="font-black text-xs uppercase">${t.nombre}</p><svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg></div><div class="hidden p-5 border-t border-gray-50 bg-white"><div class="mb-5"><p class="text-[8px] font-black text-gray-400 uppercase mb-2">Credencial PIN</p><div class="flex gap-2"><input type="text" id="pin-${t.id}" value="${t.pin}" class="flex-1 p-2 bg-gray-50 rounded-xl font-black text-center text-blue-600 text-sm outline-none"><button onclick="navigator.clipboard.writeText(document.getElementById('pin-${t.id}').value);alert('Copiado');" class="bg-gray-100 p-2 rounded-xl"><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2"></path></svg></button><button onclick="saveNewPIN('${t.id}')" class="bg-blue-600 text-white font-black px-4 rounded-xl text-[9px] uppercase">Guardar</button></div></div><div class="mb-5 p-3 bg-red-50 rounded-xl"><ul class="text-[9px] font-bold text-red-600 space-y-1">${lstM}${lstT}</ul></div><div class="flex justify-between bg-gray-50 p-3 rounded-xl">${semaHTML}</div></div></div>`;
             }).join('');
         }
 
-        async function saveNewPIN(tiendaId) {
-            let newPin = document.getElementById(`pin-${tiendaId}`).value; if(!newPin || newPin.length < 4) return alert("PIN no válido.");
-            const l = document.getElementById('loading'); document.getElementById('loading-text').innerText = "Actualizando..."; l.classList.remove('hidden');
-            try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStorePin', params: { tiendaId: tiendaId, newPin: newPin, rol: user.rol } }) }), d = await r.json();
-                if(d.status === 'success') alert("PIN modificado con éxito."); else alert("Error al modificar.");
-            } catch (e) { alert("Error de red."); } l.classList.add('hidden');
+        async function saveNewPIN(tId) {
+            let nP = document.getElementById(`pin-${tId}`).value; if(!nP) return;
+            const l = document.getElementById('loading'); l.classList.remove('hidden');
+            try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStorePin', params: { tiendaId: tId, newPin: nP } }) }); alert("PIN actualizado."); } catch(e) {} l.classList.add('hidden');
         }
 
         async function generateAuditReport() {
-            const p = { startDate: document.getElementById('audit-start').value, endDate: document.getElementById('audit-end').value, tiendas: Array.from(document.getElementById('audit-stores').selectedOptions).map(o=>o.value), categorias: Array.from(document.getElementById('audit-cats').selectedOptions).map(o=>o.value), productos: Array.from(document.getElementById('audit-prods').selectedOptions).map(o=>o.value), rol: user.rol, zonas: user.zonas };
+            const p = { startDate: document.getElementById('audit-start').value, endDate: document.getElementById('audit-end').value, rol: user.rol, zonas: user.zonas };
             if(!p.startDate) return alert("Falta fecha.");
-            const l = document.getElementById('loading'); document.getElementById('loading-text').innerText = "Analizando..."; l.classList.remove('hidden');
+            const l = document.getElementById('loading'); l.classList.remove('hidden');
             try {
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getAuditData', params: p }) }), d = await r.json();
-                if(d.status === 'success' && d.data.chartData.length > 0) { renderAudit(d.data.chartData); document.getElementById('audit-results-container').classList.remove('hidden'); }
-                else alert("Vacío.");
+                if(d.status === 'success') { renderAudit(d.data.chartData); document.getElementById('audit-results-container').classList.remove('hidden'); }
             } catch (e) { alert("Error."); } l.classList.add('hidden');
         }
 
         function renderAudit(data) {
-            let sP=0, sM=0, byS={}, byP={}, byD={};
-            data.forEach(r => {
-                sP+=r.PROD_TOTAL; sM+=r.MERMA;
-                if(!byS[r.TIENDA]) byS[r.TIENDA]={p:0,m:0}; byS[r.TIENDA].p+=r.PROD_TOTAL; byS[r.TIENDA].m+=r.MERMA;
-                if(!byP[r.PRODUCTO]) byP[r.PRODUCTO]={cat:r.CATEGORIA,sub:r.SUBCATEGORIA,p:0,m:0,d:{}}; byP[r.PRODUCTO].p+=r.PROD_TOTAL; byP[r.PRODUCTO].m+=r.MERMA;
-                let dt = r.FECHA;
-                if(!byD[dt]) byD[dt]={p:0,m:0,obr:0,med:0,tar:0}; byD[dt].p+=r.PROD_TOTAL; byD[dt].m+=r.MERMA; byD[dt].obr+=r.PROD_OBRADOR; byD[dt].med+=r.PROD_MEDIODIA; byD[dt].tar+=r.PROD_TARDE;
-                if(!byP[r.PRODUCTO].d[dt]) byP[r.PRODUCTO].d[dt]={p:0,m:0}; byP[r.PRODUCTO].d[dt].p+=r.PROD_TOTAL; byP[r.PRODUCTO].d[dt].m+=r.MERMA;
-            });
+            let sP=0, sM=0, byT={};
+            data.forEach(r => { sP+=r.PROD_TOTAL; sM+=r.MERMA; if(!byT[r.TIENDA]) byT[r.TIENDA]={p:0,m:0}; byT[r.TIENDA].p+=r.PROD_TOTAL; byT[r.TIENDA].m+=r.MERMA; });
             document.getElementById('kpi-prod').innerText = sP.toLocaleString(); document.getElementById('kpi-merma').innerText = sM.toLocaleString(); document.getElementById('kpi-porc').innerText = sP>0?((sM/sP)*100).toFixed(1)+'%':'0%';
-            if(charts.store) charts.store.destroy(); charts.store = new Chart(document.getElementById('auditChartStore').getContext('2d'), { type:'bar', data:{labels:Object.keys(byS), datasets:[{label:'Prod',data:Object.keys(byS).map(k=>byS[k].p),backgroundColor:'#3b82f6'},{label:'Merma',data:Object.keys(byS).map(k=>byS[k].m),backgroundColor:'#ef4444'}]}, options:{responsive:true,maintainAspectRatio:false} });
-            if(charts.turnos) charts.turnos.destroy(); let dKeys = Object.keys(byD).sort(); charts.turnos = new Chart(document.getElementById('auditChartTurnos').getContext('2d'), { type:'bar', data:{labels:dKeys.map(k=>fmtDate(k)), datasets:[{label:'Obrador',data:dKeys.map(k=>byD[k].obr),backgroundColor:'#93c5fd',stack:'P'},{label:'Mediodía',data:dKeys.map(k=>byD[k].med),backgroundColor:'#3b82f6',stack:'P'},{label:'Tarde',data:dKeys.map(k=>byD[k].tar),backgroundColor:'#1e3a8a',stack:'P'},{label:'Merma',data:dKeys.map(k=>byD[k].m),backgroundColor:'#ef4444',stack:'M'}]}, options:{responsive:true,maintainAspectRatio:false} });
-            if(charts.prod) charts.prod.destroy(); let topP = Object.keys(byP).map(k=>({n:k,m:byP[k].m})).sort((a,b)=>b.m-a.m).slice(0,10); charts.prod = new Chart(document.getElementById('auditChartProd').getContext('2d'), { type:'bar', data:{labels:topP.map(x=>x.n),datasets:[{label:'Unidades',data:topP.map(x=>x.m),backgroundColor:'#ef4444'}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}} });
-            if(charts.trend) charts.trend.destroy(); let daysMap = [0,0,0,0,0,0,0]; data.forEach(r => { let pts=r.FECHA.split('-'); daysMap[new Date(pts[0],pts[1]-1,pts[2]).getDay()] += r.MERMA; }); charts.trend = new Chart(document.getElementById('auditChartTrend').getContext('2d'), { type:'line', data:{labels:["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],datasets:[{label:'Merma Acumulada',data:daysMap,borderColor:'#ef4444',tension:0.4}]}, options:{responsive:true,maintainAspectRatio:false} });
-            let pKeys = Object.keys(byP).sort(), uR = master.config.UMBRAL_ROJO||15, uA = master.config.UMBRAL_AMARILLO||5;
-            let ths = dKeys.map(d => `<th class="px-3 py-2 bg-gray-100 border-l whitespace-nowrap">${fmtDate(d)}</th>`).join('');
-            let trs = pKeys.map(p => { let cat=byP[p].cat, sub=byP[p].sub, tdDays=dKeys.map(d=>{ let vd=byP[p].d[d]||{p:0,m:0}, prc=vd.p>0?((vd.m/vd.p)*100).toFixed(0):0, col=prc>=uR?'text-red-500 bg-red-50':(prc>=uA?'text-orange-500 bg-orange-50':'text-gray-400'); return `<td class="px-3 py-2 text-center border-l text-[10px] ${col} whitespace-nowrap"><div class="font-black">${vd.p} / ${vd.m}</div><div>${prc}%</div></td>`; }).join(''); let prcT = byP[p].p>0?((byP[p].m/byP[p].p)*100).toFixed(1):0, cT = prcT>=uR?'text-red-600':(prcT>=uA?'text-orange-500':'text-gray-800'); return `<tr class="border-b hover:bg-gray-50"><td class="px-3 py-2 text-xs text-gray-400 whitespace-nowrap">${cat}</td><td class="px-3 py-2 text-xs text-gray-500 whitespace-nowrap">${sub}</td><td class="px-3 py-2 font-black text-xs text-slate-800 whitespace-nowrap">${p}</td>${tdDays}<td class="px-3 py-2 text-right border-l font-black ${cT} bg-gray-50 whitespace-nowrap">${prcT}%</td></tr>`; }).join('');
-            document.getElementById('pivot-container').innerHTML = `<table class="w-full text-left text-xs bg-white"><thead><tr class="text-gray-500 border-b"><th class="px-3 py-2 bg-gray-100 whitespace-nowrap">Categoría</th><th class="px-3 py-2 bg-gray-100 whitespace-nowrap">Subcat</th><th class="px-3 py-2 bg-gray-100 whitespace-nowrap">Producto</th>${ths}<th class="px-3 py-2 bg-gray-100 border-l text-right whitespace-nowrap">Global</th></tr></thead><tbody>${trs}</tbody></table>`;
+            if(charts.store) charts.store.destroy(); charts.store = new Chart(document.getElementById('auditChartStore').getContext('2d'), { type:'bar', data:{labels:Object.keys(byT), datasets:[{label:'Prod',data:Object.keys(byT).map(k=>byT[k].p),backgroundColor:'#3b82f6'},{label:'Merma',data:Object.keys(byT).map(k=>byT[k].m),backgroundColor:'#ef4444'}]}, options:{responsive:true,maintainAspectRatio:false} });
+            document.getElementById('pivot-container').innerHTML = `<table class="w-full text-left text-[9px] bg-white"><thead class="bg-gray-100"><tr><th class="p-2">Fecha</th><th class="p-2">Tienda</th><th class="p-2">Producto</th><th class="p-2 text-center">Prod</th><th class="p-2 text-center">Merma</th><th class="p-2 text-right">%</th></tr></thead><tbody>${data.map(r => `<tr><td class="p-2 border-b">${r.FECHA}</td><td class="p-2 border-b">${r.TIENDA}</td><td class="p-2 border-b">${r.PRODUCTO}</td><td class="p-2 border-b text-center font-bold text-blue-600">${r.PROD_TOTAL}</td><td class="p-2 border-b text-center font-bold text-red-500">${r.MERMA}</td><td class="p-2 border-b text-right">${r.PORCENTAJE_MERMA}%</td></tr>`).join('')}</tbody></table>`;
         }
-        function toggleFS(id) { document.getElementById(id).classList.toggle('fs-chart'); }
+
+        function showSec(id) { document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden')); document.getElementById('sec-'+id).classList.remove('hidden'); document.querySelectorAll('.tab-item').forEach(t => { t.classList.replace('tab-active', 'tab-inactive'); }); document.getElementById('tab-'+id).classList.replace('tab-inactive', 'tab-active'); if(id === 'input') renderCats(); if(id === 'crm') loadCRMData(); }
+        function toggleLoginUI() { const isS = document.getElementById('user-type').value === 'store'; document.getElementById('group-store').classList.toggle('hidden', !isS); document.getElementById('group-admin').classList.toggle('hidden', isS); }
+        function renderCats() { const act = master.prods.filter(p => p.act), cats = ["TODOS", ...new Set(act.map(p => p.cat))].sort(); document.getElementById('pill-cats').innerHTML = cats.map(c => `<button onclick="selCat('${c}')" class="px-6 py-3 rounded-xl font-black text-[10px] uppercase ${cache.cat===c?'pill-selected':'pill-default'}">${c}</button>`).join(''); if(cache.cat) renderSubs(); }
+        function selCat(c) { cache.cat = c; cache.sub = 'TODOS'; renderCats(); renderSubs(); }
+        function renderSubs() { const act = master.prods.filter(p => p.act && (cache.cat==='TODOS'||p.cat===cache.cat)), subs = ["TODOS", ...new Set(act.map(p => p.sub))].sort(); document.getElementById('pill-subs').innerHTML = subs.map(s => `<button onclick="selSub('${s}')" class="px-5 py-2 rounded-xl font-bold text-[9px] uppercase ${cache.sub===s?'pill-selected':'pill-default'}">${s}</button>`).join(''); document.getElementById('pill-subs').classList.remove('hidden'); renderProds(); }
+        function selSub(s) { cache.sub = s; renderSubs(); }
+        function renderProds() {
+            const lst = master.prods.filter(p => p.act && (cache.cat==='TODOS'||p.cat===cache.cat) && (cache.sub==='TODOS'||p.sub===cache.sub));
+            document.getElementById('prod-grid').innerHTML = lst.map(p => `<div class="bg-white p-5 rounded-[2rem] shadow-sm flex justify-between items-center"><div class="flex-1 pr-2"><p class="font-black text-xs uppercase">${p.nom}</p></div><div class="flex gap-3"><button onclick="val('${p.uid}',-1)" class="w-8 h-8 bg-gray-100 rounded-lg font-black">-</button><input type="number" id="v-${p.uid}" value="${inputState[p.uid]||0}" oninput="inputState['${p.uid}']=parseInt(this.value)||0" class="w-8 text-center font-black text-blue-600 bg-transparent outline-none"><button onclick="val('${p.uid}',1)" class="w-8 h-8 bg-gray-100 rounded-lg font-black">+</button></div></div>`).join('');
+        }
+        function val(uid, d) { let i = document.getElementById('v-'+uid), n = Math.max(0, parseInt(i.value||0)+d); i.value = n; inputState[uid] = n; }
+        async function processSave() {
+            const itms = master.prods.map(p => ({ id: p.id, v: inputState[p.uid]||0 })).filter(x => x.v>0); if(!itms.length) return alert("Nada introducido.");
+            const l = document.getElementById('loading'); l.classList.remove('hidden');
+            try {
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveDaily', params: { fecha: document.getElementById('input-date').value, type: document.getElementById('input-type').value, turno: document.getElementById('input-turno').value, tiendaId: user.id, items: itms.map(x=>({prodId:x.id, val:x.v})) } }) }), d = await r.json();
+                if(d.status === 'success') { alert("OK"); inputState = {}; await fetchDashboard(); renderDashboard(); showSec('dash'); }
+            } catch(e) { alert("Error."); } l.classList.add('hidden');
+        }
     </script>
 </body>
 </html>
