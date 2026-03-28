@@ -55,7 +55,7 @@
 
     <div id="login-screen" class="min-h-screen flex items-center justify-center p-6 bg-slate-900">
         <div class="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-md">
-            <div class="text-center mb-8"><h1 class="text-5xl font-black text-slate-900 italic tracking-tighter">LIO</h1><div class="h-1 w-12 bg-blue-600 mx-auto mt-2 rounded-full"></div></div>
+            <div class="text-center mb-8"><h1 id="login-app-name" class="text-5xl font-black text-slate-900 italic tracking-tighter">LIO</h1><div class="h-1 w-12 bg-blue-600 mx-auto mt-2 rounded-full"></div></div>
             <div class="space-y-4">
                 <select id="user-type" onchange="toggleLoginUI()" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold text-gray-700 outline-none focus:ring-blue-600">
                     <option value="store">ACCESO TIENDA</option>
@@ -108,22 +108,26 @@
 
                 <section id="sec-audit" class="app-section hidden space-y-6">
                     <div class="bg-white p-6 rounded-[2rem] border shadow-sm">
-                        <h3 class="font-black text-slate-800 uppercase text-[10px] mb-4 tracking-widest">Filtros de Análisis</h3>
+                        <h3 class="font-black text-slate-800 uppercase text-[10px] mb-4 tracking-widest">Filtros de Análisis en Cascada</h3>
                         <div class="grid grid-cols-2 gap-4 mb-6">
-                            <div><label class="text-[9px] font-bold text-gray-400 uppercase">Desde</label><input type="date" id="audit-start" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border"></div>
-                            <div><label class="text-[9px] font-bold text-gray-400 uppercase">Hasta</label><input type="date" id="audit-end" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border"></div>
+                            <div><label class="text-[9px] font-bold text-gray-400 uppercase ml-2">Desde</label><input type="date" id="audit-start" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border focus:ring-blue-600 ring-2 ring-transparent"></div>
+                            <div><label class="text-[9px] font-bold text-gray-400 uppercase ml-2">Hasta</label><input type="date" id="audit-end" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border focus:ring-blue-600 ring-2 ring-transparent"></div>
                             <div class="col-span-2 hidden" id="audit-stores-container">
-                                <label class="text-[9px] font-bold text-gray-400 uppercase">Tiendas</label>
-                                <select id="audit-stores" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border h-24"></select>
+                                <label class="text-[9px] font-bold text-gray-400 uppercase ml-2">Tiendas</label>
+                                <select id="audit-stores" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border h-24 focus:ring-blue-600 ring-2 ring-transparent"></select>
                             </div>
-                            <div class="col-span-2">
-                                <label class="text-[9px] font-bold text-gray-400 uppercase">Productos</label>
-                                <select id="audit-products" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border h-28"></select>
+                            <div class="col-span-2 md:col-span-1">
+                                <label class="text-[9px] font-bold text-gray-400 uppercase ml-2">Categorías</label>
+                                <select id="audit-categorias" multiple onchange="updateAuditProducts()" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border h-28 focus:ring-blue-600 ring-2 ring-transparent"></select>
+                            </div>
+                            <div class="col-span-2 md:col-span-1">
+                                <label class="text-[9px] font-bold text-gray-400 uppercase ml-2">Productos</label>
+                                <select id="audit-products" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border h-28 focus:ring-blue-600 ring-2 ring-transparent"></select>
                             </div>
                         </div>
                         <div class="flex gap-2">
-                           <button onclick="generateAuditReport()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-xl text-[10px] uppercase shadow-lg">Analizar / Buscar</button>
-                           <button onclick="exportAuditCSV()" class="bg-green-600 text-white font-black px-6 rounded-xl text-[10px] uppercase shadow-lg">Excel</button>
+                           <button onclick="generateAuditReport()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-xl text-[10px] uppercase shadow-lg active:scale-95 transition-all">Analizar / Buscar</button>
+                           <button onclick="exportAuditCSV()" class="bg-green-600 text-white font-black px-6 rounded-xl text-[10px] uppercase shadow-lg active:scale-95 transition-all">Excel</button>
                         </div>
                     </div>
                     
@@ -177,29 +181,11 @@
                     <div class="bg-white p-6 rounded-[2rem] border shadow-sm">
                         <h3 class="font-black text-slate-800 uppercase text-[12px] tracking-widest mb-4">Motor de Archivado Anual</h3>
                         <p class="text-[10px] text-gray-500 font-bold mb-6">Este proceso mueve todos los datos de un año natural a un Excel externo para aligerar la base de datos viva.</p>
-                        
                         <div class="space-y-4">
-                            <div>
-                                <label class="text-[9px] font-bold text-gray-400 uppercase ml-2">Año a procesar</label>
-                                <input type="number" id="archive-year" class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border">
-                            </div>
-                            
-                            <div class="p-4 border rounded-xl bg-gray-50">
-                                <h4 class="font-black text-[10px] text-slate-800 uppercase mb-3">Paso 1: Analizar Estado</h4>
-                                <button onclick="checkArchive()" class="w-full bg-blue-600 text-white font-black py-3 rounded-xl text-[10px] uppercase shadow-md active:scale-95 transition-transform">Ejecutar Escáner de Año</button>
-                                <div id="archive-status" class="mt-4 text-[10px] font-bold hidden p-3 rounded-lg border"></div>
-                            </div>
-
-                            <div class="p-4 border rounded-xl bg-gray-50 opacity-50 pointer-events-none transition-opacity" id="step-2-container">
-                                <h4 class="font-black text-[10px] text-slate-800 uppercase mb-3">Paso 2: Crear Copia de Seguridad</h4>
-                                <button onclick="createBackup()" class="w-full bg-slate-900 text-white font-black py-3 rounded-xl text-[10px] uppercase shadow-md active:scale-95 transition-transform">Generar Histórico en Google Drive</button>
-                                <div id="archive-link" class="mt-4 hidden text-center bg-blue-50 p-4 rounded-lg border border-blue-100"></div>
-                            </div>
-
-                            <div class="p-4 border border-red-200 rounded-xl bg-red-50 opacity-50 pointer-events-none transition-opacity" id="step-3-container">
-                                <h4 class="font-black text-[10px] uppercase text-red-600 mb-3">Paso 3: Destrucción de Base de Datos Viva</h4>
-                                <button onclick="purgeArchive()" class="w-full bg-red-600 text-white font-black py-4 rounded-xl text-[10px] uppercase shadow-md active:scale-95 transition-transform tracking-widest">Purgar Datos Operativos</button>
-                            </div>
+                            <div><label class="text-[9px] font-bold text-gray-400 uppercase ml-2">Año a procesar</label><input type="number" id="archive-year" class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border"></div>
+                            <div class="p-4 border rounded-xl bg-gray-50"><h4 class="font-black text-[10px] text-slate-800 uppercase mb-3">Paso 1: Analizar Estado</h4><button onclick="checkArchive()" class="w-full bg-blue-600 text-white font-black py-3 rounded-xl text-[10px] uppercase shadow-md active:scale-95 transition-transform">Ejecutar Escáner de Año</button><div id="archive-status" class="mt-4 text-[10px] font-bold hidden p-3 rounded-lg border"></div></div>
+                            <div class="p-4 border rounded-xl bg-gray-50 opacity-50 pointer-events-none transition-opacity" id="step-2-container"><h4 class="font-black text-[10px] text-slate-800 uppercase mb-3">Paso 2: Crear Copia de Seguridad</h4><button onclick="createBackup()" class="w-full bg-slate-900 text-white font-black py-3 rounded-xl text-[10px] uppercase shadow-md active:scale-95 transition-transform">Generar Histórico en Google Drive</button><div id="archive-link" class="mt-4 hidden text-center bg-blue-50 p-4 rounded-lg border border-blue-100"></div></div>
+                            <div class="p-4 border border-red-200 rounded-xl bg-red-50 opacity-50 pointer-events-none transition-opacity" id="step-3-container"><h4 class="font-black text-[10px] uppercase text-red-600 mb-3">Paso 3: Destrucción de Base de Datos Viva</h4><button onclick="purgeArchive()" class="w-full bg-red-600 text-white font-black py-4 rounded-xl text-[10px] uppercase shadow-md active:scale-95 transition-transform tracking-widest">Purgar Datos Operativos</button></div>
                         </div>
                     </div>
                 </section>
@@ -220,11 +206,20 @@
         function getColText(val) { let v = parseFloat(val) || 0, uv = parseFloat(master?.config?.UMBRAL_VERDE || 10), ur = parseFloat(master?.config?.UMBRAL_ROJO || 20); if (v >= ur) return 'text-red-500'; if (v >= uv) return 'text-orange-500'; return 'text-green-600'; }
         function getColBg(val) { let v = parseFloat(val) || 0, uv = parseFloat(master?.config?.UMBRAL_VERDE || 10), ur = parseFloat(master?.config?.UMBRAL_ROJO || 20); if (v >= ur) return 'text-red-500 bg-red-50'; if (v >= uv) return 'text-orange-500 bg-orange-50'; return 'text-green-600 bg-green-50'; }
 
+        // Mapeador Inteligente de Tablas (Soluciona el bug Panel Usuarios "Vacío")
+        function getAdminDataKey(table) {
+            if (table === 'MAESTRO_TIENDAS') return 'tiendas';
+            if (table === 'USUARIOS_SISTEMA') return 'usuarios';
+            if (table === 'MAESTRO_PRODUCTOS') return 'productos';
+            if (table === 'ZONAS') return 'zonas';
+            return table.toLowerCase();
+        }
+
         window.onload = async () => {
             document.getElementById('input-date').valueAsDate = new Date();
             let t = new Date(), lw = new Date(); lw.setDate(t.getDate() - 7);
             document.getElementById('audit-end').valueAsDate = t; document.getElementById('audit-start').valueAsDate = lw;
-            document.getElementById('archive-year').value = t.getFullYear() - 1; // Default año anterior
+            document.getElementById('archive-year').value = t.getFullYear() - 1;
             await loadMasterData();
         };
 
@@ -243,6 +238,7 @@
                         config: d.data.config
                     };
                     document.getElementById('store-select').innerHTML = master.tiendas.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
+                    document.getElementById('login-app-name').innerText = master.config.NOMBRE_APP || 'LIO';
                 }
             } catch (e) {}
         }
@@ -297,11 +293,39 @@
             if (user.rol === 'STORE') document.getElementById('audit-stores-container').classList.add('hidden');
             else {
                 let st = master.tiendas; 
-                if (user.rol === 'AREA_MANAGER') { let userZonas = String(user.zonas).split(',').map(z => z.trim()); st = master.tiendas.filter(t => userZonas.includes(t.zona)); }
+                if (user.rol === 'AREA_MANAGER') { 
+                    let userZonas = String(user.zonas).toUpperCase().split(',').map(z => z.trim()); 
+                    st = master.tiendas.filter(t => userZonas.includes("TODAS") || userZonas.includes(String(t.zona).toUpperCase()) || userZonas.includes(String(t.id).toUpperCase())); 
+                }
                 sSel.innerHTML = st.map(t => `<option value="${t.id}">${t.nom}</option>`).join(''); document.getElementById('audit-stores-container').classList.remove('hidden');
             }
-            const pSel = document.getElementById('audit-products'); let cats = [...new Set(master.prods.filter(p=>p.act).map(p=>p.cat))].sort(), pHTML = '';
-            cats.forEach(c => { pHTML += `<optgroup label="${c}">`; master.prods.filter(p=>p.act && p.cat===c).sort((a,b)=>a.nom.localeCompare(b.nom)).forEach(p => { pHTML += `<option value="${p.id}">${p.nom}</option>`; }); pHTML += `</optgroup>`; });
+            
+            const cSel = document.getElementById('audit-categorias');
+            let cats = [...new Set(master.prods.filter(p=>p.act).map(p=>p.cat))].sort();
+            cSel.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+            
+            updateAuditProducts(); // Llama en cascada a los productos
+        }
+
+        function updateAuditProducts() {
+            const pSel = document.getElementById('audit-products');
+            const cSel = document.getElementById('audit-categorias');
+            let selectedCats = Array.from(cSel.selectedOptions).map(o => o.value);
+            
+            let filteredProds = master.prods.filter(p => p.act);
+            if (selectedCats.length > 0) filteredProds = filteredProds.filter(p => selectedCats.includes(p.cat));
+            
+            let catsToRender = selectedCats.length > 0 ? selectedCats : [...new Set(filteredProds.map(p=>p.cat))].sort();
+            
+            let pHTML = '';
+            catsToRender.forEach(c => {
+                let prodsInCat = filteredProds.filter(p => p.cat === c).sort((a,b) => a.nom.localeCompare(b.nom));
+                if (prodsInCat.length > 0) {
+                    pHTML += `<optgroup label="${c}">`;
+                    prodsInCat.forEach(p => { pHTML += `<option value="${p.id}">${p.nom}</option>`; });
+                    pHTML += `</optgroup>`;
+                }
+            });
             pSel.innerHTML = pHTML;
         }
 
@@ -322,8 +346,14 @@
 
         async function saveAdminConfig() {
             const l = document.getElementById('loading'); l.classList.remove('hidden'); document.getElementById('loading-text').innerText = "Guardando...";
-            const p = { "FECHA_INICIO_SISTEMA": document.getElementById('conf-fecha').value, "UMBRAL_VERDE": document.getElementById('conf-verde').value, "UMBRAL_AMARILLO": document.getElementById('conf-amarillo').value, "UMBRAL_ROJO": document.getElementById('conf-rojo').value };
-            try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveConfig', params: p }) }); alert("Configuración guardada."); } catch (e) { alert("Error."); } l.classList.add('hidden');
+            const p = { 
+                "NOMBRE_APP": document.getElementById('conf-nombre').value,
+                "FECHA_INICIO_SISTEMA": document.getElementById('conf-fecha').value, 
+                "UMBRAL_VERDE": document.getElementById('conf-verde').value, 
+                "UMBRAL_AMARILLO": document.getElementById('conf-amarillo').value, 
+                "UMBRAL_ROJO": document.getElementById('conf-rojo').value 
+            };
+            try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveConfig', params: p }) }); alert("Configuración guardada."); location.reload(); } catch (e) { alert("Error."); } l.classList.add('hidden');
         }
 
         function renderDashboard() {
@@ -334,6 +364,7 @@
                     <div class="bg-white p-6 rounded-[2rem] border shadow-sm">
                         <h3 class="font-black text-[10px] text-gray-400 mb-6 uppercase tracking-widest text-center">Configuración General</h3>
                         <div class="space-y-4">
+                            <div><label class="text-[9px] font-bold text-blue-600 uppercase ml-2">Nombre de la App</label><input type="text" id="conf-nombre" value="${dashData.config.NOMBRE_APP || 'LIO'}" class="w-full p-4 bg-gray-50 rounded-xl font-black text-sm outline-none border border-blue-200 uppercase tracking-widest"></div>
                             <div><label class="text-[9px] font-bold text-gray-400 uppercase ml-2">Fecha Inicio del Sistema</label><input type="date" id="conf-fecha" value="${dashData.config.FECHA_INICIO_SISTEMA || ''}" class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border"></div>
                             <div><label class="text-[9px] font-bold text-green-600 uppercase ml-2">Umbral Verde (Menor de %)</label><input type="number" id="conf-verde" value="${dashData.config.UMBRAL_VERDE || 10}" class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border border-green-200"></div>
                             <div><label class="text-[9px] font-bold text-orange-500 uppercase ml-2">Umbral Naranja (Entre verde y rojo %)</label><input type="number" id="conf-amarillo" value="${dashData.config.UMBRAL_AMARILLO || 20}" class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border border-orange-200"></div>
@@ -418,8 +449,9 @@
         async function generateAuditReport() {
             const l = document.getElementById('loading'); l.classList.remove('hidden'); document.getElementById('loading-text').innerText = "Analizando...";
             const p = { startDate: document.getElementById('audit-start').value, endDate: document.getElementById('audit-end').value, rol: user.rol, userId: user.id, zonas: user.zonas };
-            const sSel = document.getElementById('audit-stores'), pSel = document.getElementById('audit-products');
+            const sSel = document.getElementById('audit-stores'), pSel = document.getElementById('audit-products'), cSel = document.getElementById('audit-categorias');
             if(sSel && sSel.selectedOptions.length > 0) p.tiendas = Array.from(sSel.selectedOptions).map(o => o.value);
+            if(cSel && cSel.selectedOptions.length > 0) p.categorias = Array.from(cSel.selectedOptions).map(o => o.value);
             if(pSel && pSel.selectedOptions.length > 0) p.productos = Array.from(pSel.selectedOptions).map(o => o.value);
             try {
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getAuditData', params: p }) }), d = await r.json();
@@ -451,8 +483,9 @@
 
         async function exportAuditCSV() {
             const p = { startDate: document.getElementById('audit-start').value, endDate: document.getElementById('audit-end').value, rol: user.rol, userId: user.id, zonas: user.zonas };
-            const sSel = document.getElementById('audit-stores'), pSel = document.getElementById('audit-products');
+            const sSel = document.getElementById('audit-stores'), pSel = document.getElementById('audit-products'), cSel = document.getElementById('audit-categorias');
             if(sSel && sSel.selectedOptions.length > 0) p.tiendas = Array.from(sSel.selectedOptions).map(o => o.value);
+            if(cSel && cSel.selectedOptions.length > 0) p.categorias = Array.from(cSel.selectedOptions).map(o => o.value);
             if(pSel && pSel.selectedOptions.length > 0) p.productos = Array.from(pSel.selectedOptions).map(o => o.value);
             try {
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getAuditData', params: p }) }), d = await r.json();
@@ -493,7 +526,7 @@
 
         function loadAdminTable(table) {
             currentAdminTable = table; document.getElementById('admin-table-title').innerText = table.replace(/_/g, ' ');
-            const data = adminData[table.toLowerCase().split('_')[1]] || adminData[table.toLowerCase()];
+            const data = adminData[getAdminDataKey(table)];
             if(!data || data.length === 0) { document.getElementById('admin-table-content').innerHTML = "<tr><td>Vacío</td></tr>"; return; }
             const headers = data[0], rows = data.slice(1);
             let html = `<thead><tr><th>Acción</th>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`;
@@ -511,18 +544,33 @@
 
         function openAdminModal(id = null) {
             document.getElementById('admin-crud-title').innerText = id ? "EDITAR REGISTRO" : "NUEVO REGISTRO";
-            const data = adminData[currentAdminTable.toLowerCase().split('_')[1]] || adminData[currentAdminTable.toLowerCase()], headers = data[0]; let row = id ? data.slice(1).find(r => String(r[0]) === String(id)) : [];
+            const data = adminData[getAdminDataKey(currentAdminTable)], headers = data[0]; let row = id ? data.slice(1).find(r => String(r[0]) === String(id)) : [];
             let html = '';
             headers.forEach((h, i) => {
                 let val = row[i] !== undefined ? row[i] : ''; if(val instanceof Date) val = Utilities_formatDateFix(val);
-                let inputType = h.includes('FECHA') ? 'date' : 'text', readonly = (i===0 && id) ? 'readonly class="w-full p-4 bg-gray-200 rounded-xl font-bold text-sm outline-none border"' : 'class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-blue-600 ring-2 ring-transparent"';
+                let inputType = h.toUpperCase().includes('FECHA') ? 'date' : 'text', readonly = (i===0 && id) ? 'readonly class="w-full p-4 bg-gray-200 rounded-xl font-bold text-sm outline-none border"' : 'class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-blue-600 ring-2 ring-transparent"';
+                
+                let extra = '';
+                if (currentAdminTable === 'MAESTRO_PRODUCTOS') {
+                    if (h.toUpperCase() === 'CATEGORIA') {
+                        let cats = [...new Set(master.prods.map(p=>p.cat))].sort();
+                        extra = `<datalist id="dl-cats">${cats.map(c=>`<option value="${c}">`).join('')}</datalist>`;
+                        html += `<div><label class="text-[9px] font-bold text-gray-400 uppercase ml-2">${h}</label><input type="${inputType}" id="crud-input-${i}" list="dl-cats" value="${val}" ${readonly}>${extra}</div>`;
+                        return;
+                    } else if (h.toUpperCase() === 'SUBCATEGORIA') {
+                        let subs = [...new Set(master.prods.map(p=>p.sub))].sort();
+                        extra = `<datalist id="dl-subs">${subs.map(c=>`<option value="${c}">`).join('')}</datalist>`;
+                        html += `<div><label class="text-[9px] font-bold text-gray-400 uppercase ml-2">${h}</label><input type="${inputType}" id="crud-input-${i}" list="dl-subs" value="${val}" ${readonly}>${extra}</div>`;
+                        return;
+                    }
+                }
                 html += `<div><label class="text-[9px] font-bold text-gray-400 uppercase ml-2">${h}</label><input type="${inputType}" id="crud-input-${i}" value="${val}" ${readonly}></div>`;
             });
             html += `<input type="hidden" id="crud-id" value="${id||''}">`; document.getElementById('admin-crud-form').innerHTML = html; document.getElementById('modal-admin-crud').classList.remove('hidden');
         }
 
         async function saveAdminForm() {
-            const data = adminData[currentAdminTable.toLowerCase().split('_')[1]] || adminData[currentAdminTable.toLowerCase()], headers = data[0]; let rowToSave = [];
+            const data = adminData[getAdminDataKey(currentAdminTable)], headers = data[0]; let rowToSave = [];
             headers.forEach((h, i) => { rowToSave.push(document.getElementById(`crud-input-${i}`).value); });
             const id = document.getElementById('crud-id').value, l = document.getElementById('loading'); l.classList.remove('hidden'); document.getElementById('modal-admin-crud').classList.add('hidden');
             try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveAdminRecord', params: { table: currentAdminTable, id: id, row: rowToSave } }) }); await loadAdminData(); } catch (e) { alert("Error al guardar."); } l.classList.add('hidden');
@@ -535,7 +583,7 @@
         }
 
         function exportAdminMaster() {
-            const data = adminData[currentAdminTable.toLowerCase().split('_')[1]] || adminData[currentAdminTable.toLowerCase()]; if(!data || data.length === 0) return alert("Sin datos.");
+            const data = adminData[getAdminDataKey(currentAdminTable)]; if(!data || data.length === 0) return alert("Sin datos.");
             const csvRows = data.map(row => row.map(val => `"${String(val===null?'':val).replace(/"/g, '""')}"`).join(',')), blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' }), link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(blob)); link.setAttribute("download", `MAESTRO_${currentAdminTable}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
