@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LIO APP - Gestión</title>
+    <title>LIO APP - Sistema de Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -11,7 +11,8 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .pill-selected { @apply bg-blue-600 text-white shadow-md scale-105 border-2 border-blue-600 transition-all; }
         .pill-default { @apply bg-white text-gray-700 shadow-sm border-2 border-gray-300 hover:border-blue-400 hover:text-blue-600 transition-all; }
-        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
         .tab-active { @apply border-blue-600 text-blue-600 font-black; }
         .tab-inactive { @apply border-transparent text-gray-400 font-bold; }
@@ -41,18 +42,18 @@
         <div class="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-md">
             <div class="text-center mb-8"><h1 class="text-5xl font-black text-slate-900 italic tracking-tighter">LIO</h1><div class="h-1 w-12 bg-blue-600 mx-auto mt-2 rounded-full"></div></div>
             <div class="space-y-4">
-                <select id="user-type" onchange="toggleLoginUI()" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold text-gray-700 outline-none">
+                <select id="user-type" onchange="toggleLoginUI()" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold text-gray-700 outline-none focus:ring-blue-600">
                     <option value="store">ACCESO TIENDA</option><option value="admin">ACCESO MANAGEMENT</option>
                 </select>
                 <div id="group-store" class="space-y-4">
                     <select id="store-select" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold text-gray-700 outline-none"></select>
-                    <input type="password" id="store-pin" inputmode="numeric" placeholder="PIN" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 text-center text-3xl font-black tracking-[0.5em] outline-none focus:ring-blue-600">
+                    <input type="password" id="store-pin" inputmode="numeric" placeholder="PIN" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 text-center text-3xl font-black tracking-[0.5em] outline-none">
                 </div>
                 <div id="group-admin" class="hidden space-y-4">
                     <input type="text" id="admin-user" placeholder="USUARIO" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none text-center uppercase tracking-widest">
                     <input type="password" id="admin-pass" placeholder="CONTRASEÑA" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold outline-none text-center">
                 </div>
-                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl active:scale-95 transition-all text-xs uppercase tracking-widest mt-4">Entrar</button>
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl active:scale-95 transition-all text-xs uppercase tracking-widest mt-4">Entrar al Sistema</button>
             </div>
         </div>
     </div>
@@ -74,8 +75,9 @@
                 </section>
 
                 <section id="sec-input" class="app-section hidden space-y-6">
-                    <div class="bg-white p-4 rounded-3xl border flex gap-2"><input type="date" id="input-date" class="flex-1 font-bold outline-none uppercase text-xs"><select id="input-type" onchange="updateInputView()" class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-black text-[10px]"><option value="prod">PRODUCCIÓN</option><option value="merma">MERMA</option></select></div>
-                    <div id="area-turno" class="bg-white p-4 rounded-3xl border"><p class="text-[9px] font-black text-gray-400 uppercase mb-3 ml-2">Turno</p><select id="input-turno" class="w-full font-bold outline-none bg-transparent text-sm"><option value="Obrador">OBRADOR</option><option value="Mediodía">MEDIODÍA</option><option value="Tarde">TARDE</option></select></div>
+                    <div class="bg-white p-4 rounded-3xl border flex gap-2"><input type="date" id="input-date" class="flex-1 font-bold outline-none uppercase text-xs"><select id="input-type" onchange="updateInputView()" class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-black text-[10px] border-none"><option value="prod">PRODUCCIÓN</option><option value="merma">MERMA</option></select></div>
+                    <div id="area-turno" class="bg-white p-4 rounded-3xl border"><p class="text-[9px] font-black text-gray-400 uppercase mb-3 ml-2">Turno de Trabajo</p><select id="input-turno" class="w-full font-bold outline-none bg-transparent text-sm"><option value="Obrador">OBRADOR</option><option value="Mediodía">MEDIODÍA</option><option value="Tarde">TARDE</option></select></div>
+                    <div class="space-y-4"><div id="pill-cats" class="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1"></div><div id="pill-subs" class="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1 hidden"></div></div>
                     <div id="prod-grid" class="space-y-3"></div>
                     <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent pointer-events-none"><button onclick="processSave()" class="w-full max-w-4xl mx-auto block bg-slate-900 text-white font-black py-5 rounded-3xl shadow-2xl active:scale-95 transition-all text-xs uppercase tracking-widest pointer-events-auto">Confirmar Registro</button></div>
                 </section>
@@ -86,18 +88,22 @@
                         <div class="grid grid-cols-2 gap-4 mb-6">
                             <div><label class="text-[9px] font-bold text-gray-400 uppercase">Desde</label><input type="date" id="audit-start" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border"></div>
                             <div><label class="text-[9px] font-bold text-gray-400 uppercase">Hasta</label><input type="date" id="audit-end" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border"></div>
+                            <div class="col-span-2" id="audit-stores-container"><label class="text-[9px] font-bold text-gray-400 uppercase">Tiendas</label><select id="audit-stores" multiple class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] outline-none border h-24"></select></div>
                         </div>
-                        <button onclick="generateAuditReport()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl text-[10px] uppercase shadow-lg active:scale-95 transition-all">Analizar Periodo</button>
+                        <div class="flex gap-2">
+                           <button onclick="generateAuditReport()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-xl text-[10px] uppercase shadow-lg">Analizar Periodo</button>
+                           <button onclick="exportAuditCSV()" class="bg-green-600 text-white font-black px-6 rounded-xl text-[10px] uppercase shadow-lg">Excel</button>
+                        </div>
                     </div>
                     <div id="audit-results-container" class="hidden space-y-6">
-                        <div class="grid grid-cols-3 gap-3 text-center"><div class="bg-white p-4 rounded-2xl border"><p class="text-[8px] font-black text-gray-400 uppercase">P.</p><p id="kpi-prod" class="text-lg font-black text-blue-600">0</p></div><div class="bg-white p-4 rounded-2xl border"><p class="text-[8px] font-black text-gray-400 uppercase">M.</p><p id="kpi-merma" class="text-lg font-black text-red-500">0</p></div><div class="bg-white p-4 rounded-2xl border"><p class="text-[8px] font-black text-gray-400 uppercase">%</p><p id="kpi-porc" class="text-lg font-black text-slate-800">0%</p></div></div>
+                        <div class="grid grid-cols-3 gap-3 text-center"><div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[8px] font-black text-gray-400 uppercase">P.</p><p id="kpi-prod" class="text-lg font-black text-blue-600">0</p></div><div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[8px] font-black text-gray-400 uppercase">M.</p><p id="kpi-merma" class="text-lg font-black text-red-500">0</p></div><div class="bg-white p-4 rounded-2xl border shadow-sm"><p class="text-[8px] font-black text-gray-400 uppercase">%</p><p id="kpi-porc" class="text-lg font-black text-slate-800">0%</p></div></div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="bg-white p-6 rounded-[2rem] border shadow-sm relative"><button onclick="toggleFS(this.parentElement)" class="absolute top-4 right-4 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5" stroke-width="2"></path></svg></button><h3 class="font-black text-[9px] text-gray-400 uppercase mb-4 text-center">Prod vs Merma</h3><div class="h-64 w-full"><canvas id="auditChartStore"></canvas></div></div>
-                            <div class="bg-white p-6 rounded-[2rem] border shadow-sm relative"><button onclick="toggleFS(this.parentElement)" class="absolute top-4 right-4 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5" stroke-width="2"></path></svg></button><h3 class="font-black text-[9px] text-gray-400 uppercase mb-4 text-center">Desglose Turnos</h3><div class="h-64 w-full"><canvas id="auditChartTurnos"></canvas></div></div>
+                            <div class="bg-white p-6 rounded-[2rem] border shadow-sm relative"><button onclick="toggleFS(this.parentElement)" class="absolute top-4 right-4 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5" stroke-width="2"></path></svg></button><h3 class="font-black text-[9px] text-gray-400 uppercase mb-4 text-center">Turnos</h3><div class="h-64 w-full"><canvas id="auditChartTurnos"></canvas></div></div>
                             <div class="bg-white p-6 rounded-[2rem] border shadow-sm relative"><button onclick="toggleFS(this.parentElement)" class="absolute top-4 right-4 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5" stroke-width="2"></path></svg></button><h3 class="font-black text-[9px] text-gray-400 uppercase mb-4 text-center">Top 10 Merma</h3><div class="h-64 w-full"><canvas id="auditChartProd"></canvas></div></div>
                             <div class="bg-white p-6 rounded-[2rem] border shadow-sm relative"><button onclick="toggleFS(this.parentElement)" class="absolute top-4 right-4 text-gray-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5" stroke-width="2"></path></svg></button><h3 class="font-black text-[9px] text-gray-400 uppercase mb-4 text-center">Tendencia</h3><div class="h-64 w-full"><canvas id="auditChartTrend"></canvas></div></div>
                         </div>
-                        <div class="bg-white p-6 rounded-[2rem] border shadow-sm"><h3 class="font-black text-slate-800 uppercase text-[10px] mb-4 text-center">Tabla Dinámica de Eficiencia</h3><div class="overflow-x-auto" id="pivot-container"></div></div>
+                        <div class="bg-white p-6 rounded-[2rem] border shadow-sm"><h3 class="font-black text-slate-800 uppercase text-[10px] mb-4 text-center tracking-widest">Matriz de Eficiencia</h3><div class="overflow-x-auto" id="pivot-container"></div></div>
                     </div>
                 </section>
 
@@ -112,13 +118,15 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby86Uyfci6i_hyunbHhVlM2XsTwpo6AtxYedAOZX8gJ6xIIn392pUUR6hxzH4hbJ3nrCA/exec";
-        let master = null, user = null, dashData = null, crmCache = [], inputState = {}, charts = {};
+        let master = null, user = null, dashData = null, crmCache = [], inputState = {}, cacheNav = {cat:'TODOS', sub:'TODOS'}, charts = {}, currentCierreMes = null;
 
         function fmtDate(dStr) { if(!dStr) return ""; const p = dStr.split("-"); return `${p[2]}/${p[1]}`; }
         function fmtMonthYear(yM) { if(!yM) return ""; const p = yM.split("-"), m = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]; return `${m[parseInt(p[1])-1]} ${p[0]}`; }
 
         window.onload = async () => {
             document.getElementById('input-date').valueAsDate = new Date();
+            let t = new Date(), lw = new Date(); lw.setDate(t.getDate() - 7);
+            document.getElementById('audit-end').valueAsDate = t; document.getElementById('audit-start').valueAsDate = lw;
             await loadMasterData();
         };
 
@@ -128,13 +136,13 @@
                 const d = await r.json();
                 if(d.status === 'success') {
                     master = {
-                        prods: d.data.productos.slice(1).filter(x => x[0]).map((x, i) => ({ id: String(x[0]), uid: 'ui_'+i, nom: String(x[1]), cat: String(x[2]), act: x[4] !== false })),
+                        prods: d.data.productos.slice(1).filter(x => x[0]).map((x, i) => ({ id: String(x[0]), uid: 'ui_'+i, nom: String(x[1]), cat: String(x[2]), sub: String(x[3]), act: x[4] !== false })),
                         tiendas: d.data.tiendas.slice(1).filter(x => x[0]).map(x => ({ id: String(x[0]), nom: String(x[1]), zona: String(x[2]), pin: String(x[3]) })),
                         config: d.data.config
                     };
                     document.getElementById('store-select').innerHTML = master.tiendas.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
                 }
-            } catch (e) { alert("Error de conexión. Recarga la página."); }
+            } catch (e) { alert("Error de enlace. Por favor recarga."); }
         }
 
         function toggleLoginUI() {
@@ -153,7 +161,7 @@
                 if(d.status === 'success') {
                     user = d.data; await fetchDashboard(); initAppStructure();
                 } else alert("Credenciales incorrectas."); 
-            } catch (e) { alert("Fallo de comunicación con el servidor."); } l.classList.add('hidden');
+            } catch (e) { alert("Error de servidor."); } l.classList.add('hidden');
         }
 
         async function fetchDashboard() {
@@ -174,7 +182,18 @@
                 tabs += `<button onclick="showSec('crm')" id="tab-crm" class="tab-item flex-1 p-4 border-b-4 tab-inactive transition-colors">Gestión</button>`;
             }
             document.getElementById('app-nav').innerHTML = tabs;
-            renderDashboard();
+            populateAuditFilters(); renderDashboard();
+        }
+
+        function populateAuditFilters() {
+            const sSel = document.getElementById('audit-stores');
+            if (user.rol === 'STORE') {
+                document.getElementById('audit-stores-container').classList.add('hidden');
+            } else {
+                let st = master.tiendas; if (user.rol === 'AREA_MANAGER') st = master.tiendas.filter(t => t.zona === user.zonas);
+                sSel.innerHTML = st.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
+                document.getElementById('audit-stores-container').classList.remove('hidden');
+            }
         }
 
         function formatStoreMessage(t) {
@@ -182,39 +201,39 @@
             let mf = t.mesesFaltantes || t.mesesPendientes;
             if(mf && mf.length > 0) msg += `🔥 Meses por cerrar: ${mf.map(x=>fmtMonthYear(x)).join(', ')}\n\n`;
             let d = t.dias || t.tareasPendientes;
-            if(d) d.forEach(x => { msg += `📅 ${x.label} (${x.motivo})\n`; });
+            if(d) d.forEach(x => { msg += `📅 ${x.label} (${x.motivo || 'Falta Registro'})\n`; });
             return msg;
         }
 
-        function copyToClipboard(txt) { navigator.clipboard.writeText(txt); alert("Copiado al portapapeles."); }
-
-        function copyStoreSpecific(id) {
+        function copySpecificStore(id) {
             let t = (crmCache.length > 0 ? crmCache : dashData.listaPendientes).find(x => x.id == id);
-            if(t) copyToClipboard(formatStoreMessage(t));
+            if(t) { navigator.clipboard.writeText(formatStoreMessage(t)); alert("Aviso copiado."); }
         }
 
         function copyAllReminders() {
             let list = crmCache.length > 0 ? crmCache : dashData.listaPendientes;
             let full = `*RESUMEN PENDIENTES ZONA ${user.zonas.toUpperCase()}*\n\n`;
-            list.forEach(t => { full += formatStoreMessage(t) + "\n-----------\n\n"; });
-            copyToClipboard(full);
+            list.filter(t => (t.dias?.length > 0 || t.tareasPendientes?.length > 0 || t.mesesFaltantes?.length > 0 || t.mesesPendientes?.length > 0)).forEach(t => { 
+                full += formatStoreMessage(t) + "\n-----------\n\n"; 
+            });
+            navigator.clipboard.writeText(full); alert("Resumen de zona copiado.");
         }
 
         function renderDashboard() {
             const w = document.getElementById('dash-widgets'), m = document.getElementById('dash-main-content'), actions = document.getElementById('dash-manager-actions');
             if(user.rol === 'STORE') {
                 actions.classList.add('hidden');
-                w.innerHTML = `<div class="bg-white p-5 rounded-3xl border shadow-sm text-center"><p class="text-[9px] text-gray-400 uppercase font-bold">Merma Acumulada</p><p class="text-3xl font-black text-blue-600">${dashData.eficiencia}%</p></div><div class="bg-white p-5 rounded-3xl border shadow-sm text-center"><p class="text-[9px] text-gray-400 uppercase font-bold">Alertas</p><p class="text-3xl font-black ${dashData.pendientes>0?'text-red-500':'text-green-500'}">${dashData.pendientes}</p></div>`;
+                w.innerHTML = `<div class="bg-white p-5 rounded-3xl border shadow-sm text-center"><p class="text-[9px] text-gray-400 uppercase font-bold">Efic. Acumulada</p><p class="text-3xl font-black text-blue-600">${dashData.eficiencia}%</p></div><div class="bg-white p-5 rounded-3xl border shadow-sm text-center"><p class="text-[9px] text-gray-400 uppercase font-bold">Alertas</p><p class="text-3xl font-black ${dashData.pendientes>0?'text-red-500':'text-green-500'}">${dashData.pendientes}</p></div>`;
                 let html = '';
-                if(dashData.mesesPendientesCierre && dashData.mesesPendientesCierre.length > 0) dashData.mesesPendientesCierre.forEach(mes => { html += `<div class="bg-red-600 p-6 rounded-[2rem] shadow-lg mb-6 text-center text-white"><h4 class="font-black text-lg mb-1 uppercase tracking-tighter italic">Cierre Obligatorio</h4><p class="text-[10px] font-bold text-red-200 mb-4">Mes de ${fmtMonthYear(mes)} sin bloquear.</p><button onclick="promptCierre('${mes}')" class="bg-white text-red-600 font-black py-3 px-8 rounded-xl uppercase text-[9px] shadow-md">Cerrar Ahora</button></div>`; });
-                if(dashData.pendientes > 0) html += `<div class="bg-red-50 p-6 rounded-[2rem] mb-6 border border-red-100"><p class="text-[10px] font-black text-red-700 uppercase mb-3 tracking-widest text-center">Tareas Diarias Pendientes</p><ul class="text-[11px] text-red-600 font-bold space-y-2">${dashData.listaPendientes.map(d=>`<li>• ${d.label}</li>`).join('')}</ul></div>`;
-                html += `<div class="bg-white p-6 rounded-[2rem] shadow-sm border"><h3 class="font-black text-[9px] text-gray-400 mb-4 uppercase tracking-widest text-center">Resumen del Día</h3>` + (dashData.resumenHoy.length > 0 ? `<table class="w-full text-left text-[11px] font-bold"><thead><tr class="text-gray-400 border-b"><th class="pb-2">Producto</th><th class="pb-2 text-center">Prod</th><th class="pb-2 text-center">Merma</th></tr></thead><tbody>${dashData.resumenHoy.map(r => `<tr><td class="py-3">${r.nom}</td><td class="py-3 text-center text-blue-600">${r.prod}</td><td class="py-3 text-center text-red-500">${r.merma}</td></tr>`).join('')}</tbody></table>` : '<p class="text-[10px] text-gray-400 uppercase font-bold text-center py-4 italic">Sin datos hoy.</p>') + `</div>`;
+                if(dashData.mesesPendientesCierre && dashData.mesesPendientesCierre.length > 0) dashData.mesesPendientesCierre.forEach(mes => { html += `<div class="bg-red-600 p-6 rounded-[2rem] shadow-lg mb-6 text-center text-white"><h4 class="font-black text-lg mb-1 uppercase italic">Cierre Pendiente</h4><p class="text-[10px] font-bold text-red-100 mb-4">Mes de ${fmtMonthYear(mes)}</p><button onclick="promptCierre('${mes}')" class="bg-white text-red-600 font-black py-3 px-8 rounded-xl uppercase text-[9px] shadow-md">Cerrar Ahora</button></div>`; });
+                if(dashData.pendientes > 0) html += `<div class="bg-red-50 p-6 rounded-[2rem] mb-6 border border-red-100"><p class="text-[10px] font-black text-red-700 uppercase mb-3 text-center tracking-widest">Tareas Pendientes</p><ul class="text-[11px] text-red-600 font-bold space-y-2">${dashData.listaPendientes.map(d=>`<li>• ${d.label}</li>`).join('')}</ul></div>`;
+                html += `<div class="bg-white p-6 rounded-[2rem] border shadow-sm"><h3 class="font-black text-[9px] text-gray-400 mb-4 uppercase text-center tracking-widest">Resumen Hoy</h3>` + (dashData.resumenHoy.length > 0 ? `<table class="w-full text-left text-[11px] font-bold"><thead><tr class="text-gray-400 border-b"><th class="pb-2">Producto</th><th class="pb-2 text-center">Prod</th><th class="pb-2 text-center">Merma</th></tr></thead><tbody>${dashData.resumenHoy.map(r => `<tr><td class="py-3">${r.nom}</td><td class="py-3 text-center text-blue-600">${r.prod}</td><td class="py-3 text-center text-red-500">${r.merma}</td></tr>`).join('')}</tbody></table>` : '<p class="text-[10px] text-gray-400 uppercase font-bold text-center py-4 italic">Sin datos hoy.</p>') + `</div>`;
                 m.innerHTML = html;
             } else {
                 actions.classList.remove('hidden');
-                actions.innerHTML = `<button onclick="copyAllReminders()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg mb-6 active:scale-95 transition-all">Copiar Avisos de toda la Zona</button>`;
-                w.innerHTML = `<div class="bg-white p-5 rounded-3xl col-span-2 flex justify-between border shadow-sm"><div><p class="text-[9px] text-gray-400 uppercase font-bold">Zona Asignada</p><p class="text-xl font-black uppercase italic">${dashData.zonaNombre}</p></div><div class="text-right"><p class="text-[9px] text-gray-400 uppercase font-bold">Total Alertas</p><p class="text-3xl font-black text-red-500">${dashData.pendientes}</p></div></div>`;
-                m.innerHTML = `<div class="bg-white p-6 rounded-[2rem] border shadow-sm"><h3 class="font-black text-[9px] text-gray-400 mb-4 uppercase tracking-widest">Tiendas con Alertas</h3><div class="space-y-4">` + dashData.listaPendientes.map(t => `
+                actions.innerHTML = `<button onclick="copyAllReminders()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg mb-6 active:scale-95 transition-all">Copiar Avisos de la Zona</button>`;
+                w.innerHTML = `<div class="bg-white p-5 rounded-3xl col-span-2 flex justify-between border shadow-sm"><div><p class="text-[9px] text-gray-400 uppercase font-bold">Zona</p><p class="text-xl font-black uppercase italic">${dashData.zonaNombre}</p></div><div class="text-right"><p class="text-[9px] text-gray-400 uppercase font-bold">Alertas</p><p class="text-3xl font-black text-red-500">${dashData.pendientes}</p></div></div>`;
+                m.innerHTML = `<div class="bg-white p-6 rounded-[2rem] border shadow-sm"><h3 class="font-black text-[9px] text-gray-400 mb-4 uppercase tracking-widest">Alertas por Tienda</h3><div class="space-y-4">` + dashData.listaPendientes.map(t => `
                     <div class="border border-red-100 rounded-3xl relative overflow-hidden">
                         <div class="bg-red-50 p-4 font-black text-[11px] text-red-900 uppercase pr-12">${t.nombre}</div>
                         <button onclick="copyStoreSpecific('${t.id}')" class="absolute top-2 right-2 p-3 bg-white rounded-xl shadow-sm border border-red-200 text-red-500 active:scale-90 transition-all"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-width="2.5"></path></svg></button>
@@ -224,7 +243,7 @@
         }
 
         async function loadCRMData() {
-            const list = document.getElementById('crm-list'); list.innerHTML = '<div class="text-center py-12 text-[10px] font-black uppercase text-gray-300 italic tracking-widest">Analizando tiendas...</div>';
+            const list = document.getElementById('crm-list'); list.innerHTML = '<div class="text-center py-12 text-[10px] font-black uppercase text-gray-300 italic tracking-widest">Analizando...</div>';
             try {
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getManagerCRM', params: { rol: user.rol, zonas: user.zonas } }) }), d = await r.json();
                 if(d.status === 'success') {
@@ -236,31 +255,47 @@
         }
 
         function renderCRMList(tiendas) {
-            document.getElementById('crm-list').innerHTML = tiendas.map(t => `
+            let hoy = new Date();
+            let startP = (master.config.FECHA_INICIO_SISTEMA || "2026-04-01").split("-").map(Number);
+            let startV = startP[0] * 12 + (startP[1] - 1);
+            let mesesEval = [];
+            for(let i=1; i<=4; i++) {
+                let d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+                if((d.getFullYear() * 12 + d.getMonth()) >= startV) mesesEval.push(d.getFullYear() + "-" + (d.getMonth()+1).toString().padStart(2, '0'));
+            }
+
+            document.getElementById('crm-list').innerHTML = tiendas.map(t => {
+                let sema = mesesEval.map(mStr => {
+                    let ok = t.cierresHistoricos.some(c => c.mes === mStr);
+                    return `<div class="flex flex-col items-center"><div class="w-6 h-6 rounded-full flex items-center justify-center text-[8px] mb-1 ${ok?'bg-green-100 text-green-600':'bg-red-100 text-red-600'}">${ok?'✓':'×'}</div><span class="text-[7px] font-bold text-gray-400 uppercase">${fmtMonthYear(mStr).substring(0,3)}</span></div>`;
+                }).join('');
+
+                return `
                 <div class="bg-white border rounded-3xl overflow-hidden shadow-sm">
                     <div class="p-5 cursor-pointer flex justify-between items-center bg-gray-50/50" onclick="this.nextElementSibling.classList.toggle('hidden')">
-                        <div class="flex items-center gap-3"><p class="font-black text-xs uppercase italic">${t.nombre}</p></div>
+                        <p class="font-black text-xs uppercase italic">${t.nombre}</p>
                         <div class="flex items-center gap-3"><span class="text-[10px] font-black ${parseFloat(t.eficiencia)>15?'text-red-500':'text-green-600'}">${t.eficiencia}%</span><svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="3"></path></svg></div>
                     </div>
                     <div class="hidden p-6 border-t bg-white space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
                                 <p class="text-[8px] font-black text-blue-800 uppercase mb-3 tracking-widest">Top 5 Merma (unidades)</p>
-                                <ul class="text-[10px] font-bold text-blue-900 space-y-2">${t.topMerma.map(p=>`<li>${p.nom}: <span class="text-red-500">${p.merma}</span></li>`).join('')}</ul>
+                                <ul class="text-[10px] font-bold text-blue-900 space-y-2">${t.topMerma.map(p=>`<li>${p.nom}: <span class="text-red-500 font-black">${p.merma}</span></li>`).join('')}</ul>
                             </div>
                             <div class="bg-red-50 p-4 rounded-2xl border border-red-100 relative">
                                 <button onclick="copyStoreSpecific('${t.id}')" class="absolute top-2 right-2 text-red-400 p-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2" stroke-width="2.5"></path></svg></button>
-                                <p class="text-[8px] font-black text-red-800 uppercase mb-3 tracking-widest">Tareas Pendientes</p>
+                                <p class="text-[8px] font-black text-red-800 uppercase mb-3 tracking-widest">Pendientes</p>
                                 <ul class="text-[10px] font-bold text-red-600 space-y-1">${t.mesesPendientes.map(m=>`<li>🔥 Cierre: ${fmtMonthYear(m)}</li>`).join('')}${t.tareasPendientes.map(d=>`<li>• ${fmtDate(d.f)}</li>`).join('')}</ul>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-2xl border shadow-inner">
                             <input type="text" id="pin-${t.id}" value="${t.pin}" class="flex-1 bg-transparent font-black text-center text-blue-600 text-sm outline-none tracking-[0.3em] pl-4">
-                            <button onclick="navigator.clipboard.writeText(document.getElementById('pin-${t.id}').value);alert('Copiado');" class="bg-white p-3 rounded-xl border flex items-center justify-center h-10 w-10 shadow-sm active:bg-blue-50 transition-colors">
+                            <button onclick="navigator.clipboard.writeText(document.getElementById('pin-${t.id}').value);alert('PIN Copiado');" class="bg-white p-3 rounded-xl border flex items-center justify-center h-10 w-10 shadow-sm active:bg-blue-50 transition-colors">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-width="2"></path></svg>
                             </button>
                             <button onclick="saveNewPIN('${t.id}')" class="bg-blue-600 text-white font-black px-4 h-10 rounded-xl text-[9px] uppercase tracking-widest shadow-md">Guardar</button>
                         </div>
+                        <div class="flex justify-around bg-gray-50 p-4 rounded-2xl border border-dashed">${sema}</div>
                     </div>
                 </div>`).join('');
         }
@@ -268,7 +303,7 @@
         async function saveNewPIN(tId) {
             let nP = document.getElementById(`pin-${tId}`).value; if(!nP) return;
             const l = document.getElementById('loading'); l.classList.remove('hidden');
-            try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStorePin', params: { tiendaId: tId, newPin: nP, rol: user.rol } }) }); alert("PIN Actualizado"); } catch(e) {} l.classList.add('hidden');
+            try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStorePin', params: { tiendaId: tId, newPin: nP, rol: user.rol } }) }); alert("OK"); } catch(e) {} l.classList.add('hidden');
         }
 
         function promptCierre(mes) { currentCierreMes = mes; document.getElementById('modal-cierre-msg').innerText = "Bloqueando mes: " + fmtMonthYear(mes); document.getElementById('cierre-pin').value = ''; document.getElementById('modal-cierre').classList.remove('hidden'); }
@@ -281,10 +316,48 @@
             } catch (e) { alert("Error."); } l.classList.add('hidden');
         }
 
-        async function generateAuditReport() {
-            const p = { startDate: document.getElementById('audit-start').value, endDate: document.getElementById('audit-end').value, rol: user.rol, userId: user.id, zonas: user.zonas };
-            if(!p.startDate) return alert("Selecciona fechas.");
+        function showSec(id) { 
+            document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden')); 
+            document.getElementById('sec-'+id).classList.remove('hidden'); 
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.replace('tab-active', 'tab-inactive')); 
+            document.getElementById('tab-'+id).classList.replace('tab-inactive', 'tab-active'); 
+            if(id === 'input') renderCats(); if(id === 'crm') loadCRMData(); 
+        }
+
+        // --- MOTOR DE REGISTRO CON CATEGORÍAS ---
+        function renderCats() { 
+            const act = master.prods.filter(p => p.act), cats = ["TODOS", ...new Set(act.map(p => p.cat))].sort(); 
+            document.getElementById('pill-cats').innerHTML = cats.map(c => `<button onclick="selCat('${c}')" class="px-6 py-3 rounded-xl font-black text-[10px] uppercase ${cacheNav.cat===c?'pill-selected':'pill-default'}">${c}</button>`).join(''); 
+            if(cacheNav.cat) renderSubs(); 
+        }
+        function selCat(c) { cacheNav.cat = c; cacheNav.sub = 'TODOS'; renderCats(); renderSubs(); }
+        function renderSubs() { 
+            const act = master.prods.filter(p => p.act && (cacheNav.cat==='TODOS'||p.cat===cacheNav.cat)), subs = ["TODOS", ...new Set(act.map(p => p.sub))].sort(); 
+            document.getElementById('pill-subs').innerHTML = subs.map(s => `<button onclick="selSub('${s}')" class="px-5 py-2 rounded-xl font-bold text-[9px] uppercase ${cacheNav.sub===s?'pill-selected':'pill-default'}">${s}</button>`).join(''); 
+            document.getElementById('pill-subs').classList.remove('hidden'); renderProds(); 
+        }
+        function selSub(s) { cacheNav.sub = s; renderSubs(); }
+        function renderProds() {
+            const lst = master.prods.filter(p => p.act && (cacheNav.cat==='TODOS'||p.cat===cacheNav.cat) && (cacheNav.sub==='TODOS'||p.sub===cacheNav.sub));
+            document.getElementById('prod-grid').innerHTML = lst.map(p => `<div class="bg-white p-5 rounded-[2rem] shadow-sm flex justify-between items-center border"><div class="flex-1 pr-2"><p class="font-black text-xs uppercase">${p.nom}</p></div><div class="flex gap-3"><button onclick="val('${p.uid}',-1)" class="w-8 h-8 bg-gray-100 rounded-lg font-black">-</button><input type="number" id="v-${p.uid}" value="${inputState[p.uid]||0}" oninput="inputState['${p.uid}']=parseInt(this.value)||0" class="w-8 text-center font-black text-blue-600 bg-transparent outline-none"><button onclick="val('${p.uid}',1)" class="w-8 h-8 bg-gray-100 rounded-lg font-black">+</button></div></div>`).join('');
+        }
+        function val(uid, d) { let i = document.getElementById('v-'+uid), n = Math.max(0, parseInt(i.value||0)+d); i.value = n; inputState[uid] = n; }
+        function updateInputView() { document.getElementById('area-turno').classList.toggle('hidden', document.getElementById('input-type').value==='merma'); }
+
+        async function processSave() {
+            const items = master.prods.map(p => ({ id: p.id, v: inputState[p.uid]||0 })).filter(x => x.v>0); if(!items.length) return alert("Sin datos.");
             const l = document.getElementById('loading'); l.classList.remove('hidden');
+            try {
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveDaily', params: { fecha: document.getElementById('input-date').value, type: document.getElementById('input-type').value, turno: document.getElementById('input-turno').value, tiendaId: user.id, items: items.map(x=>({prodId:x.id, val:x.v})) } }) }), d = await r.json();
+                if(d.status === 'success') { alert("Guardado OK"); inputState = {}; await fetchDashboard(); renderDashboard(); showSec('dash'); }
+            } catch(e) { alert("Error al guardar."); } l.classList.add('hidden');
+        }
+
+        // --- MOTOR DE AUDITORÍA AVANZADA ---
+        async function generateAuditReport() {
+            const l = document.getElementById('loading'); l.classList.remove('hidden');
+            const p = { startDate: document.getElementById('audit-start').value, endDate: document.getElementById('audit-end').value, rol: user.rol, userId: user.id, zonas: user.zonas };
+            const sSel = document.getElementById('audit-stores'); if(sSel.selectedOptions.length > 0) p.tiendas = Array.from(sSel.selectedOptions).map(o => o.value);
             try {
                 const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getAuditData', params: p }) }), d = await r.json();
                 if(d.status === 'success') { renderAudit(d.data.chartData); document.getElementById('audit-results-container').classList.remove('hidden'); }
@@ -317,19 +390,20 @@
         }
 
         function toggleFS(el) { el.classList.toggle('fs-chart'); }
-        function showSec(id) { document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden')); document.getElementById('sec-'+id).classList.remove('hidden'); document.querySelectorAll('.tab-item').forEach(t => t.classList.replace('tab-active', 'tab-inactive')); document.getElementById('tab-'+id).classList.replace('tab-inactive', 'tab-active'); if(id === 'input') renderProds(); if(id === 'crm') loadCRMData(); }
-        function renderProds() {
-            document.getElementById('prod-grid').innerHTML = master.prods.filter(p => p.act).map(p => `<div class="bg-white p-5 rounded-[2rem] shadow-sm flex justify-between items-center border"><div class="flex-1 pr-2"><p class="font-black text-xs uppercase">${p.nom}</p></div><div class="flex gap-3"><button onclick="val('${p.uid}',-1)" class="w-8 h-8 bg-gray-100 rounded-lg font-black">-</button><input type="number" id="v-${p.uid}" value="${inputState[p.uid]||0}" oninput="inputState['${p.uid}']=parseInt(this.value)||0" class="w-8 text-center font-black text-blue-600 bg-transparent outline-none"><button onclick="val('${p.uid}',1)" class="w-8 h-8 bg-gray-100 rounded-lg font-black">+</button></div></div>`).join('');
-        }
-        function val(uid, d) { let i = document.getElementById('v-'+uid), n = Math.max(0, parseInt(i.value||0)+d); i.value = n; inputState[uid] = n; }
-        function updateInputView() { document.getElementById('area-turno').classList.toggle('hidden', document.getElementById('input-type').value==='merma'); }
-        async function processSave() {
-            const items = master.prods.map(p => ({ id: p.id, v: inputState[p.uid]||0 })).filter(x => x.v>0); if(!items.length) return alert("Sin datos.");
-            const l = document.getElementById('loading'); l.classList.remove('hidden');
+
+        async function exportAuditCSV() {
+            const p = { startDate: document.getElementById('audit-start').value, endDate: document.getElementById('audit-end').value, rol: user.rol, userId: user.id, zonas: user.zonas };
             try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveDaily', params: { fecha: document.getElementById('input-date').value, type: document.getElementById('input-type').value, turno: document.getElementById('input-turno').value, tiendaId: user.id, items: items.map(x=>({prodId:x.id, val:x.v})) } }) }), d = await r.json();
-                if(d.status === 'success') { alert("Hecho"); inputState = {}; await fetchDashboard(); renderDashboard(); showSec('dash'); }
-            } catch(e) {} l.classList.add('hidden');
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getAuditData', params: p }) }), d = await r.json();
+                if (d.status === 'success' && d.data.chartData.length > 0) {
+                    const data = d.data.chartData; const headers = Object.keys(data[0]); const csvRows = [headers.join(',')];
+                    for (const row of data) { const values = headers.map(h => { const val = row[h] === null ? "" : row[h]; return `"${String(val).replace(/"/g, '""')}"`; }); csvRows.push(values.join(',')); }
+                    const blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob); const link = document.createElement("a");
+                    link.setAttribute("href", url); link.setAttribute("download", `AUDITORIA_LIO.csv`);
+                    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                } else { alert("Sin datos para exportar."); }
+            } catch (e) { alert("Fallo exportación."); }
         }
     </script>
 </body>
