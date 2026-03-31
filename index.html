@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LIO APP - Sistema de Control</title>
+    <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -21,6 +22,46 @@
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #f1f5f9; }
         th { background-color: #f8fafc; font-weight: 900; font-size: 10px; text-transform: uppercase; color: #64748b; }
         td { font-size: 12px; font-weight: bold; color: #334155; }
+
+        /* ── DARK MODE ── */
+        .dark body { background-color: #0f172a !important; color: #e2e8f0; }
+        .dark .bg-white { background-color: #1e293b !important; }
+        .dark .bg-gray-50 { background-color: #0f172a !important; }
+        .dark .bg-gray-100 { background-color: #1e293b !important; }
+        .dark .bg-gray-50\/50 { background-color: #1e293b !important; }
+        .dark .text-slate-800, .dark .text-slate-900 { color: #f1f5f9 !important; }
+        .dark .text-gray-700 { color: #cbd5e1 !important; }
+        .dark .text-gray-400 { color: #94a3b8 !important; }
+        .dark .border { border-color: #334155 !important; }
+        .dark .border-b { border-bottom-color: #334155 !important; }
+        .dark .border-gray-200 { border-color: #334155 !important; }
+        .dark .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0,0,0,0.4) !important; }
+        .dark header { background-color: #1e293b !important; border-bottom-color: #334155 !important; }
+        .dark #app-nav { background-color: #1e293b !important; border-bottom-color: #334155 !important; }
+        .dark .pill-default { background-color: #1e293b !important; color: #94a3b8 !important; border-color: #475569 !important; }
+        .dark th { background-color: #1e293b !important; color: #94a3b8 !important; }
+        .dark td { color: #cbd5e1 !important; }
+        .dark tr { border-bottom-color: #334155 !important; }
+        .dark input, .dark select, .dark textarea { background-color: #0f172a !important; color: #e2e8f0 !important; border-color: #475569 !important; }
+        .dark .tab-inactive { color: #475569 !important; }
+        .dark .bg-blue-50 { background-color: #1e3a5f !important; }
+        .dark .bg-red-50 { background-color: #3b1a1a !important; }
+        .dark .bg-slate-900 { background-color: #020617 !important; }
+
+        /* ── PRINT / PDF ── */
+        @media print {
+            #app-nav, header, #sec-audit > div:first-child, .no-print { display: none !important; }
+            body { background: white !important; color: black !important; }
+            #audit-results-container { display: block !important; }
+            .fs-chart { position: relative !important; width: 100% !important; height: auto !important; z-index: auto !important; }
+            .bg-white { background: white !important; box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
+            canvas { max-width: 100% !important; }
+        }
+
+        /* ── TOAST ── */
+        #toast { transition: opacity 0.3s ease, transform 0.3s ease; }
+        #toast.toast-show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        #toast.toast-hide { opacity: 0; transform: translateX(-50%) translateY(12px); }
     </style>
 </head>
 <body class="bg-gray-50 text-slate-900 font-sans antialiased">
@@ -87,9 +128,15 @@
                 <p id="role-display" class="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1"></p>
                 <h2 id="user-display" class="font-black text-xl text-slate-800 italic leading-none"></h2>
             </div>
-            <button onclick="location.reload()" title="Cerrar sesión" class="bg-gray-50 p-3 rounded-2xl text-gray-400 hover:text-red-600 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-            </button>
+            <div class="flex gap-2">
+                <button onclick="toggleDarkMode()" id="btn-darkmode" title="Modo oscuro" class="bg-gray-50 p-3 rounded-2xl text-gray-400 hover:text-blue-600 transition-colors">
+                    <svg id="icon-dark" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    <svg id="icon-light" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </button>
+                <button onclick="location.reload()" title="Cerrar sesión" class="bg-gray-50 p-3 rounded-2xl text-gray-400 hover:text-red-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+            </div>
         </header>
 
         <nav id="app-nav" class="bg-white border-b flex justify-around font-black text-[9px] uppercase tracking-widest sticky top-[89px] z-40 shadow-sm overflow-x-auto no-scrollbar"></nav>
@@ -158,6 +205,7 @@
                         <div class="flex gap-2">
                            <button onclick="generateAuditReport()" class="flex-1 bg-slate-900 text-white font-black py-4 rounded-xl text-[10px] uppercase shadow-lg active:scale-95 transition-all">Analizar / Buscar</button>
                            <button onclick="exportAuditCSV()" class="bg-green-600 text-white font-black px-6 rounded-xl text-[10px] uppercase shadow-lg active:scale-95 transition-all">Excel</button>
+                           <button onclick="exportAuditPDF()" class="no-print bg-blue-600 text-white font-black px-6 rounded-xl text-[10px] uppercase shadow-lg active:scale-95 transition-all">PDF</button>
                         </div>
                     </div>
 
@@ -241,8 +289,126 @@
         </main>
     </div>
 
+    <!-- TOAST -->
+    <div id="toast" class="toast-hide fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-2xl shadow-2xl text-[11px] font-black uppercase tracking-widest pointer-events-none whitespace-nowrap"></div>
+
+    <!-- MODAL: Confirmación tipada de Purge -->
+    <div id="modal-purge-confirm" class="hidden fixed inset-0 bg-slate-900/90 z-[3000] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl text-center">
+            <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path></svg>
+            </div>
+            <h3 class="font-black text-slate-800 text-lg uppercase italic mb-2">Acción Irreversible</h3>
+            <p class="text-[11px] text-gray-500 font-bold mb-1">Vas a eliminar TODOS los datos operativos del año:</p>
+            <p id="purge-modal-year" class="text-3xl font-black text-red-600 mb-4"></p>
+            <p class="text-[10px] text-gray-400 font-bold mb-4">Escribe el año para confirmar:</p>
+            <input type="number" id="purge-confirm-input" placeholder="XXXX" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-red-200 text-center text-2xl font-black tracking-widest mb-6 outline-none focus:ring-red-500">
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('modal-purge-confirm').classList.add('hidden')" class="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-xl uppercase text-[10px]">Cancelar</button>
+                <button onclick="executePurge()" class="flex-1 bg-red-600 text-white font-black py-4 rounded-xl shadow-lg uppercase text-[10px] tracking-widest">Purgar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby86Uyfci6i_hyunbHhVlM2XsTwpo6AtxYedAOZX8gJ6xIIn392pUUR6hxzH4hbJ3nrCA/exec";
+
+        // ── TOAST ──────────────────────────────────────────────────────────────
+        let _toastTimer = null;
+        function showToast(msg, type = 'info', duration = 3000) {
+            const el = document.getElementById('toast');
+            const colors = {
+                success: 'bg-green-600 text-white',
+                error:   'bg-red-600 text-white',
+                warning: 'bg-orange-500 text-white',
+                info:    'bg-slate-900 text-white'
+            };
+            el.className = 'toast-hide fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-2xl shadow-2xl text-[11px] font-black uppercase tracking-widest pointer-events-none whitespace-nowrap ' + (colors[type] || colors.info);
+            el.innerText = msg;
+            // force reflow then show
+            void el.offsetWidth;
+            el.classList.replace('toast-hide', 'toast-show');
+            if (_toastTimer) clearTimeout(_toastTimer);
+            _toastTimer = setTimeout(() => {
+                el.classList.replace('toast-show', 'toast-hide');
+            }, duration);
+        }
+
+        // ── DARK MODE ──────────────────────────────────────────────────────────
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('lio_dark', isDark ? '1' : '0');
+            document.getElementById('icon-dark').classList.toggle('hidden', isDark);
+            document.getElementById('icon-light').classList.toggle('hidden', !isDark);
+        }
+        function applyStoredTheme() {
+            const stored = localStorage.getItem('lio_dark');
+            if (stored === '1') {
+                document.documentElement.classList.add('dark');
+                document.getElementById('icon-dark') && document.getElementById('icon-dark').classList.add('hidden');
+                document.getElementById('icon-light') && document.getElementById('icon-light').classList.remove('hidden');
+            }
+        }
+
+        // ── SESSION TIMEOUT (30 min inactividad) ──────────────────────────────
+        let _sessionTimer = null;
+        function initSessionTimeout() {
+            const TIMEOUT_MS = 30 * 60 * 1000;
+            const reset = () => {
+                if (_sessionTimer) clearTimeout(_sessionTimer);
+                _sessionTimer = setTimeout(() => {
+                    showToast('Sesión cerrada por inactividad', 'warning', 3000);
+                    setTimeout(() => location.reload(), 3000);
+                }, TIMEOUT_MS);
+            };
+            ['click', 'touchstart', 'keydown'].forEach(ev => document.addEventListener(ev, reset, { passive: true }));
+            reset();
+        }
+
+        // ── PDF EXPORT ─────────────────────────────────────────────────────────
+        function exportAuditPDF() {
+            const container = document.getElementById('audit-results-container');
+            if (container.classList.contains('hidden')) {
+                showToast('Genera primero un informe de auditoría', 'warning');
+                return;
+            }
+            window.print();
+        }
+
+        // ── PURGE MODAL ────────────────────────────────────────────────────────
+        function openPurgeModal() {
+            const y = document.getElementById('archive-year').value;
+            if (!y) { showToast('Introduce un año válido', 'warning'); return; }
+            document.getElementById('purge-modal-year').innerText = y;
+            document.getElementById('purge-confirm-input').value = '';
+            document.getElementById('modal-purge-confirm').classList.remove('hidden');
+            setTimeout(() => document.getElementById('purge-confirm-input').focus(), 100);
+        }
+        async function executePurge() {
+            const y = document.getElementById('archive-year').value;
+            const typed = document.getElementById('purge-confirm-input').value;
+            if (String(typed).trim() !== String(y).trim()) {
+                showToast('El año escrito no coincide', 'error');
+                return;
+            }
+            document.getElementById('modal-purge-confirm').classList.add('hidden');
+            const l = document.getElementById('loading');
+            l.classList.remove('hidden');
+            document.getElementById('loading-text').innerText = "Purgando...";
+            try {
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'purgeYearData', params: { year: y } }) });
+                const d = await r.json();
+                if (d.status === 'success') {
+                    showToast(`Año ${y} purgado correctamente`, 'success', 3000);
+                    setTimeout(() => location.reload(), 3000);
+                } else {
+                    showToast('Error al purgar los datos', 'error');
+                }
+            } catch (e) {
+                showToast('Error de conexión al purgar', 'error');
+            }
+            l.classList.add('hidden');
+        }
 
         let master = null;
         let user = null;
@@ -312,6 +478,7 @@
         }
 
         window.onload = async () => {
+            applyStoredTheme();
             const t = new Date();
             const lw = new Date();
             lw.setDate(t.getDate() - 7);
@@ -406,11 +573,12 @@
                     user = d.data;
                     await fetchDashboard();
                     initAppStructure();
+                    initSessionTimeout();
                 } else {
-                    alert("Credenciales incorrectas. Verifica usuario y contraseña.");
+                    showToast('Credenciales incorrectas. Verifica usuario y contraseña.', 'error', 4000);
                 }
             } catch (e) {
-                alert("Error de red al intentar conectar. Comprueba tu conexión.");
+                showToast('Error de red. Comprueba tu conexión.', 'error', 4000);
             }
             l.classList.add('hidden');
         }
@@ -525,7 +693,7 @@
 
         function copyToClipboard(txt) {
             navigator.clipboard.writeText(txt);
-            alert("Copiado al portapapeles.");
+            showToast('Copiado al portapapeles', 'success');
         }
 
         function copySpecificStore(id) {
@@ -558,10 +726,10 @@
 
             try {
                 await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'saveConfig', params: p }) });
-                alert("Configuración guardada.");
-                location.reload();
+                showToast('Configuración guardada', 'success', 2000);
+                setTimeout(() => location.reload(), 2000);
             } catch (e) {
-                alert("Error al guardar configuración.");
+                showToast('Error al guardar configuración', 'error');
             }
             l.classList.add('hidden');
         }
@@ -751,16 +919,16 @@
                 const d = await r.json();
 
                 if (d.status === 'success') {
-                    alert("Mes cerrado correctamente.");
+                    showToast('Mes cerrado correctamente', 'success');
                     await fetchDashboard();
                     renderDashboard();
                 } else if (d.status === 'already_closed') {
-                    alert("Este mes ya estaba cerrado.");
+                    showToast('Este mes ya estaba cerrado', 'warning');
                 } else {
-                    alert("PIN Incorrecto. Inténtalo de nuevo.");
+                    showToast('PIN incorrecto. Inténtalo de nuevo.', 'error');
                 }
             } catch (e) {
-                alert("Error de conexión.");
+                showToast('Error de conexión', 'error');
             }
             l.classList.add('hidden');
         }
@@ -861,7 +1029,7 @@
         async function processSave() {
             const items = master.prods.map(p => ({ id: p.id, v: inputState[p.uid] || 0 })).filter(x => x.v > 0);
 
-            if (!items.length) return alert("Sin datos para registrar. Introduce al menos un valor.");
+            if (!items.length) { showToast('Sin datos para registrar. Introduce al menos un valor.', 'warning', 4000); return; }
 
             const l = document.getElementById('loading');
             l.classList.remove('hidden');
@@ -884,18 +1052,18 @@
                 const d = await r.json();
 
                 if (d.status === 'success') {
-                    alert("Registro Guardado correctamente.");
+                    showToast('Registro guardado correctamente', 'success');
                     inputState = {};
                     await fetchDashboard();
                     renderDashboard();
                     showSec('dash');
                 } else if (d.status === 'locked') {
-                    alert("No se puede guardar: Este mes ya está cerrado.");
+                    showToast('Este mes ya está cerrado. No se puede guardar.', 'error', 4000);
                 } else {
-                    alert("Error al guardar. Inténtalo de nuevo.");
+                    showToast('Error al guardar. Inténtalo de nuevo.', 'error');
                 }
             } catch (e) {
-                alert("Error de conexión al guardar.");
+                showToast('Error de conexión al guardar', 'error');
             }
             l.classList.add('hidden');
         }
@@ -937,7 +1105,7 @@
                     }
                 }
             } catch (e) {
-                alert("Error al obtener datos de auditoría.");
+                showToast('Error al obtener datos de auditoría', 'error');
             }
             l.classList.add('hidden');
         }
@@ -1130,10 +1298,10 @@
                     link.click();
                     document.body.removeChild(link);
                 } else {
-                    alert("No hay datos para exportar en el periodo seleccionado.");
+                    showToast('No hay datos para exportar en el periodo seleccionado', 'warning', 4000);
                 }
             } catch (e) {
-                alert("Error al exportar.");
+                showToast('Error al exportar', 'error');
             }
         }
 
@@ -1212,7 +1380,7 @@
                     loadAdminTable('MAESTRO_TIENDAS');
                 }
             } catch (e) {
-                alert("Error cargando base de datos.");
+                showToast('Error cargando base de datos', 'error');
             }
             l.classList.add('hidden');
         }
@@ -1276,7 +1444,7 @@
             if (type === 'TIENDA') msg = `⚠️ *CREDENCIALES LIO APP* ⚠️\nAcceso Tienda: ${id}\nPIN: ${pass}\nGuarda este mensaje.`;
             if (type === 'USER') msg = `⚠️ *CREDENCIALES LIO APP* ⚠️\nAcceso Management\nUsuario: ${id}\nPass: ${pass}\nGuarda este mensaje.`;
             navigator.clipboard.writeText(msg);
-            alert("Copiado para WhatsApp.");
+            showToast('Copiado para WhatsApp', 'success');
         }
 
         function checkNewCatSub(sel, targetId) {
@@ -1386,7 +1554,7 @@
                 });
                 await loadAdminData();
             } catch (e) {
-                alert("Error al guardar registro.");
+                showToast('Error al guardar registro', 'error');
             }
             l.classList.add('hidden');
         }
@@ -1399,14 +1567,14 @@
                 await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteAdminRecord', params: { table: currentAdminTable, id: id } }) });
                 await loadAdminData();
             } catch (e) {
-                alert("Error al borrar registro.");
+                showToast('Error al borrar registro', 'error');
             }
             l.classList.add('hidden');
         }
 
         function exportAdminMaster() {
             const data = adminData[getAdminDataKey(currentAdminTable)];
-            if (!data || data.length === 0) return alert("Sin datos.");
+            if (!data || data.length === 0) { showToast('Sin datos para exportar', 'warning'); return; }
 
             const csvRows = data.map(row => row.map(val => `"${String(val === null ? '' : val).replace(/"/g, '""')}"`).join(','));
             const blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
@@ -1420,7 +1588,7 @@
 
         async function checkArchive() {
             let y = document.getElementById('archive-year').value;
-            if (!y) return alert("Introduce un año válido.");
+            if (!y) { showToast('Introduce un año válido', 'warning'); return; }
 
             const l = document.getElementById('loading');
             l.classList.remove('hidden');
@@ -1448,7 +1616,7 @@
                     }
                 }
             } catch (e) {
-                alert("Error de análisis.");
+                showToast('Error de análisis', 'error');
             }
             l.classList.add('hidden');
         }
@@ -1470,30 +1638,13 @@
                     document.getElementById('step-3-container').classList.remove('opacity-50', 'pointer-events-none');
                 }
             } catch (e) {
-                alert("Fallo al crear el archivo.");
+                showToast('Fallo al crear el archivo de backup', 'error');
             }
             l.classList.add('hidden');
         }
 
-        async function purgeArchive() {
-            let y = document.getElementById('archive-year').value;
-            if (!confirm(`⚠️ PELIGRO: Vas a borrar TODOS los datos del año ${y} de la base de datos. ¿Estás seguro? Esta acción es irreversible.`)) return;
-
-            const l = document.getElementById('loading');
-            l.classList.remove('hidden');
-            document.getElementById('loading-text').innerText = "Purgando...";
-
-            try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'purgeYearData', params: { year: y } }) });
-                const d = await r.json();
-                if (d.status === 'success') {
-                    alert(`Año ${y} purgado correctamente.`);
-                    location.reload();
-                }
-            } catch (e) {
-                alert("Error al purgar los datos.");
-            }
-            l.classList.add('hidden');
+        function purgeArchive() {
+            openPurgeModal();
         }
     </script>
 </body>
