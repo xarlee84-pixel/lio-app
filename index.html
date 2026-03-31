@@ -304,14 +304,21 @@
             }).join(', ');
         }
 
+        // Devuelve "YYYY-MM-DD" en hora LOCAL (evita el desfase UTC de valueAsDate)
+        function localDateStr(d) {
+            return d.getFullYear() + '-' +
+                   String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                   String(d.getDate()).padStart(2, '0');
+        }
+
         window.onload = async () => {
-            document.getElementById('input-date').valueAsDate = new Date();
-            let t = new Date();
-            let lw = new Date();
+            const t = new Date();
+            const lw = new Date();
             lw.setDate(t.getDate() - 7);
 
-            document.getElementById('audit-end').valueAsDate = t;
-            document.getElementById('audit-start').valueAsDate = lw;
+            document.getElementById('input-date').value = localDateStr(t);
+            document.getElementById('audit-end').value   = localDateStr(t);
+            document.getElementById('audit-start').value = localDateStr(lw);
             document.getElementById('archive-year').value = t.getFullYear() - 1;
 
             await loadMasterData();
