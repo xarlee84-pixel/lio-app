@@ -468,6 +468,10 @@
         let adminData = null;
         let currentAdminTable = null;
         let auditFilters = { stores: [], cats: [], prods: [] };
+        let heatmapData = null;
+        let auditRawAllData = [];
+        let auditRawOffset = 0;
+        const AUDIT_PAGE = 500;
 
         // Formateadores Globales
         function fmtDate(dStr) {
@@ -639,6 +643,17 @@
             });
             const d = await r.json();
             if (d.status === 'success') dashData = d.data;
+
+            if (user.rol === 'AREA_MANAGER' || user.rol === 'ADMIN') {
+                try {
+                    const rh = await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'getZoneHeatmap', params: { rol: user.rol, zonas: user.zonas } })
+                    });
+                    const dh = await rh.json();
+                    if (dh.status === 'success') heatmapData = dh.data;
+                } catch (e) { /* heatmap no crítico, si falla no bloquea */ }
+            }
         }
 
         function initAppStructure() {
@@ -775,7 +790,10 @@
         }
 
         function formatStoreMessage(t) {
-            let msg = `⚠️ *AVISO TIENDA: ${t.nombre.toUpperCase()}* ⚠️\nPor favor, actualizad los datos en el sistema:\n\n`;
+            const header = (master?.config?.MSG_AVISO_HEADER || '⚠️ *AVISO TIENDA: {TIENDA}* ⚠️')
+                .replace('{TIENDA}', t.nombre.toUpperCase());
+            const intro  = master?.config?.MSG_AVISO_INTRO || 'Por favor, actualizad los datos en el sistema:';
+            let msg = `${header}\n${intro}\n\n`;
             let mf = t.mesesFaltantes || t.mesesPendientes;
 
             if (mf && mf.length > 0) {
@@ -822,7 +840,9 @@
                 "FECHA_INICIO_SISTEMA": document.getElementById('conf-fecha').value,
                 "UMBRAL_VERDE": document.getElementById('conf-verde').value,
                 "UMBRAL_AMARILLO": document.getElementById('conf-amarillo').value,
-                "UMBRAL_ROJO": document.getElementById('conf-rojo').value
+                "UMBRAL_ROJO": document.getElementById('conf-rojo').value,
+                "MSG_AVISO_HEADER": document.getElementById('conf-wp-header').value,
+                "MSG_AVISO_INTRO": document.getElementById('conf-wp-intro').value
             };
 
             try {
@@ -866,6 +886,18 @@
                             <div>
                                 <label class="text-[9px] font-bold text-red-500 uppercase ml-2">Umbral Rojo (Crítico mayor de %)</label>
                                 <input type="number" id="conf-rojo" value="${dashData.config.UMBRAL_ROJO || 20}" class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border border-red-200">
+                            </div>
+                            <div class="pt-4 border-t mt-2">
+                                <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3">Plantilla Mensaje WhatsApp</p>
+                                <p class="text-[9px] text-gray-400 font-bold mb-3 ml-2">Usa <span class="bg-gray-100 px-1 rounded font-black text-slate-700">{TIENDA}</span> para insertar el nombre de la tienda.</p>
+                                <div>
+                                    <label class="text-[9px] font-bold text-gray-400 uppercase ml-2">Cabecera del mensaje</label>
+                                    <input type="text" id="conf-wp-header" value="${dashData.config.MSG_AVISO_HEADER || '⚠️ *AVISO TIENDA: {TIENDA}* ⚠️'}" class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border">
+                                </div>
+                                <div class="mt-3">
+                                    <label class="text-[9px] font-bold text-gray-400 uppercase ml-2">Texto introductorio</label>
+                                    <input type="text" id="conf-wp-intro" value="${dashData.config.MSG_AVISO_INTRO || 'Por favor, actualizad los datos en el sistema:'}" class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border">
+                                </div>
                             </div>
                             <button onclick="saveAdminConfig()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all mt-4">Guardar Cambios</button>
                         </div>
@@ -974,7 +1006,7 @@
 
                 // CORRECCIÓN: Guards para evitar error si listaPendientes tiene propiedades undefined
                 const listaPend = dashData.listaPendientes || [];
-                m.innerHTML = `
+                let mgrHtml = `
                     <div class="bg-white p-6 rounded-[2rem] border shadow-sm">
                         <h3 class="font-black text-[9px] text-gray-400 mb-4 uppercase tracking-widest">Tiendas con Alertas</h3>
                         <div class="space-y-4">
@@ -996,7 +1028,94 @@
                             }
                         </div>
                     </div>`;
+
+                // Mapa de calor del mes actual
+                if (heatmapData && heatmapData.dias) {
+                    mgrHtml += renderHeatmap(heatmapData);
+                }
+
+                m.innerHTML = mgrHtml;
             }
+        }
+
+        function renderHeatmap(data) {
+            const dias = data.dias || [];
+            const uv = parseFloat(master?.config?.UMBRAL_VERDE || 10);
+            const ur = parseFloat(master?.config?.UMBRAL_ROJO  || 20);
+
+            // Construir mapa fecha→datos
+            const byDay = {};
+            dias.forEach(d => { byDay[d.fecha] = d; });
+
+            // Calcular mes y año del monthStart
+            const [yr, mo] = data.monthStart.split('-').map(Number);
+            const daysInMonth = new Date(yr, mo, 0).getDate();
+            const firstDow = new Date(yr, mo - 1, 1).getDay(); // 0=Dom
+
+            const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            const dias7 = ['D','L','M','X','J','V','S'];
+
+            // Cabecera días de semana
+            let grid = dias7.map(d =>
+                `<div class="text-center text-[8px] font-black text-gray-400 uppercase">${d}</div>`
+            ).join('');
+
+            // Celdas vacías hasta el primer día
+            for (let i = 0; i < firstDow; i++) {
+                grid += `<div></div>`;
+            }
+
+            // Celdas del mes
+            const today = localDateStr(new Date());
+            for (let day = 1; day <= daysInMonth; day++) {
+                const fechaStr = yr + '-' + String(mo).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+                const isFuture = fechaStr > today;
+                const entry = byDay[fechaStr];
+
+                let bg = 'bg-gray-100 text-gray-300';
+                let title = 'Sin datos';
+
+                if (!isFuture && entry) {
+                    if (entry.porc === null) {
+                        bg = 'bg-gray-200 text-gray-500';
+                        title = 'Sin producción';
+                    } else if (entry.porc >= ur) {
+                        bg = 'bg-red-500 text-white';
+                        title = entry.porc + '%';
+                    } else if (entry.porc >= uv) {
+                        bg = 'bg-orange-400 text-white';
+                        title = entry.porc + '%';
+                    } else {
+                        bg = 'bg-green-500 text-white';
+                        title = entry.porc + '%';
+                    }
+                } else if (isFuture) {
+                    bg = 'bg-transparent text-gray-200';
+                    title = '';
+                }
+
+                const isToday = fechaStr === today;
+                const ring = isToday ? 'ring-2 ring-blue-600 ring-offset-1' : '';
+
+                grid += `<div class="aspect-square flex flex-col items-center justify-center rounded-lg ${bg} ${ring} cursor-default select-none"
+                              title="${title}">
+                            <span class="text-[9px] font-black leading-none">${day}</span>
+                            ${entry && entry.porc !== null ? `<span class="text-[7px] font-bold leading-none mt-0.5">${entry.porc}%</span>` : ''}
+                         </div>`;
+            }
+
+            return `
+                <div class="bg-white p-6 rounded-[2rem] border shadow-sm">
+                    <h3 class="font-black text-[9px] text-gray-400 uppercase tracking-widest mb-1 text-center">Mapa de Calor</h3>
+                    <p class="text-[8px] font-bold text-gray-300 uppercase text-center mb-4">${meses[mo-1]} ${yr} · % Merma zona</p>
+                    <div class="grid grid-cols-7 gap-1">${grid}</div>
+                    <div class="flex justify-center gap-4 mt-4">
+                        <span class="flex items-center gap-1 text-[8px] font-bold text-gray-400"><span class="w-3 h-3 rounded-sm bg-green-500 inline-block"></span>&lt;${uv}%</span>
+                        <span class="flex items-center gap-1 text-[8px] font-bold text-gray-400"><span class="w-3 h-3 rounded-sm bg-orange-400 inline-block"></span>${uv}–${ur}%</span>
+                        <span class="flex items-center gap-1 text-[8px] font-bold text-gray-400"><span class="w-3 h-3 rounded-sm bg-red-500 inline-block"></span>&gt;${ur}%</span>
+                        <span class="flex items-center gap-1 text-[8px] font-bold text-gray-400"><span class="w-3 h-3 rounded-sm bg-gray-200 inline-block"></span>Sin datos</span>
+                    </div>
+                </div>`;
         }
 
         function promptCierre(idx) {
@@ -1272,24 +1391,66 @@
             inlineLoad.classList.add('hidden');
         }
 
-        function renderRawAuditTable(data) {
+        function renderRawAuditTable(data, append) {
             document.getElementById('manager-audit-view').classList.add('hidden');
             document.getElementById('admin-audit-view').classList.remove('hidden');
 
-            if (!data || data.length === 0) {
-                document.getElementById('admin-raw-table').innerHTML = "<tr><td>Sin datos en este periodo.</td></tr>";
+            if (!append) {
+                auditRawAllData = data || [];
+                auditRawOffset  = 0;
+            }
+
+            if (!auditRawAllData || auditRawAllData.length === 0) {
+                document.getElementById('admin-raw-table').innerHTML = "<tr><td colspan='99' class='text-center text-gray-400 py-6'>Sin datos en este periodo.</td></tr>";
+                document.getElementById('audit-load-more-wrap')?.remove();
                 return;
             }
 
-            const headers = Object.keys(data[0]);
-            let html = `<thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+            const headers  = Object.keys(auditRawAllData[0]);
+            const slice    = auditRawAllData.slice(auditRawOffset, auditRawOffset + AUDIT_PAGE);
+            const isFirst  = auditRawOffset === 0;
+            const hasMore  = auditRawOffset + AUDIT_PAGE < auditRawAllData.length;
 
-            data.forEach(r => {
+            let html = isFirst
+                ? `<thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`
+                : document.getElementById('admin-raw-table').querySelector('tbody') ? '' : '<tbody>';
+
+            slice.forEach(r => {
                 html += `<tr>${headers.map(h => `<td>${r[h]}</td>`).join('')}</tr>`;
             });
 
-            html += `</tbody>`;
-            document.getElementById('admin-raw-table').innerHTML = html;
+            if (isFirst) {
+                html += `</tbody>`;
+                document.getElementById('admin-raw-table').innerHTML = html;
+            } else {
+                const tbody = document.getElementById('admin-raw-table').querySelector('tbody');
+                if (tbody) tbody.insertAdjacentHTML('beforeend', html);
+            }
+
+            auditRawOffset += AUDIT_PAGE;
+
+            // Botón "cargar más" fuera de la tabla (hermano del div contenedor)
+            const existingBtn = document.getElementById('audit-load-more-wrap');
+            if (existingBtn) existingBtn.remove();
+
+            if (hasMore) {
+                const remaining = auditRawAllData.length - auditRawOffset;
+                const wrap = document.createElement('div');
+                wrap.id = 'audit-load-more-wrap';
+                wrap.className = 'pt-3 text-center';
+                wrap.innerHTML = `<button onclick="renderRawAuditTable(null, true)"
+                    class="bg-slate-900 text-white font-black px-8 py-3 rounded-xl text-[10px] uppercase shadow-md active:scale-95 transition-all">
+                    Cargar ${Math.min(remaining, AUDIT_PAGE)} registros más
+                    <span class="text-gray-400 ml-1">(${auditRawOffset} / ${auditRawAllData.length})</span>
+                </button>`;
+                document.getElementById('admin-audit-view').appendChild(wrap);
+            } else if (!isFirst) {
+                const wrap = document.createElement('div');
+                wrap.id = 'audit-load-more-wrap';
+                wrap.className = 'pt-3 text-center';
+                wrap.innerHTML = `<p class="text-[9px] font-bold text-gray-400 uppercase">— ${auditRawAllData.length} registros totales —</p>`;
+                document.getElementById('admin-audit-view').appendChild(wrap);
+            }
         }
 
         function renderAudit(data) {
