@@ -602,12 +602,20 @@
 
         async function loadMasterData() {
             const sel = document.getElementById('store-select');
-            if (sel) sel.innerHTML = '<option disabled selected>Cargando tiendas...</option>';
+            if (sel) sel.innerHTML = '<option disabled selected>Conectando...</option>';
+
+            // Mensaje progresivo: si tarda más de 5s, avisar del cold start
+            let coldStartTimer = setTimeout(() => {
+                if (sel && sel.options[0]?.text === 'Conectando...')
+                    sel.options[0].text = 'Arrancando servidor (~15s)...';
+            }, 5000);
+
             try {
-                const r = await fetch(API_URL, {
+                const r = await fetchWithTimeout(API_URL, {
                     method: 'POST',
                     body: JSON.stringify({ action: 'getInitialData' })
-                });
+                }, 50000);
+                clearTimeout(coldStartTimer);
                 const d = await r.json();
 
                 if (d.status === 'success') {
@@ -646,10 +654,13 @@
                     document.getElementById('store-select').innerHTML = master.tiendas.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
                 }
             } catch (e) {
+                clearTimeout(coldStartTimer);
                 console.error('Error cargando datos maestros:', e);
-                const sel2 = document.getElementById('store-select');
-                if (sel2) sel2.innerHTML = '<option disabled selected>⚠️ Error de conexión — recarga la página</option>';
-                showToast('Error al conectar con el servidor. Comprueba tu conexión.', 'error', 6000);
+                const msg = e.message === 'TIMEOUT'
+                    ? '⚠️ Tiempo de espera agotado — recarga la página'
+                    : '⚠️ Error de conexión — recarga la página';
+                if (sel) sel.innerHTML = `<option disabled selected>${msg}</option>`;
+                showToast('No se pudo conectar al servidor. Intenta recargar.', 'error', 6000);
             }
         }
 
@@ -659,9 +670,25 @@
             document.getElementById('group-admin').classList.toggle('hidden', isStore);
         }
 
+        // Fetch con timeout configurable (ms). Por defecto 45s para GAS cold start.
+        async function fetchWithTimeout(url, options, timeoutMs = 45000) {
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+            try {
+                const r = await fetch(url, { ...options, signal: ctrl.signal });
+                clearTimeout(timer);
+                return r;
+            } catch (e) {
+                clearTimeout(timer);
+                if (e.name === 'AbortError') throw new Error('TIMEOUT');
+                throw e;
+            }
+        }
+
         async function handleLogin() {
             const l = document.getElementById('loading');
-            document.getElementById('loading-text').innerText = "Autenticando...";
+            const lt = document.getElementById('loading-text');
+            lt.innerText = "Conectando...";
             l.classList.remove('hidden');
 
             const type = document.getElementById('user-type').value;
@@ -676,7 +703,8 @@
             }
 
             try {
-                const r = await fetch(API_URL, {
+                lt.innerText = "Autenticando...";
+                const r = await fetchWithTimeout(API_URL, {
                     method: 'POST',
                     body: JSON.stringify({ action: 'login', params: p })
                 });
@@ -684,36 +712,47 @@
 
                 if (d.status === 'success') {
                     user = d.data;
+                    // Cargar dashboard en paralelo pero sin bloquear el acceso si falla
+                    lt.innerText = "Cargando Panel...";
                     await fetchDashboard();
                     initAppStructure();
                     initSessionTimeout();
                 } else {
-                    showToast('Credenciales incorrectas. Verifica usuario y contraseña.', 'error', 4000);
+                    showToast('PIN o credenciales incorrectas.', 'error', 4000);
                 }
             } catch (e) {
-                showToast('Error de red. Comprueba tu conexión.', 'error', 4000);
+                if (e.message === 'TIMEOUT') {
+                    showToast('El servidor tardó demasiado. Intenta de nuevo.', 'error', 5000);
+                } else {
+                    showToast('Error de red. Comprueba tu conexión.', 'error', 4000);
+                }
             }
             l.classList.add('hidden');
         }
 
         async function fetchDashboard() {
-            document.getElementById('loading-text').innerText = "Cargando Panel...";
-            const r = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'getDashboardData', params: { userId: user.id, rol: user.rol, zonas: user.zonas } })
-            });
-            const d = await r.json();
-            if (d.status === 'success') dashData = d.data;
+            try {
+                document.getElementById('loading-text').innerText = "Cargando Panel...";
+                const r = await fetchWithTimeout(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'getDashboardData', params: { userId: user.id, rol: user.rol, zonas: user.zonas } })
+                });
+                const d = await r.json();
+                if (d.status === 'success') dashData = d.data;
+            } catch (e) {
+                console.warn('Dashboard data unavailable, proceeding anyway:', e);
+                // No bloquear el acceso si el dashboard falla
+            }
 
             if (user.rol === 'AREA_MANAGER' || user.rol === 'ADMIN') {
                 try {
-                    const rh = await fetch(API_URL, {
+                    const rh = await fetchWithTimeout(API_URL, {
                         method: 'POST',
                         body: JSON.stringify({ action: 'getZoneHeatmap', params: { rol: user.rol, zonas: user.zonas } })
-                    });
+                    }, 20000);
                     const dh = await rh.json();
                     if (dh.status === 'success') heatmapData = dh.data;
-                } catch (e) { /* heatmap no crítico, si falla no bloquea */ }
+                } catch (e) { /* heatmap no crítico */ }
             }
         }
 
