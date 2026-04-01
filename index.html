@@ -583,20 +583,26 @@
         }
 
         window.onload = async () => {
-            applyStoredTheme();
-            const t = new Date();
-            const lw = new Date();
-            lw.setDate(t.getDate() - 7);
+            try {
+                applyStoredTheme();
+                const t = new Date();
+                const lw = new Date();
+                lw.setDate(t.getDate() - 7);
 
-            document.getElementById('input-date').value = localDateStr(t);
-            document.getElementById('audit-end').value   = localDateStr(t);
-            document.getElementById('audit-start').value = localDateStr(lw);
-            document.getElementById('archive-year').value = t.getFullYear() - 1;
-
+                const safeSet = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+                safeSet('input-date',    localDateStr(t));
+                safeSet('audit-end',     localDateStr(t));
+                safeSet('audit-start',   localDateStr(lw));
+                safeSet('archive-year',  t.getFullYear() - 1);
+            } catch (e) {
+                console.warn('onload init error:', e);
+            }
             await loadMasterData();
         };
 
         async function loadMasterData() {
+            const sel = document.getElementById('store-select');
+            if (sel) sel.innerHTML = '<option disabled selected>Cargando tiendas...</option>';
             try {
                 const r = await fetch(API_URL, {
                     method: 'POST',
@@ -641,6 +647,9 @@
                 }
             } catch (e) {
                 console.error('Error cargando datos maestros:', e);
+                const sel2 = document.getElementById('store-select');
+                if (sel2) sel2.innerHTML = '<option disabled selected>⚠️ Error de conexión — recarga la página</option>';
+                showToast('Error al conectar con el servidor. Comprueba tu conexión.', 'error', 6000);
             }
         }
 
