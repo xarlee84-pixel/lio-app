@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LIO APP - Sistema de Control</title>
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LIO">
+    <link rel="apple-touch-icon" href="icon.svg">
     <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -358,6 +366,17 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby86Uyfci6i_hyunbHhVlM2XsTwpo6AtxYedAOZX8gJ6xIIn392pUUR6hxzH4hbJ3nrCA/exec";
 
+        // ── SHA-256 (Web Crypto API) ───────────────────────────────────────────
+        async function sha256(str) {
+            const buf = await crypto.subtle.digest(
+                'SHA-256',
+                new TextEncoder().encode(String(str))
+            );
+            return Array.from(new Uint8Array(buf))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
         // ── TOAST ──────────────────────────────────────────────────────────────
         let _toastTimer = null;
         function showToast(msg, type = 'info', duration = 3000) {
@@ -607,11 +626,11 @@
             let p = { type };
 
             if (type === 'store') {
-                p.id = document.getElementById('store-select').value;
-                p.pin = document.getElementById('store-pin').value;
+                p.id  = document.getElementById('store-select').value;
+                p.pin = await sha256(document.getElementById('store-pin').value);
             } else {
                 p.user = document.getElementById('admin-user').value;
-                p.pass = document.getElementById('admin-pass').value;
+                p.pass = await sha256(document.getElementById('admin-pass').value);
             }
 
             try {
@@ -1139,8 +1158,9 @@
         }
 
         async function confirmCierre() {
-            const p = document.getElementById('cierre-pin').value;
-            if (!p) return;
+            const rawPin = document.getElementById('cierre-pin').value;
+            if (!rawPin) return;
+            const p = await sha256(rawPin);
 
             const l = document.getElementById('loading');
             l.classList.remove('hidden');
@@ -1964,6 +1984,14 @@
 
         function purgeArchive() {
             openPurgeModal();
+        }
+
+        // ── SERVICE WORKER (PWA) ───────────────────────────────────────────────
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .catch(err => console.warn('SW no registrado:', err));
+            });
         }
     </script>
 </body>
