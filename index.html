@@ -110,6 +110,22 @@
         </div>
     </div>
 
+    <!-- Modal: Cambiar PIN / Contraseña -->
+    <div id="modal-change-pin" class="hidden fixed inset-0 bg-slate-900/90 z-[3000] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl text-center">
+            <h3 id="change-pin-title" class="font-black text-slate-800 mb-1 text-xl uppercase italic">Cambiar PIN</h3>
+            <p id="change-pin-subtitle" class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6"></p>
+            <input type="hidden" id="change-pin-entity-id">
+            <input type="hidden" id="change-pin-type">
+            <input type="password" id="new-pin-input" inputmode="numeric" placeholder="NUEVO PIN / CONTRASEÑA" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 text-center text-xl font-black tracking-[0.4em] mb-3 outline-none focus:ring-blue-600" autocomplete="new-password">
+            <input type="password" id="new-pin-confirm" inputmode="numeric" placeholder="CONFIRMAR" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 text-center text-xl font-black tracking-[0.4em] mb-6 outline-none focus:ring-blue-600" autocomplete="new-password">
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('modal-change-pin').classList.add('hidden')" class="flex-1 bg-gray-100 text-gray-600 font-black py-4 rounded-xl uppercase text-[10px]">Cancelar</button>
+                <button onclick="confirmPinChange()" class="flex-1 bg-blue-600 text-white font-black py-4 rounded-xl shadow-lg uppercase text-[10px]">Guardar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-admin-crud" class="hidden fixed inset-0 bg-slate-900/90 z-[3000] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-[2rem] p-8 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 id="admin-crud-title" class="font-black text-slate-800 mb-6 text-lg uppercase italic text-center">Formulario</h3>
@@ -1196,6 +1212,54 @@
             l.classList.add('hidden');
         }
 
+        // ── CAMBIAR PIN / CONTRASEÑA ────────────────────────────────────────────
+        function openChangePinModal(type, entityId, name) {
+            // type: 'tienda' | 'usuario'
+            document.getElementById('change-pin-type').value     = type;
+            document.getElementById('change-pin-entity-id').value = entityId;
+            document.getElementById('change-pin-title').innerText = type === 'tienda' ? 'Cambiar PIN Tienda' : 'Cambiar Contraseña';
+            document.getElementById('change-pin-subtitle').innerText = name || entityId;
+            document.getElementById('new-pin-input').value   = '';
+            document.getElementById('new-pin-confirm').value  = '';
+            document.getElementById('new-pin-input').inputMode  = type === 'tienda' ? 'numeric' : 'text';
+            document.getElementById('new-pin-confirm').inputMode = type === 'tienda' ? 'numeric' : 'text';
+            document.getElementById('modal-change-pin').classList.remove('hidden');
+        }
+
+        async function confirmPinChange() {
+            const tipo     = document.getElementById('change-pin-type').value;
+            const entityId = document.getElementById('change-pin-entity-id').value;
+            const newPin   = document.getElementById('new-pin-input').value.trim();
+            const confirm  = document.getElementById('new-pin-confirm').value.trim();
+
+            if (!newPin) { showToast('Introduce el nuevo PIN / contraseña', 'warning'); return; }
+            if (newPin !== confirm) { showToast('Los valores no coinciden', 'error'); return; }
+            if (tipo === 'tienda' && !/^\d{4,8}$/.test(newPin)) { showToast('El PIN debe tener entre 4 y 8 dígitos', 'warning'); return; }
+
+            document.getElementById('modal-change-pin').classList.add('hidden');
+            const l = document.getElementById('loading');
+            l.classList.remove('hidden');
+
+            try {
+                const hashed = await sha256(newPin);
+                let action, params;
+                if (tipo === 'tienda') {
+                    action = 'updateStorePin';
+                    params = { tiendaId: entityId, newPin: hashed };
+                } else {
+                    action = 'updateUserPass';
+                    params = { userId: entityId, newPass: hashed };
+                }
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, params }) });
+                const d = await r.json();
+                showToast(d.status === 'success' ? '✅ Credencial actualizada' : '❌ Error al actualizar', d.status === 'success' ? 'success' : 'error');
+                if (user.rol === 'ADMIN') await loadAdminData();
+            } catch (e) {
+                showToast('Error de conexión', 'error');
+            }
+            l.classList.add('hidden');
+        }
+
         function showSec(id) {
             document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
             document.getElementById('sec-' + id).classList.remove('hidden');
@@ -1708,6 +1772,10 @@
                                     </ul>
                                 </div>
                             </div>
+                            <button onclick="openChangePinModal('tienda','${t.id}','${t.nombre.replace(/'/g,"\\'")}');event.stopPropagation();" class="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-blue-50 text-gray-600 hover:text-blue-700 font-black py-3 rounded-xl text-[10px] uppercase border border-gray-200 hover:border-blue-300 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                                Cambiar PIN Tienda
+                            </button>
                         </div>
                     </div>`;
             }).join('');
@@ -1748,26 +1816,39 @@
 
             rows.forEach(r => {
                 if (!r[0]) return;
+
+                // Botón cambiar credencial
+                let btnKey = '';
                 let btnWp = '';
+                const safeNom = String(r[1] || r[0]).replace(/'/g, "\\'");
 
                 if (table === 'MAESTRO_TIENDAS') {
-                    btnWp = `<button onclick="copyWhatsApp('TIENDA', '${r[0]}', '${r[3]}')" class="text-green-500 mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg></button>`;
+                    btnKey = `<button onclick="openChangePinModal('tienda','${r[0]}','${safeNom}')" title="Cambiar PIN" class="text-blue-400 mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg></button>`;
+                    btnWp  = `<button onclick="copyWhatsApp('TIENDA','${r[0]}','****')" title="WhatsApp" class="text-green-500 mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg></button>`;
                 }
                 if (table === 'USUARIOS_SISTEMA') {
-                    btnWp = `<button onclick="copyWhatsApp('USER', '${r[0]}', '${r[1]}')" class="text-green-500 mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg></button>`;
+                    btnKey = `<button onclick="openChangePinModal('usuario','${r[0]}','${String(r[0]).replace(/'/g,"\\'")}') " title="Cambiar contraseña" class="text-blue-400 mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg></button>`;
+                    btnWp  = `<button onclick="copyWhatsApp('USER','${r[0]}','****')" title="WhatsApp" class="text-green-500 mx-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg></button>`;
                 }
 
                 html += `
                     <tr>
                         <td class="flex items-center">
-                            <button onclick="openAdminModal('${r[0]}')" class="text-blue-500 mr-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
-                            <button onclick="delAdminRecord('${r[0]}')" class="text-red-500 mr-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                            ${btnWp}
+                            <button onclick="openAdminModal('${r[0]}')" title="Editar" class="text-blue-500 mr-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+                            <button onclick="delAdminRecord('${r[0]}')" title="Borrar" class="text-red-500 mr-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                            ${btnKey}${btnWp}
                         </td>`;
 
                 r.forEach((v, i) => {
+                    // Ocultar campos de credencial (hash)
+                    const isPinCol  = table === 'MAESTRO_TIENDAS'  && headers[i] === 'PIN';
+                    const isPassCol = table === 'USUARIOS_SISTEMA' && headers[i] === 'CONTRASEÑA';
+                    if (isPinCol || isPassCol) {
+                        html += `<td class="text-gray-400 tracking-widest text-xs">••••••••</td>`;
+                        return;
+                    }
                     let displayVal = v instanceof Date ? Utilities_formatDateFix(v) : (v === null || v === undefined ? '' : v);
-                    if (table === 'MAESTRO_TIENDAS' && headers[i] === 'ZONA') displayVal = translateZoneId(v);
+                    if (table === 'MAESTRO_TIENDAS'  && headers[i] === 'ZONA')  displayVal = translateZoneId(v);
                     if (table === 'USUARIOS_SISTEMA' && headers[i] === 'ZONAS') displayVal = translateZoneId(v);
                     html += `<td>${displayVal}</td>`;
                 });
@@ -1818,13 +1899,30 @@
                 let val = (row && row[i] !== undefined) ? row[i] : '';
                 if (val instanceof Date) val = Utilities_formatDateFix(val);
 
-                let inputType = h.toUpperCase().includes('FECHA') ? 'date' : 'text';
-                let readonly = (i === 0 && id) ? 'readonly class="w-full p-4 bg-gray-200 rounded-xl font-bold text-sm outline-none border"' : 'class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-blue-600 ring-2 ring-transparent"';
+                // ── 1. Campos de credencial: nunca mostrar el hash ────────────────────
+                const isPin  = currentAdminTable === 'MAESTRO_TIENDAS'  && h.toUpperCase() === 'PIN';
+                const isPass = currentAdminTable === 'USUARIOS_SISTEMA' && h.toUpperCase() === 'CONTRASEÑA';
+                if (isPin || isPass) {
+                    const lbl = isPin ? 'PIN' : 'Contraseña';
+                    html += `
+                        <div>
+                            <label class="text-[9px] font-bold text-gray-400 uppercase ml-2">${lbl} ${id ? '<span class="text-blue-400 normal-case">(dejar vacío para no cambiar)</span>' : ''}</label>
+                            <input type="password" id="crud-input-${i}" inputmode="${isPin ? 'numeric' : 'text'}"
+                                placeholder="${id ? '••••••••' : 'Nuevo ' + lbl}"
+                                class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-blue-600 ring-2 ring-transparent tracking-widest"
+                                autocomplete="new-password">
+                            <input type="hidden" id="crud-orig-${i}" value="${val}">
+                        </div>`;
+                    return;
+                }
 
+                let inputType = h.toUpperCase().includes('FECHA') ? 'date' : 'text';
+                let readonly  = (i === 0 && id) ? 'readonly class="w-full p-4 bg-gray-200 rounded-xl font-bold text-sm outline-none border"' : 'class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-blue-600 ring-2 ring-transparent"';
+
+                // ── 2. Categoría / Subcategoría de productos ──────────────────────────
                 if (currentAdminTable === 'MAESTRO_PRODUCTOS' && (h.toUpperCase() === 'CATEGORIA' || h.toUpperCase() === 'SUBCATEGORIA')) {
                     let opts = [...new Set(master.prods.map(p => h.toUpperCase() === 'CATEGORIA' ? p.cat : p.sub))].filter(Boolean).sort();
                     let optHtml = opts.map(c => `<option value="${c}" ${val === c ? 'selected' : ''}>${c}</option>`).join('');
-
                     html += `
                         <div>
                             <label class="text-[9px] font-bold text-gray-400 uppercase ml-2">${h}</label>
@@ -1838,18 +1936,15 @@
                     return;
                 }
 
-                if (h.toUpperCase() === 'ZONAS' || h.toUpperCase() === 'ZONA') {
-                    let userZones = String(val).split(',').map(s => s.trim());
-                    let isMultiple = h.toUpperCase() === 'ZONAS' ? 'multiple' : '';
-                    let zHtml = adminData.zonas.map(z => `
-                        <option value="${z[0]}" ${userZones.includes(String(z[0])) ? 'selected' : ''}>${z[1]} (${z[0]})</option>
-                    `).join('');
-                    let extraH = isMultiple ? 'h-32' : '';
-
+                // ── 3. ZONA (simple — para tiendas) ──────────────────────────────────
+                if (h.toUpperCase() === 'ZONA') {
+                    let zHtml = adminData.zonas.slice(1).map(z =>
+                        `<option value="${z[0]}" ${String(val) === String(z[0]) ? 'selected' : ''}>${z[1]} (${z[0]})</option>`
+                    ).join('');
                     html += `
                         <div>
                             <label class="text-[9px] font-bold text-gray-400 uppercase ml-2">${h}</label>
-                            <select ${isMultiple} id="crud-sel-${i}" class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-blue-600 ${extraH}">
+                            <select id="crud-sel-${i}" class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-blue-600">
                                 ${zHtml}
                             </select>
                             <input type="hidden" id="crud-input-${i}" value="${val}">
@@ -1857,6 +1952,38 @@
                     return;
                 }
 
+                // ── 4. ZONAS (múltiple — para usuarios: zonas + tiendas individuales) ─
+                if (h.toUpperCase() === 'ZONAS') {
+                    let selectedVals = String(val).split(',').map(s => s.trim()).filter(Boolean);
+                    // Zonas completas
+                    let zonePills = `<option value="TODAS" ${selectedVals.includes('TODAS') ? 'selected' : ''}>⭐ TODAS LAS TIENDAS</option>`;
+                    zonePills += adminData.zonas.slice(1).map(z =>
+                        `<option value="${z[0]}" ${selectedVals.includes(String(z[0])) ? 'selected' : ''}>${z[1]}</option>`
+                    ).join('');
+                    // Tiendas individuales
+                    let storePills = adminData.tiendas.slice(1).map(t =>
+                        `<option value="${t[0]}" ${selectedVals.includes(String(t[0])) ? 'selected' : ''}>${t[1]}</option>`
+                    ).join('');
+                    html += `
+                        <div>
+                            <label class="text-[9px] font-bold text-blue-600 uppercase ml-2">Acceso: Zonas completas</label>
+                            <p class="text-[8px] text-gray-400 ml-2 mb-1">Mantén Ctrl (o Cmd en Mac) para seleccionar varias</p>
+                            <select multiple id="crud-zonas-sel-${i}" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] uppercase outline-none border focus:ring-blue-600 h-28">
+                                ${zonePills}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-blue-600 uppercase ml-2">Acceso: Tiendas individuales adicionales</label>
+                            <p class="text-[8px] text-gray-400 ml-2 mb-1">Para dar acceso a tiendas concretas de otra zona</p>
+                            <select multiple id="crud-tiendas-sel-${i}" class="w-full p-3 bg-gray-50 rounded-xl font-bold text-[10px] uppercase outline-none border focus:ring-blue-600 h-28">
+                                ${storePills}
+                            </select>
+                        </div>
+                        <input type="hidden" id="crud-input-${i}" value="${val}">`;
+                    return;
+                }
+
+                // ── 5. Campo genérico ─────────────────────────────────────────────────
                 html += `
                     <div>
                         <label class="text-[9px] font-bold text-gray-400 uppercase ml-2">${h}</label>
@@ -1875,8 +2002,29 @@
             let rowToSave = [];
 
             headers.forEach((h, i) => {
+                // ── Credenciales: si el campo está vacío, conservar el hash original ──
+                const isPin  = currentAdminTable === 'MAESTRO_TIENDAS'  && h.toUpperCase() === 'PIN';
+                const isPass = currentAdminTable === 'USUARIOS_SISTEMA' && h.toUpperCase() === 'CONTRASEÑA';
+                if (isPin || isPass) {
+                    const newVal  = (document.getElementById(`crud-input-${i}`) || {}).value || '';
+                    const origVal = (document.getElementById(`crud-orig-${i}`) || {}).value || '';
+                    rowToSave.push(newVal.trim() !== '' ? newVal.trim() : origVal);
+                    return;
+                }
+
+                // ── ZONAS de usuario: combinar zonas + tiendas individuales ──────────
+                const zonasSel   = document.getElementById(`crud-zonas-sel-${i}`);
+                const tiendasSel = document.getElementById(`crud-tiendas-sel-${i}`);
+                if (zonasSel && tiendasSel) {
+                    const zones   = Array.from(zonasSel.selectedOptions).map(o => o.value);
+                    const tiendas = Array.from(tiendasSel.selectedOptions).map(o => o.value);
+                    const combined = [...zones, ...tiendas].filter(Boolean).join(', ');
+                    rowToSave.push(combined);
+                    return;
+                }
+
                 let inputEl = document.getElementById(`crud-input-${i}`);
-                let selEl = document.getElementById(`crud-sel-${i}`);
+                let selEl   = document.getElementById(`crud-sel-${i}`);
 
                 if (selEl) {
                     if (selEl.multiple) {
