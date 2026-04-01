@@ -10,7 +10,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="LIO">
+    <meta name="apple-mobile-web-app-title" content="LIAO">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="shortcut icon" href="icon.svg">
     <link rel="apple-touch-icon" href="icon.svg">
     <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,8 +20,22 @@
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .pill-selected { @apply bg-blue-600 text-white shadow-md scale-105 border-2 border-blue-600 transition-all; }
-        .pill-default { @apply bg-white text-gray-700 shadow-sm border-2 border-gray-300 hover:border-blue-400 hover:text-blue-600 transition-all; }
+        .pill-selected {
+            background-color: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(37,99,235,0.35);
+            transform: scale(1.05);
+            border: 2px solid #2563eb;
+            transition: all 0.15s ease;
+        }
+        .pill-default {
+            background-color: #ffffff;
+            color: #374151;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.06);
+            border: 2px solid #d1d5db;
+            transition: all 0.15s ease;
+        }
+        .pill-default:hover { border-color: #93c5fd; color: #2563eb; }
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
@@ -47,6 +63,7 @@
         .dark header { background-color: #1e293b !important; border-bottom-color: #334155 !important; }
         .dark #app-nav { background-color: #1e293b !important; border-bottom-color: #334155 !important; }
         .dark .pill-default { background-color: #1e293b !important; color: #94a3b8 !important; border-color: #475569 !important; }
+        .dark .pill-selected { background-color: #2563eb !important; color: #ffffff !important; border-color: #2563eb !important; }
         .dark th { background-color: #1e293b !important; color: #94a3b8 !important; }
         .dark td { color: #cbd5e1 !important; }
         .dark tr { border-bottom-color: #334155 !important; }
@@ -107,8 +124,9 @@
     <div id="login-screen" class="min-h-screen flex items-center justify-center p-6 bg-slate-900">
         <div class="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-md">
             <div class="text-center mb-8">
-                <h1 id="login-app-name" class="text-5xl font-black text-slate-900 italic tracking-tighter">LIO</h1>
-                <div class="h-1 w-12 bg-blue-600 mx-auto mt-2 rounded-full"></div>
+                <h1 class="text-5xl font-black text-slate-900 italic tracking-tighter">LIAO GESTIÓN</h1>
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Producción y Merma</p>
+                <div class="h-1 w-16 bg-blue-600 mx-auto mt-3 rounded-full"></div>
             </div>
             <div class="space-y-4">
                 <select id="user-type" onchange="toggleLoginUI()" class="w-full p-4 bg-gray-50 rounded-2xl border-none ring-2 ring-gray-100 font-bold text-gray-700 outline-none focus:ring-blue-600">
@@ -235,7 +253,7 @@
                         <div id="print-report-header" class="hidden bg-white p-6 rounded-[2rem] border shadow-sm">
                             <div class="flex items-start justify-between mb-5 pb-4 border-b">
                                 <div>
-                                    <h2 id="print-app-name" class="text-3xl font-black italic text-slate-900">LIO</h2>
+                                    <h2 id="print-app-name" class="text-3xl font-black italic text-slate-900">LIAO GESTIÓN</h2>
                                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Informe de Auditoría</p>
                                 </div>
                                 <div class="text-right">
@@ -604,7 +622,6 @@
                     };
 
                     document.getElementById('store-select').innerHTML = master.tiendas.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
-                    document.getElementById('login-app-name').innerText = master.config.NOMBRE_APP || 'LIO';
                 }
             } catch (e) {
                 console.error('Error cargando datos maestros:', e);
@@ -723,16 +740,9 @@
 
             const cats = [...new Set(master.prods.map(p => p.cat))].filter(Boolean).sort();
             renderAuditPills('audit-categorias-pills', cats.map(c => ({ id: c, label: c })), 'cats');
-            updateAuditProducts();
-        }
 
-        function updateAuditProducts() {
-            let filteredProds = master.prods;
-            if (auditFilters.cats.length > 0) {
-                filteredProds = filteredProds.filter(p => auditFilters.cats.includes(p.cat));
-            }
-            filteredProds = filteredProds.slice().sort((a, b) => a.nom.localeCompare(b.nom));
-            renderAuditPills('audit-products-pills', filteredProds.map(p => ({ id: p.id, label: p.nom })), 'prods');
+            const allProds = master.prods.slice().sort((a, b) => a.nom.localeCompare(b.nom));
+            renderAuditPills('audit-products-pills', allProds.map(p => ({ id: p.id, label: p.nom })), 'prods');
         }
 
         function renderAuditPills(containerId, items, filterKey) {
@@ -752,14 +762,12 @@
             const idx = auditFilters[filterKey].indexOf(id);
             if (idx > -1) {
                 auditFilters[filterKey].splice(idx, 1);
-                btn.classList.remove('pill-selected'); btn.classList.add('pill-default');
+                btn.classList.remove('pill-selected');
+                btn.classList.add('pill-default');
             } else {
                 auditFilters[filterKey].push(id);
-                btn.classList.remove('pill-default'); btn.classList.add('pill-selected');
-            }
-            if (filterKey === 'cats') {
-                auditFilters.prods = [];
-                updateAuditProducts();
+                btn.classList.remove('pill-default');
+                btn.classList.add('pill-selected');
             }
         }
 
@@ -768,7 +776,7 @@
             const end   = document.getElementById('audit-end').value;
             const year  = start ? start.split('-')[0] : '';
 
-            document.getElementById('print-app-name').innerText  = master?.config?.NOMBRE_APP || 'LIO';
+            document.getElementById('print-app-name').innerText  = master?.config?.NOMBRE_APP || 'LIAO GESTIÓN';
             document.getElementById('print-daterange').innerText = `${fmtDate(start)} — ${fmtDate(end)} (${year})`;
 
             const now = new Date();
