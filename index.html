@@ -600,67 +600,93 @@
             await loadMasterData();
         };
 
+        // ── CACHE DE DATOS MAESTROS (localStorage, TTL 60 min) ───────────────────
+        const MASTER_CACHE_KEY = 'lio_master_v2';
+        const MASTER_CACHE_TTL = 60 * 60 * 1000; // 60 minutos
+
+        function parseMasterData(data) {
+            const hoy = new Date().getTime();
+            return {
+                prods: data.productos.slice(1).filter(x => x[0]).map((x, i) => {
+                    let act = x[4] !== false;
+                    if (act && typeof x[4] !== 'boolean') {
+                        let dDate = (x[4] instanceof Date) ? x[4] : null;
+                        if (!dDate && typeof x[5] !== 'boolean') dDate = (x[5] instanceof Date) ? x[5] : null;
+                        if (dDate && !isNaN(dDate.getTime()) && hoy > dDate.getTime()) act = false;
+                    }
+                    return { id: String(x[0]), uid: 'ui_' + i, nom: String(x[1]), cat: String(x[2] || 'S/C'), sub: String(x[3] || 'S/S'), act };
+                }),
+                tiendas: data.tiendas.slice(1).filter(x => x[0]).map(x => ({
+                    id: String(x[0]), nom: String(x[1]), zona: String(x[2]), pin: String(x[3])
+                })),
+                zonas: data.zonas,
+                config: data.config
+            };
+        }
+
+        function applyMaster(parsed) {
+            master = parsed;
+            document.getElementById('store-select').innerHTML =
+                master.tiendas.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
+        }
+
+        function saveMasterCache(parsed) {
+            try {
+                localStorage.setItem(MASTER_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: parsed }));
+            } catch (e) { /* quota exceeded o private mode */ }
+        }
+
+        function loadMasterCache() {
+            try {
+                const raw = localStorage.getItem(MASTER_CACHE_KEY);
+                if (!raw) return null;
+                const { ts, data } = JSON.parse(raw);
+                if (Date.now() - ts > MASTER_CACHE_TTL) return null;
+                return data;
+            } catch (e) { return null; }
+        }
+
+        async function fetchMasterFromAPI() {
+            const r = await fetchWithTimeout(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'getInitialData' })
+            }, 50000);
+            const d = await r.json();
+            if (d.status === 'success') {
+                const parsed = parseMasterData(d.data);
+                saveMasterCache(parsed);
+                return parsed;
+            }
+            return null;
+        }
+
         async function loadMasterData() {
             const sel = document.getElementById('store-select');
-            if (sel) sel.innerHTML = '<option disabled selected>Conectando...</option>';
 
-            // Mensaje progresivo: si tarda más de 5s, avisar del cold start
-            let coldStartTimer = setTimeout(() => {
-                if (sel && sel.options[0]?.text === 'Conectando...')
-                    sel.options[0].text = 'Arrancando servidor (~15s)...';
+            // ── 1. Intentar desde caché (carga instantánea) ───────────────────────
+            const cached = loadMasterCache();
+            if (cached) {
+                applyMaster(cached);
+                // Refrescar en background sin bloquear
+                fetchMasterFromAPI().then(fresh => { if (fresh) applyMaster(fresh); }).catch(() => {});
+                return;
+            }
+
+            // ── 2. Sin caché: llamada a la API con indicador progresivo ────────────
+            if (sel) sel.innerHTML = '<option disabled selected>Cargando...</option>';
+            const coldTimer = setTimeout(() => {
+                if (sel?.options[0]?.text === 'Cargando...') sel.options[0].text = 'Conectando (~15s)...';
             }, 5000);
 
             try {
-                const r = await fetchWithTimeout(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'getInitialData' })
-                }, 50000);
-                clearTimeout(coldStartTimer);
-                const d = await r.json();
-
-                if (d.status === 'success') {
-                    let hoy = new Date().getTime();
-                    master = {
-                        prods: d.data.productos.slice(1).filter(x => x[0]).map((x, i) => {
-                            // CORRECCIÓN CRÍTICA: No convertir booleanos (checkboxes de GSheets) a Date.
-                            // new Date(true) = 1 Jan 1970, lo que marcaba todos los productos como inactivos.
-                            let act = x[4] !== false;
-                            if (act && typeof x[4] !== 'boolean') {
-                                let dDate = (x[4] instanceof Date) ? x[4] : null;
-                                if (!dDate && typeof x[5] !== 'boolean') {
-                                    dDate = (x[5] instanceof Date) ? x[5] : null;
-                                }
-                                if (dDate && !isNaN(dDate.getTime()) && hoy > dDate.getTime()) act = false;
-                            }
-                            return {
-                                id: String(x[0]),
-                                uid: 'ui_' + i,
-                                nom: String(x[1]),
-                                cat: String(x[2] || 'S/C'),
-                                sub: String(x[3] || 'S/S'),
-                                act: act
-                            };
-                        }),
-                        tiendas: d.data.tiendas.slice(1).filter(x => x[0]).map(x => ({
-                            id: String(x[0]),
-                            nom: String(x[1]),
-                            zona: String(x[2]),
-                            pin: String(x[3])
-                        })),
-                        zonas: d.data.zonas,
-                        config: d.data.config
-                    };
-
-                    document.getElementById('store-select').innerHTML = master.tiendas.map(t => `<option value="${t.id}">${t.nom}</option>`).join('');
-                }
+                const parsed = await fetchMasterFromAPI();
+                clearTimeout(coldTimer);
+                if (parsed) applyMaster(parsed);
             } catch (e) {
-                clearTimeout(coldStartTimer);
-                console.error('Error cargando datos maestros:', e);
-                const msg = e.message === 'TIMEOUT'
-                    ? '⚠️ Tiempo de espera agotado — recarga la página'
-                    : '⚠️ Error de conexión — recarga la página';
+                clearTimeout(coldTimer);
+                const msg = e.message === 'TIMEOUT' ? '⚠️ Tiempo agotado — recarga' : '⚠️ Error de conexión';
                 if (sel) sel.innerHTML = `<option disabled selected>${msg}</option>`;
-                showToast('No se pudo conectar al servidor. Intenta recargar.', 'error', 6000);
+                showToast('Error al conectar. Intenta recargar la página.', 'error', 6000);
             }
         }
 
@@ -706,17 +732,24 @@
                 lt.innerText = "Autenticando...";
                 const r = await fetchWithTimeout(API_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'login', params: p })
+                    body: JSON.stringify({ action: 'loginFull', params: p })
                 });
                 const d = await r.json();
 
                 if (d.status === 'success') {
-                    user = d.data;
-                    // Cargar dashboard en paralelo pero sin bloquear el acceso si falla
-                    lt.innerText = "Cargando Panel...";
-                    await fetchDashboard();
+                    user = d.data.auth;
+                    dashData = d.data.dashboard;
                     initAppStructure();
                     initSessionTimeout();
+                    // Cargar heatmap en background sin bloquear
+                    if (user.rol === 'AREA_MANAGER' || user.rol === 'ADMIN') {
+                        fetchWithTimeout(API_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({ action: 'getZoneHeatmap', params: { rol: user.rol, zonas: user.zonas } })
+                        }, 20000).then(rh => rh.json()).then(dh => {
+                            if (dh.status === 'success') { heatmapData = dh.data; }
+                        }).catch(() => {});
+                    }
                 } else {
                     showToast('PIN o credenciales incorrectas.', 'error', 4000);
                 }
