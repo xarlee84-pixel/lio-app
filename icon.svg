@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0f172a"/>
+  <rect x="44" y="472" width="424" height="10" rx="5" fill="#2563eb"/>
+  <text x="256" y="316"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="216"
+        font-weight="900"
+        font-style="italic"
+        fill="#ffffff"
+        text-anchor="middle"
+        letter-spacing="-8">LIO</text>
+</svg>
