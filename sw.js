@@ -4,7 +4,7 @@
  *             Network-only SIEMPRE para la API de Google Apps Script.
  */
 
-const CACHE_NAME   = 'lio-app-v1';
+const CACHE_NAME   = 'lio-app-v3';
 const NEVER_CACHE  = ['script.google.com', 'googleusercontent.com'];
 
 const PRECACHE = [
