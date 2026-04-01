@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LIO APP - Sistema de Control</title>
+    <title>LIAO APP - Sistema de Control</title>
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
@@ -1840,16 +1840,17 @@
                         </td>`;
 
                 r.forEach((v, i) => {
+                    const hUp = String(headers[i]).toUpperCase();
                     // Ocultar campos de credencial (hash)
-                    const isPinCol  = table === 'MAESTRO_TIENDAS'  && headers[i] === 'PIN';
-                    const isPassCol = table === 'USUARIOS_SISTEMA' && headers[i] === 'CONTRASEÑA';
+                    const isPinCol  = table === 'MAESTRO_TIENDAS'  && hUp.includes('PIN');
+                    const isPassCol = table === 'USUARIOS_SISTEMA' && (hUp.includes('PASS') || hUp === 'CONTRASEÑA');
                     if (isPinCol || isPassCol) {
                         html += `<td class="text-gray-400 tracking-widest text-xs">••••••••</td>`;
                         return;
                     }
                     let displayVal = v instanceof Date ? Utilities_formatDateFix(v) : (v === null || v === undefined ? '' : v);
-                    if (table === 'MAESTRO_TIENDAS'  && headers[i] === 'ZONA')  displayVal = translateZoneId(v);
-                    if (table === 'USUARIOS_SISTEMA' && headers[i] === 'ZONAS') displayVal = translateZoneId(v);
+                    if (table === 'MAESTRO_TIENDAS'  && hUp === 'ZONA')         displayVal = translateZoneId(v);
+                    if (table === 'USUARIOS_SISTEMA' && hUp.includes('ZONAS'))  displayVal = translateZoneId(v);
                     html += `<td>${displayVal}</td>`;
                 });
 
@@ -1887,6 +1888,21 @@
             }
         }
 
+        function filterProdSubcat(catVal) {
+            const sel = document.getElementById('crud-subcat-select');
+            if (!sel) return;
+            const subs = catVal && catVal !== 'NEW_VALUE'
+                ? [...new Set(master.prods.filter(p => p.cat === catVal).map(p => p.sub))].filter(Boolean).sort()
+                : [...new Set(master.prods.map(p => p.sub))].filter(Boolean).sort();
+            sel.innerHTML =
+                `<option value="">Seleccionar...</option>` +
+                subs.map(s => `<option value="${s}">${s}</option>`).join('') +
+                `<option value="NEW_VALUE" class="font-black text-blue-600">+ CREAR NUEVA</option>`;
+            // También resetear el input oculto de subcategoría
+            const subcatInput = sel.closest('div')?.querySelector('input[type="text"]');
+            if (subcatInput) { subcatInput.classList.add('hidden'); subcatInput.value = ''; }
+        }
+
         function openAdminModal(id = null) {
             document.getElementById('admin-crud-title').innerText = id ? "EDITAR REGISTRO" : "NUEVO REGISTRO";
 
@@ -1895,13 +1911,18 @@
             let row = id ? data.slice(1).find(r => String(r[0]) === String(id)) : [];
             let html = '';
 
+            // Rastrear índice de CATEGORIA para cascada subcategorías
+            let catColIdx = headers.findIndex(h => h.toUpperCase().includes('CATEG') && !h.toUpperCase().includes('SUB'));
+
             headers.forEach((h, i) => {
                 let val = (row && row[i] !== undefined) ? row[i] : '';
                 if (val instanceof Date) val = Utilities_formatDateFix(val);
 
-                // ── 1. Campos de credencial: nunca mostrar el hash ────────────────────
-                const isPin  = currentAdminTable === 'MAESTRO_TIENDAS'  && h.toUpperCase() === 'PIN';
-                const isPass = currentAdminTable === 'USUARIOS_SISTEMA' && h.toUpperCase() === 'CONTRASEÑA';
+                const hUp = h.toUpperCase();
+
+                // ── 1. Credencial: nunca mostrar el hash (PIN o PASSWORD/CONTRASEÑA) ──
+                const isPin  = currentAdminTable === 'MAESTRO_TIENDAS'  && hUp.includes('PIN');
+                const isPass = currentAdminTable === 'USUARIOS_SISTEMA' && (hUp.includes('PASS') || hUp === 'CONTRASEÑA');
                 if (isPin || isPass) {
                     const lbl = isPin ? 'PIN' : 'Contraseña';
                     html += `
@@ -1916,17 +1937,17 @@
                     return;
                 }
 
-                let inputType = h.toUpperCase().includes('FECHA') ? 'date' : 'text';
+                let inputType = hUp.includes('FECHA') ? 'date' : 'text';
                 let readonly  = (i === 0 && id) ? 'readonly class="w-full p-4 bg-gray-200 rounded-xl font-bold text-sm outline-none border"' : 'class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-blue-600 ring-2 ring-transparent"';
 
-                // ── 2. Categoría / Subcategoría de productos ──────────────────────────
-                if (currentAdminTable === 'MAESTRO_PRODUCTOS' && (h.toUpperCase() === 'CATEGORIA' || h.toUpperCase() === 'SUBCATEGORIA')) {
-                    let opts = [...new Set(master.prods.map(p => h.toUpperCase() === 'CATEGORIA' ? p.cat : p.sub))].filter(Boolean).sort();
-                    let optHtml = opts.map(c => `<option value="${c}" ${val === c ? 'selected' : ''}>${c}</option>`).join('');
+                // ── 2a. CATEGORIA de productos ────────────────────────────────────────
+                if (currentAdminTable === 'MAESTRO_PRODUCTOS' && hUp.includes('CATEG') && !hUp.includes('SUB')) {
+                    let cats = [...new Set(master.prods.map(p => p.cat))].filter(Boolean).sort();
+                    let optHtml = cats.map(c => `<option value="${c}" ${val === c ? 'selected' : ''}>${c}</option>`).join('');
                     html += `
                         <div>
                             <label class="text-[9px] font-bold text-gray-400 uppercase ml-2">${h}</label>
-                            <select onchange="checkNewCatSub(this, 'crud-input-${i}')" class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-blue-600">
+                            <select id="crud-cat-select" onchange="checkNewCatSub(this,'crud-input-${i}');filterProdSubcat(this.value);" class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-blue-600">
                                 <option value="">Seleccionar...</option>
                                 ${optHtml}
                                 <option value="NEW_VALUE" class="font-black text-blue-600">+ CREAR NUEVA</option>
@@ -1936,8 +1957,28 @@
                     return;
                 }
 
-                // ── 3. ZONA (simple — para tiendas) ──────────────────────────────────
-                if (h.toUpperCase() === 'ZONA') {
+                // ── 2b. SUBCATEGORIA de productos (filtrada por categoría actual) ──────
+                if (currentAdminTable === 'MAESTRO_PRODUCTOS' && hUp.includes('SUB')) {
+                    const currentCat = (row && catColIdx > -1) ? String(row[catColIdx] || '') : '';
+                    let subs = currentCat
+                        ? [...new Set(master.prods.filter(p => p.cat === currentCat).map(p => p.sub))].filter(Boolean).sort()
+                        : [...new Set(master.prods.map(p => p.sub))].filter(Boolean).sort();
+                    let optHtml = subs.map(s => `<option value="${s}" ${val === s ? 'selected' : ''}>${s}</option>`).join('');
+                    html += `
+                        <div>
+                            <label class="text-[9px] font-bold text-gray-400 uppercase ml-2">${h}</label>
+                            <select id="crud-subcat-select" onchange="checkNewCatSub(this,'crud-input-${i}')" class="w-full p-4 bg-gray-50 rounded-xl font-bold text-sm outline-none border focus:ring-blue-600">
+                                <option value="">Seleccionar...</option>
+                                ${optHtml}
+                                <option value="NEW_VALUE" class="font-black text-blue-600">+ CREAR NUEVA</option>
+                            </select>
+                            <input type="text" id="crud-input-${i}" value="${val}" class="mt-2 w-full p-4 bg-white rounded-xl font-bold text-sm outline-none border border-blue-400 hidden" placeholder="Escribe la nueva...">
+                        </div>`;
+                    return;
+                }
+
+                // ── 3. ZONA única (para tiendas — coincidencia exacta) ────────────────
+                if (hUp === 'ZONA') {
                     let zHtml = adminData.zonas.slice(1).map(z =>
                         `<option value="${z[0]}" ${String(val) === String(z[0]) ? 'selected' : ''}>${z[1]} (${z[0]})</option>`
                     ).join('');
@@ -1952,15 +1993,13 @@
                     return;
                 }
 
-                // ── 4. ZONAS (múltiple — para usuarios: zonas + tiendas individuales) ─
-                if (h.toUpperCase() === 'ZONAS') {
+                // ── 4. ZONAS múltiples (usuarios — cualquier header que contenga ZONAS) ─
+                if (hUp.includes('ZONAS')) {
                     let selectedVals = String(val).split(',').map(s => s.trim()).filter(Boolean);
-                    // Zonas completas
                     let zonePills = `<option value="TODAS" ${selectedVals.includes('TODAS') ? 'selected' : ''}>⭐ TODAS LAS TIENDAS</option>`;
                     zonePills += adminData.zonas.slice(1).map(z =>
                         `<option value="${z[0]}" ${selectedVals.includes(String(z[0])) ? 'selected' : ''}>${z[1]}</option>`
                     ).join('');
-                    // Tiendas individuales
                     let storePills = adminData.tiendas.slice(1).map(t =>
                         `<option value="${t[0]}" ${selectedVals.includes(String(t[0])) ? 'selected' : ''}>${t[1]}</option>`
                     ).join('');
@@ -2002,9 +2041,10 @@
             let rowToSave = [];
 
             headers.forEach((h, i) => {
+                const hUp = h.toUpperCase();
                 // ── Credenciales: si el campo está vacío, conservar el hash original ──
-                const isPin  = currentAdminTable === 'MAESTRO_TIENDAS'  && h.toUpperCase() === 'PIN';
-                const isPass = currentAdminTable === 'USUARIOS_SISTEMA' && h.toUpperCase() === 'CONTRASEÑA';
+                const isPin  = currentAdminTable === 'MAESTRO_TIENDAS'  && hUp.includes('PIN');
+                const isPass = currentAdminTable === 'USUARIOS_SISTEMA' && (hUp.includes('PASS') || hUp === 'CONTRASEÑA');
                 if (isPin || isPass) {
                     const newVal  = (document.getElementById(`crud-input-${i}`) || {}).value || '';
                     const origVal = (document.getElementById(`crud-orig-${i}`) || {}).value || '';
